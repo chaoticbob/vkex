@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
+
+project(projects_basic)
+
+add_subdirectory(01_vkex_info)
+add_subdirectory(02_cube)

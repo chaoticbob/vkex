@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.329
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "01_vkex_info", "01_vkex_info.vcxproj", "{617EEA8A-581A-3691-8E2F-EF9C65AC5366}"
+	ProjectSection(ProjectDependencies) = postProject
+		{BB529878-E764-44B1-A8D9-8473E7CFC1E4} = {BB529878-E764-44B1-A8D9-8473E7CFC1E4}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "vkex-ggp", "..\..\..\..\ggp\vkex-ggp.vcxproj", "{BB529878-E764-44B1-A8D9-8473E7CFC1E4}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "glfw-ggp", "..\..\..\..\external\glfw\contrib\ggp\glfw-ggp.vcxproj", "{7CE1F7F5-5DE0-4D67-9950-09C072A2B505}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|GGP = Debug|GGP
+		Release|GGP = Release|GGP
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{617EEA8A-581A-3691-8E2F-EF9C65AC5366}.Debug|GGP.ActiveCfg = Debug|GGP
+		{617EEA8A-581A-3691-8E2F-EF9C65AC5366}.Debug|GGP.Build.0 = Debug|GGP
+		{617EEA8A-581A-3691-8E2F-EF9C65AC5366}.Release|GGP.ActiveCfg = Release|GGP
+		{617EEA8A-581A-3691-8E2F-EF9C65AC5366}.Release|GGP.Build.0 = Release|GGP
+		{BB529878-E764-44B1-A8D9-8473E7CFC1E4}.Debug|GGP.ActiveCfg = Debug|GGP
+		{BB529878-E764-44B1-A8D9-8473E7CFC1E4}.Debug|GGP.Build.0 = Debug|GGP
+		{BB529878-E764-44B1-A8D9-8473E7CFC1E4}.Release|GGP.ActiveCfg = Release|GGP
+		{BB529878-E764-44B1-A8D9-8473E7CFC1E4}.Release|GGP.Build.0 = Release|GGP
+		{7CE1F7F5-5DE0-4D67-9950-09C072A2B505}.Debug|GGP.ActiveCfg = Debug|GGP
+		{7CE1F7F5-5DE0-4D67-9950-09C072A2B505}.Debug|GGP.Build.0 = Debug|GGP
+		{7CE1F7F5-5DE0-4D67-9950-09C072A2B505}.Release|GGP.ActiveCfg = Release|GGP
+		{7CE1F7F5-5DE0-4D67-9950-09C072A2B505}.Release|GGP.Build.0 = Release|GGP
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {64C9E9F9-1A35-441C-8B9A-6018DAEB1E71}
+	EndGlobalSection
+EndGlobal
