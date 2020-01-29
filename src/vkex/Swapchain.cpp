@@ -42,16 +42,7 @@ vkex::Result CSurface::InternalCreate(
 
   // Surface
   {
-#if defined(VKEX_WIN32)
-    m_vk_create_info = { VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR };
-    m_vk_create_info.hinstance = create_info.hinstance;
-    m_vk_create_info.hwnd = create_info.hwnd;
-    VkResult vk_result = vkex::CreateWin32SurfaceKHR(
-      *m_instance,
-      &m_vk_create_info,
-      p_allocator,
-      &m_vk_object);
-#elif defined(VKEX_LINUX_GGP)
+#if defined(VKEX_GGP)
     m_vk_create_info = { VK_STRUCTURE_TYPE_STREAM_DESCRIPTOR_SURFACE_CREATE_INFO_GGP };
     m_vk_create_info.streamDescriptor = GgpStreamDescriptorConstants::kGgpPrimaryStreamDescriptor;
     VkResult vk_result = vkex::CreateStreamDescriptorSurfaceGGP(
@@ -59,11 +50,20 @@ vkex::Result CSurface::InternalCreate(
       &m_vk_create_info,
       p_allocator,
       &m_vk_object);
-#elif defined(VKEX_LINUX)
+#elif defined(VKEX_LINUX_XCB)
     m_vk_create_info = { VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR };
     m_vk_create_info.connection = create_info.connection;
     m_vk_create_info.window = create_info.window;
     VkResult vk_result = vkex::CreateXcbSurfaceKHR(
+      *m_instance,
+      &m_vk_create_info,
+      p_allocator,
+      &m_vk_object);
+#elif defined(VKEX_WIN32)
+    m_vk_create_info = { VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR };
+    m_vk_create_info.hinstance = create_info.hinstance;
+    m_vk_create_info.hwnd = create_info.hwnd;
+    VkResult vk_result = vkex::CreateWin32SurfaceKHR(
       *m_instance,
       &m_vk_create_info,
       p_allocator,

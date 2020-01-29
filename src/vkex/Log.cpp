@@ -68,28 +68,22 @@ ConsoleLog::~ConsoleLog()
 {
 }
 
-#if defined(VKEX_WIN32)
 void ConsoleLog::Write(const std::string& msg)
 {
-  OutputDebugStringA(msg.c_str());
-}
-#elif defined(VKEX_LINUX) || defined(VKEX_GGP)
-void Console::Write(const std::string& msg)
-{
+#if defined(VKEX_LINUX) || defined(VKEX_GGP)
   std::cout << msg;
-}
+#elif defined(VKEX_WIN32)
+  OutputDebugStringA(msg.c_str());
 #endif
+}
 
-#if defined(VKEX_WIN32)
 void ConsoleLog::FlushOutput()
 {
-}
-#elif defined(VKEX_LINUX) || defined(VKEX_GGP)
-void ConsoleLog::FlushOutput()
-{
+#if defined(VKEX_LINUX) || defined(VKEX_GGP)
   std::cout << std::flush;
-}
+#elif defined(VKEX_WIN32)
 #endif
+}
 
 // =================================================================================================
 // FileLog

@@ -31,9 +31,8 @@ namespace vkex {
  */
 struct SurfaceCreateInfo {
   vkex::PhysicalDevice  physical_device;
-#if defined(VKEX_WIN32)
-  HINSTANCE             hinstance;
-  HWND                  hwnd;
+#if defined(VKEX_GGP)
+  // Nothing
 #elif defined(VKEX_LINUX_WAYLAND)
   struct wl_display*    display;
   struct wl_surface*    surface;
@@ -43,6 +42,9 @@ struct SurfaceCreateInfo {
 #elif defined(VKEX_LINUX_XLIB)
   Display*              dpy;
   Window                window;
+#elif defined(VKEX_WIN32)
+  HINSTANCE             hinstance;
+  HWND                  hwnd;
 #endif
 };
 
@@ -113,18 +115,16 @@ private:
   vkex::Instance                    m_instance = nullptr;
   vkex::SurfaceCreateInfo           m_create_info = {};
 
-#if defined(VKEX_WIN32)
-  VkWin32SurfaceCreateInfoKHR               m_vk_create_info = {};
-#elif defined(VKEX_LINUX)
-# if defined(VKEX_LINUX_WAYLAND)
-  VkWaylandSurfaceCreateInfoKHR             m_vk_create_info = {};
-# elif defined(VKEX_LINUX_XCB)
-  VkXcbSurfaceCreateInfoKHR                 m_vk_create_info = {};
-# elif defined(VKEX_LINUX_XLIB)
-  VkXlibSurfaceCreateInfoKHR                m_vk_create_info = {};
-# elif defined(VKEX_LINUX_GGP)
+#if defined(VKEX_GGP)
   VkStreamDescriptorSurfaceCreateInfoGGP    m_vk_create_info = {};
-# endif
+#elif defined(VKEX_LINUX_WAYLAND)
+  VkWaylandSurfaceCreateInfoKHR             m_vk_create_info = {};
+#elif defined(VKEX_LINUX_XCB)
+  VkXcbSurfaceCreateInfoKHR                 m_vk_create_info = {};
+#elif defined(VKEX_LINUX_XLIB)
+  VkXlibSurfaceCreateInfoKHR                m_vk_create_info = {};
+#elif defined(VKEX_WIN32)
+  VkWin32SurfaceCreateInfoKHR               m_vk_create_info = {};
 #endif
   VkSurfaceKHR                      m_vk_object = VK_NULL_HANDLE;
   VkSurfaceCapabilities2KHR         m_vk_surface_capabilities = {};

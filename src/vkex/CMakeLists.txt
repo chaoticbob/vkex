@@ -222,7 +222,7 @@ target_compile_definitions(${PROJECT_NAME}
 if (LINUX)
 	if (GGP)
 		target_compile_definitions(${PROJECT_NAME}
-			PUBLIC VK_USE_PLATFORM_GGP		
+			PUBLIC VK_USE_PLATFORM_GGP_KHR
 			       VKEX_GGP
 		)		
 	else()

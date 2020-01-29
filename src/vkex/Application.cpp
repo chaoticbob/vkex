@@ -886,17 +886,20 @@ vkex::Result Application::InitializeVkexSwapchain()
   {
     vkex::SurfaceCreateInfo surface_create_info = {};
     surface_create_info.physical_device = m_device->GetPhysicalDevice();
-#if defined(VKEX_WIN32)
-    surface_create_info.hinstance = ::GetModuleHandle(nullptr);
-    surface_create_info.hwnd = glfwGetWin32Window(m_window);
-#elif defined(VKEX_LINUX_WAYLAND)
-# error "not implemented"
-#elif defined(VKEX_LINUX_XCB)
+#if defined(VKEX_GGP)
+    // Nothing to do
+#elif defined(VKEX_LINUX)
+# if defined(VKEX_LINUX_WAYLAND)
+#   error "not implemented"
+# elif defined(VKEX_LINUX_XCB)
     surface_create_info.connection = XGetXCBConnection(glfwGetX11Display());
     surface_create_info.window = glfwGetX11Window(m_window);
-#elif defined(VKEX_LINUX_XLIB)
-# error "not implemented"
-#elif defined(VKEX_LINUX_GGP)
+# elif defined(VKEX_LINUX_XLIB)
+#   error "not implemented"
+# endif
+#elif defined(VKEX_WIN32)
+    surface_create_info.hinstance = ::GetModuleHandle(nullptr);
+    surface_create_info.hwnd = glfwGetWin32Window(m_window);
 #endif
     vkex::Result vkex_result = vkex::Result::Undefined;
     VKEX_RESULT_CALL(
@@ -2329,7 +2332,7 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
     vk_present_info.pImageIndices       = DataPtr(vk_swapchain_image_indices);
     vk_present_info.pResults            = nullptr;
 
-#if defined(VKEX_LINUX_GGP)
+#if defined(VKEX_GGP)
     // TODO: Add frame token support to be a good citizen...
     // Though, it isn't really needed for this sample
 #endif
