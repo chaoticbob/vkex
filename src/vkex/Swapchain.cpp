@@ -323,7 +323,7 @@ vkex::Result CSwapchain::InternalCreate(
       // Images
       for (const auto& vk_image : vk_swapchain_images) {
         vkex::ImageCreateInfo image_create_info = {};
-        image_create_info.create_flags                 = 0;
+        image_create_info.create_flags          = 0;
         image_create_info.image_type            = VK_IMAGE_TYPE_2D;
         image_create_info.format                = { m_create_info.color_format };
         image_create_info.extent                = { m_create_info.width, m_create_info.height, 1 };
