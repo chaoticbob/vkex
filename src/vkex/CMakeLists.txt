@@ -20,44 +20,46 @@ project(libvkex)
 
 # Determine Vulkan's include directory
 if (NOT VULKAN_INCLUDE_DIR)
-	if (LINUX)
-		if (GGP)
-			set(VULKAN_INCLUDE_DIR "${GGP_SYSROOT_PATH}/usr/local/include")
-		else()
-			if (DEFINED ENV{VULKAN_SDK})
-			endif()
-		endif()
-	elseif (WIN32)
-		if (DEFINED ENV{VULKAN_SDK})
-			set(VULKAN_INCLUDE_DIR "$ENV{VULKAN_SDK}/Include")
-		endif()
-	endif()
+  if (LINUX)
+    if (GGP)
+      set(VULKAN_INCLUDE_DIR "${GGP_SYSROOT_PATH}/usr/local/include")
+    else()
+      if (DEFINED ENV{VULKAN_SDK})
+      	set(VULKAN_INCLUDE_DIR "$ENV{VULKAN_SDK}/x86_64/include")
+      endif()
+    endif()
+  elseif (WIN32)
+    if (DEFINED ENV{VULKAN_SDK})
+      set(VULKAN_INCLUDE_DIR "$ENV{VULKAN_SDK}/Include")
+    endif()
+  endif()
 endif()
 
 # Determine Vulkan's library directory
 if (NOT VULKAN_LIBRARY_DIR)
-	if (LINUX)
-		if (GGP)
-			set(VULKAN_LIBRARY_DIR "${GGP_SYSROOT_PATH}/usr/local/lib")
-		else()
-			if (DEFINED ENV{VULKAN_SDK})
-			endif()
-		endif()
-	elseif (WIN32)
-		if (DEFINED ENV{VULKAN_SDK})
-			set(VULKAN_LIBRARY_DIR "$ENV{VULKAN_SDK}/Lib")
-		endif()
-	endif()
+  if (LINUX)
+    if (GGP)
+      set(VULKAN_LIBRARY_DIR "${GGP_SYSROOT_PATH}/usr/local/lib")
+    else()
+      if (DEFINED ENV{VULKAN_SDK})
+      	set(VULKAN_LIBRARY_DIR "$ENV{VULKAN_SDK}/x86_64/lib")
+      endif()
+    endif()
+  elseif (WIN32)
+    if (DEFINED ENV{VULKAN_SDK})
+      set(VULKAN_LIBRARY_DIR "$ENV{VULKAN_SDK}/Lib")
+    endif()
+  endif()
 endif()
 
 # Bail if Vulkan's include directory is not set
 if (NOT VULKAN_INCLUDE_DIR)
-	message(FATAL_ERROR "VULKAN_INCLUDE_DIR not specified and could not be determined using environment variable VULKAN_SDK")
+  message(FATAL_ERROR "VULKAN_INCLUDE_DIR not specified and could not be determined using environment variable VULKAN_SDK")
 endif()
 
 # Bail if Vulkan's library directory is not set
 if (NOT VULKAN_LIBRARY_DIR)
-	message(FATAL_ERROR "VULKAN_LIBRARY_DIR not specified and could not be determined using environment variable VULKAN_SDK")
+  message(FATAL_ERROR "VULKAN_LIBRARY_DIR not specified and could not be determined using environment variable VULKAN_SDK")
 endif()
 
 ## TODO: Fix this logic to make it more flexible for custom Vulkan installations
@@ -90,9 +92,9 @@ set(INC_DIR     ${CMAKE_CURRENT_SOURCE_DIR})
 set(SRC_DIR     ${CMAKE_CURRENT_SOURCE_DIR})
 set(SHADERS_DIR ${CMAKE_SOURCE_DIR}/src/shaders)
 
-set(GLM_INC_DIR	      ${CMAKE_SOURCE_DIR}/third_party/glm)
-set(STB_INC_DIR	      ${CMAKE_SOURCE_DIR}/third_party/stb)
-set(VMA_INC_DIR	      ${CMAKE_SOURCE_DIR}/third_party/VulkanMemoryAllocator/src)
+set(GLM_INC_DIR       ${CMAKE_SOURCE_DIR}/third_party/glm)
+set(STB_INC_DIR       ${CMAKE_SOURCE_DIR}/third_party/stb)
+set(VMA_INC_DIR       ${CMAKE_SOURCE_DIR}/third_party/VulkanMemoryAllocator/src)
 set(SPIRV_REFLECT_DIR ${CMAKE_SOURCE_DIR}/third_party/SPIRV-Reflect)
 set(IMGUI_DIR         ${CMAKE_SOURCE_DIR}/third_party/imgui)
 set(TINY_OBJ_INC_DIR  ${CMAKE_SOURCE_DIR}/third_party/tinyobjloader)
@@ -203,6 +205,7 @@ list(APPEND SRC_FILES
   ${IMGUI_SRC_FILES}
 )
 
+message("${SRC_FILES}")
 add_library(${PROJECT_NAME} STATIC ${HDR_FILES} ${SRC_FILES})
 
 source_group("vkex\\Header Files"          FILES ${VKEX_HDR_FILES})
@@ -216,26 +219,27 @@ set_target_properties(${PROJECT_NAME}
 
 # Compile definitions
 target_compile_definitions(${PROJECT_NAME}
-	PUBLIC GLFW_INCLUDE_NONE)
+  PUBLIC GLFW_INCLUDE_NONE)
 
 # Additional compile definitions
 if (LINUX)
-	if (GGP)
-		target_compile_definitions(${PROJECT_NAME}
-			PUBLIC VK_USE_PLATFORM_GGP_KHR
-			       VKEX_GGP
-		)		
-	else()
-		target_compile_definitions(${PROJECT_NAME}
-			PUBLIC VK_USE_PLATFORM_XCB_KHR
-			       VKEX_LINUX
-		)	
-	endif()
+  if (GGP)
+    target_compile_definitions(${PROJECT_NAME}
+      PUBLIC VK_USE_PLATFORM_GGP_KHR
+             VKEX_GGP
+    )    
+  else()
+    target_compile_definitions(${PROJECT_NAME}
+      PUBLIC VK_USE_PLATFORM_XCB_KHR
+             VKEX_LINUX
+             VKEX_LINUX_XCB
+    )  
+  endif()
 elseif (WIN32)
   target_compile_definitions(${PROJECT_NAME}
     PUBLIC VK_USE_PLATFORM_WIN32_KHR
-		       VKEX_WIN32
-	         _CRT_SECURE_NO_WARNINGS
+           VKEX_WIN32
+           _CRT_SECURE_NO_WARNINGS
   )
 endif()
 
@@ -254,22 +258,36 @@ target_include_directories(${PROJECT_NAME}
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME} 
-	PUBLIC glfw)
+  PUBLIC glfw
+)
 
 # Additional link properties
 if (LINUX)
-	if (GGP)
-	  # Link directories
-		target_link_directories(${PROJECT_NAME} 
-			PUBLIC ${VULKAN_LIBRARY_DIR})	
-		# Link libraries
-		target_link_libraries(${PROJECT_NAME} 
-			PUBLIC vulkan)	
-	else()
-	endif()
+  # Link directories
+  target_link_directories(${PROJECT_NAME} 
+    PUBLIC ${VULKAN_LIBRARY_DIR}
+  )
+  # Link libraries
+  target_link_libraries(${PROJECT_NAME} 
+    PUBLIC vulkan
+  )  
+
+  # Additional link properties and libraries for non-GGP Linux
+  if (NOT GGP)
+    # Link properties
+    set_target_properties(${PROJECT_NAME}
+      PROPERTIES OUTPUT_NAME VKEX
+                 LINKER_LANGUAGE CXX
+    )
+    # Link libraries
+    target_link_libraries(${PROJECT_NAME} 
+        PUBLIC xcb X11-xcb
+    )  
+  endif()
 elseif (WIN32)
-	target_link_libraries(${PROJECT_NAME} 
-		PUBLIC "${VULKAN_LIBRARY_DIR}/vulkan-1.lib")
+  target_link_libraries(${PROJECT_NAME} 
+    PUBLIC "${VULKAN_LIBRARY_DIR}/vulkan-1.lib"
+  )
 endif()
 
 #if(UNIX AND NOT APPLE)
