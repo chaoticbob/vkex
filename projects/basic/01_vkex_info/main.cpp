@@ -62,7 +62,6 @@ void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& co
   // Force present mode to VK_PRESENT_MODE_MAILBOX_KHR for now...because #reasons
   configuration.window.resizeable                        = false;
   configuration.swapchain.paced_frame_rate               = 60;
-  configuration.swapchain.depth_stencil_format           = VK_FORMAT_D32_SFLOAT;
   configuration.swapchain.present_mode                   = VK_PRESENT_MODE_MAILBOX_KHR;
   configuration.swapchain.depth_stencil_format           = VK_FORMAT_D32_SFLOAT;
   configuration.graphics_debug.enable                    = true;
@@ -158,34 +157,15 @@ void VkexInfoApp::Setup()
 
   // Texture
   {
-    // Load bitmap
-    auto bitmap_data = asset_util::LoadFile(GetAssetPath("textures/box_panel.jpg"));
-    VKEX_ASSERT_MSG(!bitmap_data.empty(), "Texture failed to load!");
-    std::unique_ptr<vkex::Bitmap> bitmap;
-    VKEX_CALL(vkex::Bitmap::Create(bitmap_data.size(), bitmap_data.data(), 0, &bitmap));
+	  const bool host_visible = false;
 
-    vkex::TextureCreateInfo create_info = {};
-    create_info.image.image_type        = VK_IMAGE_TYPE_2D;
-    create_info.image.format            = bitmap->GetFormat();
-    create_info.image.extent            = bitmap->GetExtent();
-    create_info.image.mip_levels        = bitmap->GetMipLevels();
-    create_info.image.initial_layout    = VK_IMAGE_LAYOUT_PREINITIALIZED;
-    create_info.image.committed         = true;
-    create_info.image.memory_usage      = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    create_info.view.derive_from_image  = true;
-    VKEX_CALL(GetDevice()->CreateTexture(create_info, &m_texture));
-    for (uint32_t level = 0; level < bitmap->GetMipLevels(); ++level) {
-      VKEX_CALL(m_texture->CopyToMipLevel(level, 0, bitmap->GetRowStride(level), bitmap->GetHeight(level), bitmap->GetData(level)));
-    }
-
-    // Transition from VK_IMAGE_LAYOUT_PREINITIALIZED to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
-    // for VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT.
-    VKEX_CALL(vkex::TransitionImageLayout(
-      GetGraphicsQueue(), 
-      m_texture->GetImage(), 
-      VK_IMAGE_LAYOUT_PREINITIALIZED, 
-      VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-      VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT));
+	  // Load file data
+	  auto image_file_path = GetAssetPath("textures/box_panel.jpg");
+	  VKEX_CALL(asset_util::CreateTexture(
+		  image_file_path,
+		  GetGraphicsQueue(),
+		  host_visible,
+		  &m_texture));
   }
 
   // Sampler
