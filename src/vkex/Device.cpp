@@ -502,6 +502,8 @@ vkex::Result CDevice::InternalCreate(
     m_vk_create_info.pEnabledFeatures         = &m_create_info.enabled_features;
   }
 
+  VKEX_LOG_INFO(ToString(m_vk_create_info));
+
   // Create Vulkan instance
   {
     VkResult vk_result = InvalidValue<VkResult>::Value;

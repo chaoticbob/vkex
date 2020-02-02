@@ -287,6 +287,9 @@ vkex::Result CSwapchain::InternalCreate(
     m_vk_create_info.presentMode            = m_create_info.present_mode;
     m_vk_create_info.clipped                = VK_FALSE;
     m_vk_create_info.oldSwapchain           = VK_NULL_HANDLE;
+
+    VKEX_LOG_INFO(ToString(m_vk_create_info));
+
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
       vk_result,

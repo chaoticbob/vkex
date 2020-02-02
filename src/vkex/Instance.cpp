@@ -593,6 +593,8 @@ vkex::Result CInstance::InternalCreate(
     m_vk_create_info.ppEnabledExtensionNames  = DataPtr(m_c_str_extensions);
   }
 
+  VKEX_LOG_INFO(ToString(m_vk_create_info));
+
   // Create Vulkan instance
   {
     VkResult vk_result = InvalidValue<VkResult>::Value;

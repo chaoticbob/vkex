@@ -38,6 +38,16 @@ std::string ToString(VkColorSpaceKHR value);
 std::string ToStringShort(VkPresentModeKHR value);
 std::string ToString(VkPresentModeKHR value);
 
+std::string ToString(VkSharingMode value);
+std::string ToString(VkSurfaceTransformFlagBitsKHR value);
+std::string ToString(VkCompositeAlphaFlagBitsKHR value);
+
+std::string ToString(const VkExtent2D& value);
+
+std::string ToString(const VkInstanceCreateInfo& create_info, const std::string& indent = "");
+std::string ToString(const VkDeviceCreateInfo& create_info, const std::string& indent = "");
+std::string ToString(const VkSwapchainCreateInfoKHR& create_info, const std::string& indent = "");
+
 template <typename T>
 std::string ToHexString(T* ptr, bool pad_zero = true, bool upper_case_alpha = true, bool prefix = true)
 {
@@ -108,6 +118,34 @@ std::string ToHexString(T value, bool pad_zero = true, bool upper_case_alpha = t
     s = "0x" + s;
   }
   return s;
+}
+
+template <typename T>
+std::string ToPointerAddressString(T* ptr, bool pad_zero = true, bool upper_case_alpha = true, bool prefix = true)
+{
+  return (ptr != nullptr) ? ToHexString(ptr, pad_zero, upper_case_alpha, prefix) : "NULL";
+}
+
+template <typename T>
+std::string ToVkHandleAddressString(T* ptr, bool pad_zero = true, bool upper_case_alpha = true, bool prefix = true)
+{
+  return (ptr != VK_NULL_HANDLE) ? ToHexString(ptr, pad_zero, upper_case_alpha, prefix) : "VK_NULL_HANDLE";
+}
+
+template <typename T>
+std::string ToArrayString(size_t count, const T* p_array, const std::string& indent = "", const std::string& sw = "")
+{
+  if (count == 0) {
+    return "{}";
+  }
+
+  std::stringstream ss;
+  ss << "{" << "\n";
+  for (uint32_t i = 0; i < count; ++i) {
+    ss << indent << sw << "[" << i << "]" << " = " << p_array[i] << "\n";
+  }
+  ss << indent << "}";
+  return ss.str();
 }
 
 } // namespace vkex
