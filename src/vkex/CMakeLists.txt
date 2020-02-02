@@ -205,7 +205,6 @@ list(APPEND SRC_FILES
   ${IMGUI_SRC_FILES}
 )
 
-message("${SRC_FILES}")
 add_library(${PROJECT_NAME} STATIC ${HDR_FILES} ${SRC_FILES})
 
 source_group("vkex\\Header Files"          FILES ${VKEX_HDR_FILES})
