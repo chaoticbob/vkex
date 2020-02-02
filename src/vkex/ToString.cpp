@@ -18,9 +18,30 @@
 
 namespace vkex {
 
-std::string ToString(VkResult vk_result)
+const char* k_new_line = "\n";
+
+std::string ToString(uint32_t value, const vkex::TextFormat& format)
 {
-  switch (vk_result) {
+  std::stringstream ss;
+  ss << value;
+  return ss.str();
+}
+
+std::string ToString(float value, const vkex::TextFormat& format)
+{
+  std::stringstream ss;
+  ss << value;
+  return ss.str();
+}
+
+std::string ToString(const char* value, const vkex::TextFormat& format)
+{
+  return (value != nullptr) ? value : "";
+}
+
+std::string ToString(VkResult value)
+{
+  switch (value) {
     default: break;
     case VK_SUCCESS                                            : return"VK_SUCCESS"; break;
     case VK_NOT_READY                                          : return"VK_NOT_READY"; break;
@@ -59,9 +80,9 @@ std::string ToString(VkResult vk_result)
   return "<UNKNOWN>";
 }
 
-std::string ToString(VkStructureType vk_result)
+std::string ToString(VkStructureType value)
 {
-  switch (vk_result) {
+  switch (value) {
     default: break;
     case VK_STRUCTURE_TYPE_APPLICATION_INFO                                                : return "VK_STRUCTURE_TYPE_APPLICATION_INFO"; break;
     case VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO                                            : return "VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO"; break;
@@ -1064,6 +1085,26 @@ std::string ToString(const VkExtent2D& value)
   return ss.str();
 }
 
+std::string ToStringVkDeviceQueueCreateFlags(const VkDeviceQueueCreateFlags& flags)
+{
+  std::stringstream ss;
+  bool has_flag = false;
+
+  if (flags & VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT) {
+    ss << "VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT";
+    has_flag = true;
+  }
+
+  return has_flag ? ss.str() : "0";
+}
+
+std::string ToStringVkDeviceCreateFlags(const VkDeviceCreateFlags& flags)
+{
+  std::stringstream ss;
+  bool has_flag = false;
+  return has_flag ? ss.str() : "0";
+}
+
 std::string ToStringVkSwapchainCreateFlags(const VkSwapchainCreateFlagsKHR& flags)
 {
   std::stringstream ss;
@@ -1178,81 +1219,235 @@ std::string ToStringVkImageUsageFlags(const VkImageUsageFlags& flags)
   return has_flag ? ss.str() : "0";
 }
 
-std::string ToVkBool32(VkBool32 value)
+std::string ToStringVkBool32(VkBool32 value)
 {
   return value ? "VK_TRUE" : "VK_FALSE";
 }
 
-std::string ToString(const VkInstanceCreateInfo& create_info, const std::string& indent)
+std::string ToStringVulkanApiVersion(uint32_t api_version, const vkex::TextFormat& format = vkex::TextFormat())
 {
-  const std::string& sw = "  ";
-  const std::string  nl = "\n";
+  std::stringstream ss;
+  ss << VK_VERSION_MAJOR(api_version) << "." << VK_VERSION_MINOR(api_version) << "." << VK_VERSION_PATCH(api_version);
+  return ss.str();
+}
 
+std::string ToString(const VkPhysicalDeviceFeatures& value, const vkex::TextFormat& format)
+{
+  const std::string sw = "  ";
   std::stringstream ss;
 
-  ss << indent << "VkInstanceCreateInfo create_info = {" << nl;
-  ss << indent << sw << "sType"                   << " = " << ToString(create_info.sType) << nl;
-  ss << indent << sw << "pNext"                   << " = " << ToPointerAddressString(create_info.pNext) << nl;
-  //ss << indent << sw << "pApplicationInfo"        << " = " << ToString(create_info.pApplicationInfo) << nl;
-  ss << indent << sw << "enabledLayerCount"       << " = " << create_info.enabledLayerCount << nl;
-  ss << indent << sw << "ppEnabledLayerNames"     << " = " << ToArrayString(create_info.enabledLayerCount, create_info.ppEnabledLayerNames, indent + sw, sw) << nl;
-  ss << indent << sw << "enabledExtensionCount"   << " = " << create_info.enabledExtensionCount << nl;
-  ss << indent << sw << "ppEnabledExtensionNames" << " = " << ToArrayString(create_info.enabledExtensionCount, create_info.ppEnabledExtensionNames, indent + sw, sw) << nl;
-  ss << indent << "};";
+  ss << (format.skip_first_block_indent ? "" : format.block_indent);
+  ss << "VkPhysicalDeviceFeatures features = {" << vkex::k_new_line;
+
+  // clang-format off
+  std::string indent = format.block_indent + sw;
+  if (value.robustBufferAccess                     ) ss << indent << "robustBufferAccess"                       << " = " << ToStringVkBool32(value.robustBufferAccess) << vkex::k_new_line;
+  if (value.fullDrawIndexUint32                    ) ss << indent << "fullDrawIndexUint32"                      << " = " << ToStringVkBool32(value.fullDrawIndexUint32) << vkex::k_new_line;
+  if (value.imageCubeArray                         ) ss << indent << "imageCubeArray"                           << " = " << ToStringVkBool32(value.imageCubeArray) << vkex::k_new_line;
+  if (value.independentBlend                       ) ss << indent << "independentBlend"                         << " = " << ToStringVkBool32(value.independentBlend) << vkex::k_new_line;
+  if (value.geometryShader                         ) ss << indent << "geometryShader"                           << " = " << ToStringVkBool32(value.geometryShader) << vkex::k_new_line;
+  if (value.tessellationShader                     ) ss << indent << "tessellationShader"                       << " = " << ToStringVkBool32(value.tessellationShader) << vkex::k_new_line;
+  if (value.sampleRateShading                      ) ss << indent << "sampleRateShading"                        << " = " << ToStringVkBool32(value.sampleRateShading) << vkex::k_new_line;
+  if (value.dualSrcBlend                           ) ss << indent << "dualSrcBlend"                             << " = " << ToStringVkBool32(value.dualSrcBlend) << vkex::k_new_line;
+  if (value.logicOp                                ) ss << indent << "logicOp"                                  << " = " << ToStringVkBool32(value.logicOp) << vkex::k_new_line;
+  if (value.multiDrawIndirect                      ) ss << indent << "multiDrawIndirect"                        << " = " << ToStringVkBool32(value.multiDrawIndirect) << vkex::k_new_line;
+  if (value.drawIndirectFirstInstance              ) ss << indent << "drawIndirectFirstInstance"                << " = " << ToStringVkBool32(value.drawIndirectFirstInstance) << vkex::k_new_line;
+  if (value.depthClamp                             ) ss << indent << "depthClamp"                               << " = " << ToStringVkBool32(value.depthClamp) << vkex::k_new_line;
+  if (value.depthBiasClamp                         ) ss << indent << "depthBiasClamp"                           << " = " << ToStringVkBool32(value.depthBiasClamp) << vkex::k_new_line;
+  if (value.fillModeNonSolid                       ) ss << indent << "fillModeNonSolid"                         << " = " << ToStringVkBool32(value.fillModeNonSolid) << vkex::k_new_line;
+  if (value.depthBounds                            ) ss << indent << "depthBounds"                              << " = " << ToStringVkBool32(value.depthBounds) << vkex::k_new_line;
+  if (value.wideLines                              ) ss << indent << "wideLines"                                << " = " << ToStringVkBool32(value.wideLines) << vkex::k_new_line;
+  if (value.largePoints                            ) ss << indent << "largePoints"                              << " = " << ToStringVkBool32(value.largePoints) << vkex::k_new_line;
+  if (value.alphaToOne                             ) ss << indent << "alphaToOne"                               << " = " << ToStringVkBool32(value.alphaToOne) << vkex::k_new_line;
+  if (value.multiViewport                          ) ss << indent << "multiViewport"                            << " = " << ToStringVkBool32(value.multiViewport) << vkex::k_new_line;
+  if (value.samplerAnisotropy                      ) ss << indent << "samplerAnisotropy"                        << " = " << ToStringVkBool32(value.samplerAnisotropy) << vkex::k_new_line;
+  if (value.textureCompressionETC2                 ) ss << indent << "textureCompressionETC2"                   << " = " << ToStringVkBool32(value.textureCompressionETC2) << vkex::k_new_line;
+  if (value.textureCompressionASTC_LDR             ) ss << indent << "textureCompressionASTC_LDR"               << " = " << ToStringVkBool32(value.textureCompressionASTC_LDR) << vkex::k_new_line;
+  if (value.textureCompressionBC                   ) ss << indent << "textureCompressionBC"                     << " = " << ToStringVkBool32(value.textureCompressionBC) << vkex::k_new_line;
+  if (value.occlusionQueryPrecise                  ) ss << indent << "occlusionQueryPrecise"                    << " = " << ToStringVkBool32(value.occlusionQueryPrecise) << vkex::k_new_line;
+  if (value.pipelineStatisticsQuery                ) ss << indent << "pipelineStatisticsQuery"                  << " = " << ToStringVkBool32(value.pipelineStatisticsQuery) << vkex::k_new_line;
+  if (value.vertexPipelineStoresAndAtomics         ) ss << indent << "vertexPipelineStoresAndAtomics"           << " = " << ToStringVkBool32(value.vertexPipelineStoresAndAtomics) << vkex::k_new_line;
+  if (value.fragmentStoresAndAtomics               ) ss << indent << "fragmentStoresAndAtomics"                 << " = " << ToStringVkBool32(value.fragmentStoresAndAtomics) << vkex::k_new_line;
+  if (value.shaderTessellationAndGeometryPointSize ) ss << indent << "shaderTessellationAndGeometryPointSize"   << " = " << ToStringVkBool32(value.shaderTessellationAndGeometryPointSize) << vkex::k_new_line;
+  if (value.shaderImageGatherExtended              ) ss << indent << "shaderImageGatherExtended"                << " = " << ToStringVkBool32(value.shaderImageGatherExtended) << vkex::k_new_line;
+  if (value.shaderStorageImageExtendedFormats      ) ss << indent << "shaderStorageImageExtendedFormats"        << " = " << ToStringVkBool32(value.shaderStorageImageExtendedFormats) << vkex::k_new_line;
+  if (value.shaderStorageImageMultisample          ) ss << indent << "shaderStorageImageMultisample"            << " = " << ToStringVkBool32(value.shaderStorageImageMultisample) << vkex::k_new_line;
+  if (value.shaderStorageImageReadWithoutFormat    ) ss << indent << "shaderStorageImageReadWithoutFormat"      << " = " << ToStringVkBool32(value.shaderStorageImageReadWithoutFormat) << vkex::k_new_line;
+  if (value.shaderStorageImageWriteWithoutFormat   ) ss << indent << "shaderStorageImageWriteWithoutFormat"     << " = " << ToStringVkBool32(value.shaderStorageImageWriteWithoutFormat) << vkex::k_new_line;
+  if (value.shaderUniformBufferArrayDynamicIndexing) ss << indent << "shaderUniformBufferArrayDynamicIndexing"  << " = " << ToStringVkBool32(value.shaderUniformBufferArrayDynamicIndexing) << vkex::k_new_line;
+  if (value.shaderSampledImageArrayDynamicIndexing ) ss << indent << "shaderSampledImageArrayDynamicIndexing"   << " = " << ToStringVkBool32(value.shaderSampledImageArrayDynamicIndexing) << vkex::k_new_line;
+  if (value.shaderStorageBufferArrayDynamicIndexing) ss << indent << "shaderStorageBufferArrayDynamicIndexing"  << " = " << ToStringVkBool32(value.shaderStorageBufferArrayDynamicIndexing) << vkex::k_new_line;
+  if (value.shaderStorageImageArrayDynamicIndexing ) ss << indent << "shaderStorageImageArrayDynamicIndexing"   << " = " << ToStringVkBool32(value.shaderStorageImageArrayDynamicIndexing) << vkex::k_new_line;
+  if (value.shaderClipDistance                     ) ss << indent << "shaderClipDistance"                       << " = " << ToStringVkBool32(value.shaderClipDistance) << vkex::k_new_line;
+  if (value.shaderCullDistance                     ) ss << indent << "shaderCullDistance"                       << " = " << ToStringVkBool32(value.shaderCullDistance) << vkex::k_new_line;
+  if (value.shaderFloat64                          ) ss << indent << "shaderFloat64"                            << " = " << ToStringVkBool32(value.shaderFloat64) << vkex::k_new_line;
+  if (value.shaderInt64                            ) ss << indent << "shaderInt64"                              << " = " << ToStringVkBool32(value.shaderInt64) << vkex::k_new_line;
+  if (value.shaderInt16                            ) ss << indent << "shaderInt16"                              << " = " << ToStringVkBool32(value.shaderInt16) << vkex::k_new_line;
+  if (value.shaderResourceResidency                ) ss << indent << "shaderResourceResidency"                  << " = " << ToStringVkBool32(value.shaderResourceResidency) << vkex::k_new_line;
+  if (value.shaderResourceMinLod                   ) ss << indent << "shaderResourceMinLod"                     << " = " << ToStringVkBool32(value.shaderResourceMinLod) << vkex::k_new_line;
+  if (value.sparseBinding                          ) ss << indent << "sparseBinding"                            << " = " << ToStringVkBool32(value.sparseBinding) << vkex::k_new_line;
+  if (value.sparseResidencyBuffer                  ) ss << indent << "sparseResidencyBuffer"                    << " = " << ToStringVkBool32(value.sparseResidencyBuffer) << vkex::k_new_line;
+  if (value.sparseResidencyImage2D                 ) ss << indent << "sparseResidencyImage2D"                   << " = " << ToStringVkBool32(value.sparseResidencyImage2D) << vkex::k_new_line;
+  if (value.sparseResidencyImage3D                 ) ss << indent << "sparseResidencyImage3D"                   << " = " << ToStringVkBool32(value.sparseResidencyImage3D) << vkex::k_new_line;
+  if (value.sparseResidency2Samples                ) ss << indent << "sparseResidency2Samples"                  << " = " << ToStringVkBool32(value.sparseResidency2Samples) << vkex::k_new_line;
+  if (value.sparseResidency4Samples                ) ss << indent << "sparseResidency4Samples"                  << " = " << ToStringVkBool32(value.sparseResidency4Samples) << vkex::k_new_line;
+  if (value.sparseResidency8Samples                ) ss << indent << "sparseResidency8Samples"                  << " = " << ToStringVkBool32(value.sparseResidency8Samples) << vkex::k_new_line;
+  if (value.sparseResidency16Samples               ) ss << indent << "sparseResidency16Samples"                 << " = " << ToStringVkBool32(value.sparseResidency16Samples) << vkex::k_new_line;
+  if (value.sparseResidencyAliased                 ) ss << indent << "sparseResidencyAliased"                   << " = " << ToStringVkBool32(value.sparseResidencyAliased) << vkex::k_new_line;
+  if (value.variableMultisampleRate                ) ss << indent << "variableMultisampleRate"                  << " = " << ToStringVkBool32(value.variableMultisampleRate) << vkex::k_new_line;
+  if (value.inheritedQueries                       ) ss << indent << "inheritedQueries"                         << " = " << ToStringVkBool32(value.inheritedQueries) << vkex::k_new_line;
+  // clang-format on
+
+  ss << format.block_indent << "};";
+  return ss.str();
+}
+
+std::string ToString(const VkApplicationInfo& application_info, const vkex::TextFormat& format)
+{
+  const std::string sw = "  ";
+  std::stringstream ss;
+
+  ss << (format.skip_first_block_indent ? "" : format.block_indent);
+  ss << "VkInstanceCreateInfo create_info = {" << vkex::k_new_line;
+
+  std::string indent = format.block_indent + sw;
+  ss << indent << "sType"                   << " = " << ToString(application_info.sType) << vkex::k_new_line;
+  ss << indent << "pNext"                   << " = " << ToPointerAddressString(application_info.pNext) << vkex::k_new_line;
+  ss << indent << "pApplicationName"        << " = " << ToString(application_info.pApplicationName) << vkex::k_new_line;
+  ss << indent << "applicationVersion"      << " = " << ToString(application_info.applicationVersion) << vkex::k_new_line;
+  ss << indent << "pEngineName"             << " = " << ToString(application_info.pEngineName) << vkex::k_new_line;
+  ss << indent << "engineVersion"           << " = " << ToString(application_info.engineVersion) << vkex::k_new_line;
+  ss << indent << "apiVersion"              << " = " << ToStringVulkanApiVersion(application_info.apiVersion) << vkex::k_new_line;
+
+  ss << format.block_indent << "};";
+  return ss.str();
+}
+
+std::string ToString(const VkInstanceCreateInfo& create_info, const vkex::TextFormat& format)
+{
+  const std::string sw = "  ";
+  std::stringstream ss;
+
+  vkex::TextFormat application_info_format = vkex::TextFormat();
+  application_info_format.block_indent = format.block_indent + sw;
+  application_info_format.skip_first_block_indent = true;
+
+  vkex::TextFormat array_format = vkex::TextFormat();
+  array_format.block_indent = format.block_indent + sw;
+  array_format.array_element_indent = sw;
+
+  ss << format.block_indent << "VkInstanceCreateInfo create_info = {" << vkex::k_new_line;
+
+  std::string indent = format.block_indent + sw;
+  ss << indent << "sType"                   << " = " << ToString(create_info.sType) << vkex::k_new_line;
+  ss << indent << "pNext"                   << " = " << ToPointerAddressString(create_info.pNext) << vkex::k_new_line;
+  ss << indent << "pApplicationInfo"        << " = " << ToString(*create_info.pApplicationInfo, application_info_format) << vkex::k_new_line;
+  ss << indent << "enabledLayerCount"       << " = " << create_info.enabledLayerCount << vkex::k_new_line;
+  ss << indent << "ppEnabledLayerNames"     << " = " << ToArrayString(create_info.enabledLayerCount, create_info.ppEnabledLayerNames, array_format) << vkex::k_new_line;
+  ss << indent << "enabledExtensionCount"   << " = " << create_info.enabledExtensionCount << vkex::k_new_line;
+  ss << indent << "ppEnabledExtensionNames" << " = " << ToArrayString(create_info.enabledExtensionCount, create_info.ppEnabledExtensionNames, array_format) << vkex::k_new_line;
+
+  ss << format.block_indent << "};";
 
   return ss.str();
 }
 
-std::string ToString(const VkDeviceCreateInfo& create_info, const std::string& indent)
+std::string ToString(const VkDeviceQueueCreateInfo& create_info, const vkex::TextFormat& format)
 {
-  const std::string& sw = "  ";
-  const std::string  nl = "\n";
-
+  const std::string sw = "  ";
   std::stringstream ss;
 
-  ss << indent << "VkDeviceCreateInfo create_info = {" << nl;
-  ss << indent << sw << "sType"                   << " = " << ToString(create_info.sType) << nl;
-  ss << indent << sw << "pNext"                   << " = " << ToPointerAddressString(create_info.pNext) << nl;
-  //ss << indent << sw << "flags"                   << " = " << << nl;
-  //ss << indent << sw << "queueCreateInfoCount"    << " = " << << nl;
-  //ss << indent << sw << "pQueueCreateInfos"       << " = " << << nl;
-  ss << indent << sw << "enabledLayerCount"       << " = " << create_info.enabledLayerCount << nl;
-  ss << indent << sw << "ppEnabledLayerNames"     << " = " << ToArrayString(create_info.enabledLayerCount, create_info.ppEnabledLayerNames, indent + sw, sw) << nl;
-  ss << indent << sw << "enabledExtensionCount"   << " = " << create_info.enabledExtensionCount << nl;
-  ss << indent << sw << "ppEnabledExtensionNames" << " = " << ToArrayString(create_info.enabledExtensionCount, create_info.ppEnabledExtensionNames, indent + sw, sw) << nl;
-  //ss << indent << sw << "pEnabledFeatures"        << " = " << << nl;
+  vkex::TextFormat array_format = vkex::TextFormat();
+  array_format.block_indent = format.block_indent + sw + sw;
+  array_format.array_element_indent = sw;
+
+  ss << (format.skip_first_block_indent ? "" : format.block_indent);
+  ss << "VkDeviceQueueCreateInfo create_info = {" << vkex::k_new_line;
+
+  std::string indent = format.block_indent + format.array_struct_indent + sw;
+  ss << indent << "sType"                   << " = " << ToString(create_info.sType) << vkex::k_new_line;
+  ss << indent << "pNext"                   << " = " << ToPointerAddressString(create_info.pNext) << vkex::k_new_line;
+  ss << indent << "flags"                   << " = " << ToStringVkDeviceQueueCreateFlags(create_info.flags) << vkex::k_new_line;
+  ss << indent << "queueFamilyIndex"        << " = " << create_info.queueFamilyIndex << vkex::k_new_line;
+  ss << indent << "queueCount"              << " = " << create_info.queueCount << vkex::k_new_line;
+  ss << indent << "pQueuePriorities"        << " = " << ToArrayString(create_info.queueCount, create_info.pQueuePriorities, array_format) << vkex::k_new_line;
+
+  indent = format.block_indent + format.array_struct_indent;
   ss << indent << "};";
+  return ss.str();
+}
+
+std::string ToString(const VkDeviceCreateInfo& create_info, const vkex::TextFormat& format)
+{
+  const std::string sw = "  ";
+  std::stringstream ss;
+
+  vkex::TextFormat queue_array_format = vkex::TextFormat();
+  queue_array_format.block_indent = format.block_indent + sw;
+  queue_array_format.skip_first_block_indent = true;
+  queue_array_format.array_element_indent = sw;
+  queue_array_format.array_struct_indent = sw;
+
+  vkex::TextFormat array_format = vkex::TextFormat();
+  array_format.block_indent = format.block_indent + sw;
+  array_format.array_element_indent = sw;
+
+  vkex::TextFormat feature_format = vkex::TextFormat();
+  feature_format.block_indent = format.block_indent + sw;
+  feature_format.skip_first_block_indent = true;
+  feature_format.array_element_indent = sw;
+
+  ss << format.block_indent << "VkDeviceCreateInfo create_info = {" << vkex::k_new_line;
+
+  std::string indent = format.block_indent + sw;
+  ss << indent << "sType"                   << " = " << ToString(create_info.sType) << vkex::k_new_line;
+  ss << indent << "pNext"                   << " = " << ToPointerAddressString(create_info.pNext) << vkex::k_new_line;
+  ss << indent << "flags"                   << " = " << ToStringVkDeviceCreateFlags(create_info.flags) << vkex::k_new_line;
+  ss << indent << "queueCreateInfoCount"    << " = " << create_info.queueCreateInfoCount<< vkex::k_new_line;
+  ss << indent << "pQueueCreateInfos"       << " = " << ToArrayString(create_info.queueCreateInfoCount, create_info.pQueueCreateInfos, queue_array_format) << vkex::k_new_line;
+  ss << indent << "enabledLayerCount"       << " = " << create_info.enabledLayerCount << vkex::k_new_line;
+  ss << indent << "ppEnabledLayerNames"     << " = " << ToArrayString(create_info.enabledLayerCount, create_info.ppEnabledLayerNames, array_format) << vkex::k_new_line;
+  ss << indent << "enabledExtensionCount"   << " = " << create_info.enabledExtensionCount << vkex::k_new_line;
+  ss << indent << "ppEnabledExtensionNames" << " = " << ToArrayString(create_info.enabledExtensionCount, create_info.ppEnabledExtensionNames, array_format) << vkex::k_new_line;
+  ss << indent << "pEnabledFeatures"        << " = " << ToString(*create_info.pEnabledFeatures, feature_format) << vkex::k_new_line;
+
+  ss << format.block_indent << "};";
 
   return ss.str();
 }
 
-std::string ToString(const VkSwapchainCreateInfoKHR& create_info, const std::string& indent)
+std::string ToString(const VkSwapchainCreateInfoKHR& create_info, const vkex::TextFormat& format)
 {
-  const std::string& sw = "  ";
-  const std::string  nl = "\n";
-
+  const std::string sw = "  ";
   std::stringstream ss;
+
+  vkex::TextFormat array_format = vkex::TextFormat();
+  array_format.block_indent = format.block_indent + sw;
+  array_format.array_element_indent = sw;
   
-  ss << indent << "VkSwapchainCreateInfoKHR create_info = {" << nl;
-  ss << indent << sw << "sType"                  << " = " << ToString(create_info.sType) << nl;
-  ss << indent << sw << "pNext"                  << " = " << ToPointerAddressString(create_info.pNext) << nl;
-  ss << indent << sw << "flags"                  << " = " << ToStringVkSwapchainCreateFlags(create_info.flags) << nl;
-  ss << indent << sw << "surface"                << " = " << ToVkHandleAddressString(create_info.surface) << nl;
-  ss << indent << sw << "minImageCount"          << " = " << create_info.minImageCount << nl;
-  ss << indent << sw << "imageFormat"            << " = " << ToString(create_info.imageFormat) << nl;
-  ss << indent << sw << "imageColorSpace"        << " = " << ToString(create_info.imageColorSpace) << nl;
-  ss << indent << sw << "imageExtent"            << " = " << ToString(create_info.imageExtent) << nl;
-  ss << indent << sw << "imageArrayLayers"       << " = " << create_info.imageArrayLayers << nl;
-  ss << indent << sw << "imageUsage"             << " = " << ToStringVkImageUsageFlags(create_info.imageUsage) << nl;
-  ss << indent << sw << "imageSharingMode"       << " = " << ToString(create_info.imageSharingMode) << nl;
-  ss << indent << sw << "queueFamilyIndexCount"  << " = " << create_info.queueFamilyIndexCount << nl;
-  ss << indent << sw << "pQueueFamilyIndices"    << " = " << ToArrayString(create_info.queueFamilyIndexCount, create_info.pQueueFamilyIndices, indent + sw, sw) << nl;
-  ss << indent << sw << "preTransform"           << " = " << ToString(create_info.preTransform) << nl;
-  ss << indent << sw << "compositeAlpha"         << " = " << ToString(create_info.compositeAlpha) << nl;
-  ss << indent << sw << "presentMode"            << " = " << ToString(create_info.presentMode) << nl;
-  ss << indent << sw << "clipped"                << " = " << ToVkBool32(create_info.clipped) << nl;
-  ss << indent << sw << "oldSwapchain"           << " = " << ToVkHandleAddressString(create_info.oldSwapchain) << nl;
-  ss << indent << "};";
+  ss << format.block_indent << "VkSwapchainCreateInfoKHR create_info = {" << vkex::k_new_line;
+
+  std::string indent = format.block_indent + sw;
+  ss << indent << "sType"                  << " = " << ToString(create_info.sType) << vkex::k_new_line;
+  ss << indent << "pNext"                  << " = " << ToPointerAddressString(create_info.pNext) << vkex::k_new_line;
+  ss << indent << "flags"                  << " = " << ToStringVkSwapchainCreateFlags(create_info.flags) << vkex::k_new_line;
+  ss << indent << "surface"                << " = " << ToVkHandleAddressString(create_info.surface) << vkex::k_new_line;
+  ss << indent << "minImageCount"          << " = " << create_info.minImageCount << vkex::k_new_line;
+  ss << indent << "imageFormat"            << " = " << ToString(create_info.imageFormat) << vkex::k_new_line;
+  ss << indent << "imageColorSpace"        << " = " << ToString(create_info.imageColorSpace) << vkex::k_new_line;
+  ss << indent << "imageExtent"            << " = " << ToString(create_info.imageExtent) << vkex::k_new_line;
+  ss << indent << "imageArrayLayers"       << " = " << create_info.imageArrayLayers << vkex::k_new_line;
+  ss << indent << "imageUsage"             << " = " << ToStringVkImageUsageFlags(create_info.imageUsage) << vkex::k_new_line;
+  ss << indent << "imageSharingMode"       << " = " << ToString(create_info.imageSharingMode) << vkex::k_new_line;
+  ss << indent << "queueFamilyIndexCount"  << " = " << create_info.queueFamilyIndexCount << vkex::k_new_line;
+  ss << indent << "pQueueFamilyIndices"    << " = " << ToArrayString(create_info.queueFamilyIndexCount, create_info.pQueueFamilyIndices, array_format) << vkex::k_new_line;
+  ss << indent << "preTransform"           << " = " << ToString(create_info.preTransform) << vkex::k_new_line;
+  ss << indent << "compositeAlpha"         << " = " << ToString(create_info.compositeAlpha) << vkex::k_new_line;
+  ss << indent << "presentMode"            << " = " << ToString(create_info.presentMode) << vkex::k_new_line;
+  ss << indent << "clipped"                << " = " << ToStringVkBool32(create_info.clipped) << vkex::k_new_line;
+  ss << indent << "oldSwapchain"           << " = " << ToVkHandleAddressString(create_info.oldSwapchain) << vkex::k_new_line;
+
+  ss << format.block_indent << "};";
 
   return ss.str();
 }

@@ -24,7 +24,18 @@
 
 namespace vkex {
 
-std::string ToString(VkResult vk_result);
+struct TextFormat {
+  std::string block_indent              = "";
+  bool        skip_first_block_indent   = false;
+  std::string array_element_indent      = "";
+  std::string array_struct_indent       = "";
+};
+
+std::string ToString(uint32_t value, const vkex::TextFormat& format = vkex::TextFormat());
+std::string ToString(float value, const vkex::TextFormat& format = vkex::TextFormat());
+std::string ToString(const char* value, const vkex::TextFormat& format = vkex::TextFormat());
+
+std::string ToString(VkResult value);
 
 std::string ToStringShort(VkPhysicalDeviceType value);
 std::string ToString(VkPhysicalDeviceType value);
@@ -43,10 +54,16 @@ std::string ToString(VkSurfaceTransformFlagBitsKHR value);
 std::string ToString(VkCompositeAlphaFlagBitsKHR value);
 
 std::string ToString(const VkExtent2D& value);
+std::string ToString(const VkPhysicalDeviceFeatures& value, const vkex::TextFormat& format = vkex::TextFormat());
 
-std::string ToString(const VkInstanceCreateInfo& create_info, const std::string& indent = "");
-std::string ToString(const VkDeviceCreateInfo& create_info, const std::string& indent = "");
-std::string ToString(const VkSwapchainCreateInfoKHR& create_info, const std::string& indent = "");
+std::string ToString(const VkApplicationInfo& application_info, const vkex::TextFormat& format = vkex::TextFormat());
+std::string ToString(const VkInstanceCreateInfo& create_info, const vkex::TextFormat& format = vkex::TextFormat());
+std::string ToString(const VkDeviceQueueCreateInfo& create_info, const vkex::TextFormat& format = vkex::TextFormat());
+std::string ToString(const VkDeviceCreateInfo& create_info, const vkex::TextFormat& format = vkex::TextFormat());
+std::string ToString(const VkSwapchainCreateInfoKHR& create_info, const vkex::TextFormat& format = vkex::TextFormat());
+std::string ToString(const VkBufferCreateInfo& create_info, const vkex::TextFormat& format = vkex::TextFormat());
+std::string ToString(const VkImageCreateInfo& create_info, const vkex::TextFormat& format = vkex::TextFormat());
+std::string ToString(const VkImageViewCreateInfo& create_info, const vkex::TextFormat& format = vkex::TextFormat());
 
 template <typename T>
 std::string ToHexString(T* ptr, bool pad_zero = true, bool upper_case_alpha = true, bool prefix = true)
@@ -133,7 +150,7 @@ std::string ToVkHandleAddressString(T* ptr, bool pad_zero = true, bool upper_cas
 }
 
 template <typename T>
-std::string ToArrayString(size_t count, const T* p_array, const std::string& indent = "", const std::string& sw = "")
+std::string ToArrayString(size_t count, const T* p_array, const vkex::TextFormat& format = vkex::TextFormat())
 {
   if (count == 0) {
     return "{}";
@@ -142,9 +159,9 @@ std::string ToArrayString(size_t count, const T* p_array, const std::string& ind
   std::stringstream ss;
   ss << "{" << "\n";
   for (uint32_t i = 0; i < count; ++i) {
-    ss << indent << sw << "[" << i << "]" << " = " << p_array[i] << "\n";
+    ss << format.block_indent << format.array_element_indent << "[" << i << "]" << " = " << vkex::ToString(p_array[i], format) << "\n";
   }
-  ss << indent << "}";
+  ss << format.block_indent << "}";
   return ss.str();
 }
 
