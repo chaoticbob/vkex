@@ -90,14 +90,14 @@ message("  Vulkan library directory: ${VULKAN_LIBRARY_DIR}")
 
 set(INC_DIR     ${CMAKE_CURRENT_SOURCE_DIR})
 set(SRC_DIR     ${CMAKE_CURRENT_SOURCE_DIR})
-set(SHADERS_DIR ${CMAKE_SOURCE_DIR}/src/shaders)
+set(SHADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../src/shaders)
 
-set(GLM_INC_DIR       ${CMAKE_SOURCE_DIR}/third_party/glm)
-set(STB_INC_DIR       ${CMAKE_SOURCE_DIR}/third_party/stb)
-set(VMA_INC_DIR       ${CMAKE_SOURCE_DIR}/third_party/VulkanMemoryAllocator/src)
-set(SPIRV_REFLECT_DIR ${CMAKE_SOURCE_DIR}/third_party/SPIRV-Reflect)
-set(IMGUI_DIR         ${CMAKE_SOURCE_DIR}/third_party/imgui)
-set(TINY_OBJ_INC_DIR  ${CMAKE_SOURCE_DIR}/third_party/tinyobjloader)
+set(GLM_INC_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/glm)
+set(STB_INC_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/stb)
+set(VMA_INC_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/VulkanMemoryAllocator/src)
+set(SPIRV_REFLECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/SPIRV-Reflect)
+set(IMGUI_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/imgui)
+set(TINY_OBJ_INC_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/tinyobjloader)
 
 list (APPEND SHARED_SHADER_HDR_FILES
   ${SHADERS_DIR}/Common.h

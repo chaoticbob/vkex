@@ -18,7 +18,7 @@ cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
 project(01_vkex_info)
 
-set(PROJECTS_DIR ${CMAKE_SOURCE_DIR}/projects)
+set(PROJECTS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../..)
 
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
