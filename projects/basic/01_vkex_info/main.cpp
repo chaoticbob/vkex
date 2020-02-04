@@ -189,10 +189,6 @@ void VkexInfoApp::Setup()
 
 void VkexInfoApp::Render(vkex::Application::RenderData* p_data)
 {
-  auto cmd = p_data->GetCommandBuffer();
-  cmd->Begin();
-  cmd->End();
-  SubmitRender(p_data);
 }
 
 void VkexInfoApp::Present(vkex::Application::PresentData* p_data)
@@ -246,8 +242,6 @@ void VkexInfoApp::Present(vkex::Application::PresentData* p_data)
     cmd->CmdEndRenderPass();
   }
   cmd->End();
-
-  SubmitPresent(p_data);
 }
 
 int main(int argn, char** argv)

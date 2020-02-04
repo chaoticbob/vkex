@@ -63,7 +63,7 @@ public:
     return m_pool;
   }
 
-  vkex::Result Begin(VkCommandBufferUsageFlags flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT);
+  vkex::Result Begin(VkCommandBufferUsageFlags flags = 0);
   vkex::Result End();
 
   // -----------------------------------------------------------------------------------------------

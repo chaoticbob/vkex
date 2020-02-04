@@ -1346,6 +1346,12 @@ vkex::Result Application::InitializeVkexPerFrameRenderData()
     if (!vkex_result) {
       return vkex_result;
     }
+    // Begin/end command buffers so we can call SubmitRender without having to begin/end
+    // in an applications derived version of Application::Render() if it's empty.
+    for (auto& cmd : command_buffers) {
+      cmd->Begin();
+      cmd->End();
+    }
   }
 
   // Per frame data
@@ -2208,11 +2214,13 @@ void Application::DispatchCallUpdate(double frame_elapsed_time)
 void Application::DispatchCallRender(Application::RenderData* p_data)
 {
   Render(p_data);
+  SubmitRender(p_data);
 }
 
 void Application::DispatchCallPresent(Application::PresentData* p_data)
 {
   Present(p_data);
+  SubmitPresent(p_data);
 }
 
 bool Application::IsKeyPressed(KeyboardInput key)
