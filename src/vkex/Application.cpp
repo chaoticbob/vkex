@@ -431,7 +431,7 @@ vkex::Result Application::PresentData::InternalCreate(vkex::Device device, uint3
     vkex::FenceCreateInfo fence_create_info = {};
     fence_create_info.object_name = "present_data:image_acquired_fence:" + std::to_string(frame_index);
     vkex::Result vkex_result = vkex::Result::Undefined;
-    fence_create_info.flags.bits.signaled = false;
+    fence_create_info.flags.bits.signaled = false ;
     VKEX_RESULT_CALL(
       vkex_result,
       m_device->CreateFence(fence_create_info, &m_image_acquired_fence)
@@ -1485,20 +1485,6 @@ vkex::Result Application::InitializeVkex()
     }
   }
 
-  //// Frame fence
-  //if (IsApplicationModeWindow()) {
-  //  vkex::FenceCreateInfo create_info = {};
-  //  create_info.flags.bits.signaled = true;
-  //  vkex::Result vkex_result = vkex::Result::Undefined;
-  //  VKEX_RESULT_CALL(
-  //    vkex_result,
-  //    m_device->CreateFence(create_info, &m_frame_fence);
-  //  );
-  //  if (!vkex_result) {
-  //    return vkex_result;
-  //  }
-  //}
-
   return vkex::Result::Success;
 }
 
@@ -1814,14 +1800,6 @@ vkex::Result Application::InternalDestroy()
     m_per_frame_present_data.clear();
   }
 
-  //// Frame fence
-  //if (IsApplicationModeWindow()) {
-  //  vkex::Result vkex_result = m_device->DestroyFence(m_frame_fence);
-  //  if (!vkex_result) {
-  //    return vkex_result;
-  //  }
-  //}
-
   // Device
   if (m_device != nullptr) {
     vkex::Result vkex_result = m_instance->DestroyDevice(m_device);
@@ -2009,28 +1987,6 @@ vkex::Result Application::ProcessFrameFence(Application::PresentData* p_data)
   if (vk_result != VK_SUCCESS) {
     return vkex::Result(vk_result);
   }
-
-  //if (!IsApplicationModeWindow()) {
-  //  return vkex::Result::ErrorInvalidApplicationMode;
-  //}
-  //
-  //VkResult vk_result = InvalidValue<VkResult>::Value;
-  //VKEX_VULKAN_RESULT_CALL(
-  //  vk_result,
-  //  m_frame_fence->WaitForFence()
-  //);
-  //if (vk_result != VK_SUCCESS) {
-  //  return vkex::Result(vk_result);
-  //}
-  //
-  //vk_result = InvalidValue<VkResult>::Value;
-  //VKEX_VULKAN_RESULT_CALL(
-  //  vk_result,
-  //  m_frame_fence->ResetFence()
-  //);
-  //if (vk_result != VK_SUCCESS) {
-  //  return vkex::Result(vk_result);
-  //}
 
   return vkex::Result::Success;
 }
@@ -2300,12 +2256,6 @@ void Application::DrawImGui(vkex::CommandBuffer cmd)
 
 vkex::Result Application::SubmitRender(Application::RenderData* p_data)
 {
-  if (IsApplicationModeHeadless()) {
-    // TODO: This isn't entirely true, but the semaphore logic has to change
-    // if we are windowless...which we won't be!
-    return vkex::Result::ErrorInvalidApplicationMode;
-  }
-
   VkCommandBuffer vk_command_buffer = *(p_data->GetCommandBuffer());
   VkPipelineStageFlags vk_pipeline_stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
   VkSemaphore vk_work_complete_semaphore = *(p_data->GetWorkCompleteSemaphore());
@@ -2318,21 +2268,21 @@ vkex::Result Application::SubmitRender(Application::RenderData* p_data)
   {
     std::vector<VkSemaphore> vk_wait_semaphores;
     if (vk_present_complete_semaphore != nullptr) {
-    vk_wait_semaphores.push_back(vk_present_complete_semaphore);
+      vk_wait_semaphores.push_back(vk_present_complete_semaphore);
     }
-    std::vector<VkCommandBuffer> vk_command_buffers = { vk_command_buffer };
-    std::vector<VkPipelineStageFlags> vk_pipeline_stages = { vk_pipeline_stage };
-    std::vector<VkSemaphore> vk_signal_semaphores = { vk_work_complete_semaphore };
-    VkFence vk_work_complete_fence = *(p_data->m_work_complete_fence);
+    std::vector<VkCommandBuffer>      vk_command_buffers     = {vk_command_buffer};
+    std::vector<VkPipelineStageFlags> vk_pipeline_stages     = {vk_pipeline_stage};
+    std::vector<VkSemaphore>          vk_signal_semaphores   = {vk_work_complete_semaphore};
+    VkFence                           vk_work_complete_fence = *(p_data->m_work_complete_fence);
 
-    VkSubmitInfo vk_submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-    vk_submit_info.waitSemaphoreCount = CountU32(vk_wait_semaphores);
-    vk_submit_info.pWaitSemaphores = DataPtr(vk_wait_semaphores);
-    vk_submit_info.pWaitDstStageMask = DataPtr(vk_pipeline_stages);
-    vk_submit_info.commandBufferCount = CountU32(vk_command_buffers);
-    vk_submit_info.pCommandBuffers = DataPtr(vk_command_buffers);
+    VkSubmitInfo vk_submit_info         = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+    vk_submit_info.waitSemaphoreCount   = CountU32(vk_wait_semaphores);
+    vk_submit_info.pWaitSemaphores      = DataPtr(vk_wait_semaphores);
+    vk_submit_info.pWaitDstStageMask    = DataPtr(vk_pipeline_stages);
+    vk_submit_info.commandBufferCount   = CountU32(vk_command_buffers);
+    vk_submit_info.pCommandBuffers      = DataPtr(vk_command_buffers);
     vk_submit_info.signalSemaphoreCount = CountU32(vk_signal_semaphores);
-    vk_submit_info.pSignalSemaphores = DataPtr(vk_signal_semaphores);
+    vk_submit_info.pSignalSemaphores    = DataPtr(vk_signal_semaphores);
     // Queue submit
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
@@ -2670,13 +2620,6 @@ vkex::Result Application::Run(int argn, const char* const* argv)
 
     // Frame fence, time, total, average, rate
     {
-      //if (IsApplicationModeWindow()) {
-      //  vkex::Result vkex_result = ProcessFrameFence();
-      //  if (!vkex_result) {
-      //    return vkex_result;
-      //  }
-      //}
-
       // Current time
       double current_time = GetElapsedTime();
 

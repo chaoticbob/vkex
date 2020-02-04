@@ -713,7 +713,6 @@ protected:
   vkex::CommandPool             m_present_command_pool = nullptr;
   PresentData*                  m_current_present_data = nullptr;
   PresentData*                  m_previous_present_data = nullptr;
-  //vkex::Fence                   m_frame_fence = nullptr;
 
   vkex::DescriptorPool          m_imgui_descriptor_pool = nullptr;
 
