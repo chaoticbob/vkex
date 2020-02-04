@@ -426,6 +426,20 @@ vkex::Result Application::PresentData::InternalCreate(vkex::Device device, uint3
       return vkex_result;
     }
   }
+  // Image acquired fence
+  {
+    vkex::FenceCreateInfo fence_create_info = {};
+    fence_create_info.object_name = "present_data:image_acquired_fence:" + std::to_string(frame_index);
+    vkex::Result vkex_result = vkex::Result::Undefined;
+    fence_create_info.flags.bits.signaled = false;
+    VKEX_RESULT_CALL(
+      vkex_result,
+      m_device->CreateFence(fence_create_info, &m_image_acquired_fence)
+    );
+    if (!vkex_result) {
+      return vkex_result;
+    }
+  }
   // Work complete for render semaphore
   {
     vkex::SemaphoreCreateInfo semaphore_create_info = {};
@@ -452,6 +466,20 @@ vkex::Result Application::PresentData::InternalCreate(vkex::Device device, uint3
       return vkex_result;
     }
   }
+  // Work complete for present fence
+  {
+    vkex::FenceCreateInfo fence_create_info = {};
+    fence_create_info.object_name = "present_data:work_complete_for_present_fence:" + std::to_string(frame_index);
+    vkex::Result vkex_result = vkex::Result::Undefined;
+    fence_create_info.flags.bits.signaled = true;
+    VKEX_RESULT_CALL(
+      vkex_result,
+      m_device->CreateFence(fence_create_info, &m_work_complete_for_present_fence)
+    );
+    if (!vkex_result) {
+      return vkex_result;
+    }
+  }
 
   return vkex::Result::Success;
 }
@@ -464,6 +492,17 @@ vkex::Result Application::PresentData::InternalDestroy()
     VKEX_RESULT_CALL(
       vkex_result,
       m_device->DestroySemaphore(m_image_acquired_sempahore);
+    );
+    if (!vkex_result) {
+      return vkex_result;
+    }   
+  }
+  // Image acquired fence
+  if (m_image_acquired_fence != nullptr) {
+    vkex::Result vkex_result = vkex::Result::Undefined;
+    VKEX_RESULT_CALL(
+      vkex_result,
+      m_device->DestroyFence(m_image_acquired_fence);
     );
     if (!vkex_result) {
       return vkex_result;
@@ -485,6 +524,17 @@ vkex::Result Application::PresentData::InternalDestroy()
     VKEX_RESULT_CALL(
       vkex_result,
       m_device->DestroySemaphore(m_work_complete_for_present_semaphore);
+    );
+    if (!vkex_result) {
+      return vkex_result;
+    }   
+  }
+  // Work complete for present fence
+  if (m_work_complete_for_present_fence != nullptr) {
+    vkex::Result vkex_result = vkex::Result::Undefined;
+    VKEX_RESULT_CALL(
+      vkex_result,
+      m_device->DestroyFence(m_work_complete_for_present_fence);
     );
     if (!vkex_result) {
       return vkex_result;
@@ -1435,19 +1485,19 @@ vkex::Result Application::InitializeVkex()
     }
   }
 
-  // Frame fence
-  if (IsApplicationModeWindow()) {
-    vkex::FenceCreateInfo create_info = {};
-    create_info.flags.bits.signaled = true;
-    vkex::Result vkex_result = vkex::Result::Undefined;
-    VKEX_RESULT_CALL(
-      vkex_result,
-      m_device->CreateFence(create_info, &m_frame_fence);
-    );
-    if (!vkex_result) {
-      return vkex_result;
-    }
-  }
+  //// Frame fence
+  //if (IsApplicationModeWindow()) {
+  //  vkex::FenceCreateInfo create_info = {};
+  //  create_info.flags.bits.signaled = true;
+  //  vkex::Result vkex_result = vkex::Result::Undefined;
+  //  VKEX_RESULT_CALL(
+  //    vkex_result,
+  //    m_device->CreateFence(create_info, &m_frame_fence);
+  //  );
+  //  if (!vkex_result) {
+  //    return vkex_result;
+  //  }
+  //}
 
   return vkex::Result::Success;
 }
@@ -1764,13 +1814,13 @@ vkex::Result Application::InternalDestroy()
     m_per_frame_present_data.clear();
   }
 
-  // Frame fence
-  if (IsApplicationModeWindow()) {
-    vkex::Result vkex_result = m_device->DestroyFence(m_frame_fence);
-    if (!vkex_result) {
-      return vkex_result;
-    }
-  }
+  //// Frame fence
+  //if (IsApplicationModeWindow()) {
+  //  vkex::Result vkex_result = m_device->DestroyFence(m_frame_fence);
+  //  if (!vkex_result) {
+  //    return vkex_result;
+  //  }
+  //}
 
   // Device
   if (m_device != nullptr) {
@@ -1936,29 +1986,51 @@ vkex::Result vkex::Application::ProcessRenderFence(Application::RenderData * p_d
     return vkex::Result::Success;
 }
 
-vkex::Result Application::ProcessFrameFence()
+vkex::Result Application::ProcessFrameFence(Application::PresentData* p_data)
 {
   if (!IsApplicationModeWindow()) {
     return vkex::Result::ErrorInvalidApplicationMode;
   }
-
+  
   VkResult vk_result = InvalidValue<VkResult>::Value;
   VKEX_VULKAN_RESULT_CALL(
     vk_result,
-    m_frame_fence->WaitForFence()
+    p_data->m_work_complete_for_present_fence->WaitForFence()
+  );
+  if (vk_result != VK_SUCCESS) {
+    return vkex::Result(vk_result);
+  }
+  
+  vk_result = InvalidValue<VkResult>::Value;
+  VKEX_VULKAN_RESULT_CALL(
+    vk_result,
+    p_data->m_work_complete_for_present_fence->ResetFence()
   );
   if (vk_result != VK_SUCCESS) {
     return vkex::Result(vk_result);
   }
 
-  vk_result = InvalidValue<VkResult>::Value;
-  VKEX_VULKAN_RESULT_CALL(
-    vk_result,
-    m_frame_fence->ResetFence()
-  );
-  if (vk_result != VK_SUCCESS) {
-    return vkex::Result(vk_result);
-  }
+  //if (!IsApplicationModeWindow()) {
+  //  return vkex::Result::ErrorInvalidApplicationMode;
+  //}
+  //
+  //VkResult vk_result = InvalidValue<VkResult>::Value;
+  //VKEX_VULKAN_RESULT_CALL(
+  //  vk_result,
+  //  m_frame_fence->WaitForFence()
+  //);
+  //if (vk_result != VK_SUCCESS) {
+  //  return vkex::Result(vk_result);
+  //}
+  //
+  //vk_result = InvalidValue<VkResult>::Value;
+  //VKEX_VULKAN_RESULT_CALL(
+  //  vk_result,
+  //  m_frame_fence->ResetFence()
+  //);
+  //if (vk_result != VK_SUCCESS) {
+  //  return vkex::Result(vk_result);
+  //}
 
   return vkex::Result::Success;
 }
@@ -1969,9 +2041,12 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_data, uin
     return vkex::Result::ErrorInvalidApplicationMode;
   }
 
+  // VKEX objects
+  vkex::Fence vkex_image_acquired_fence = p_data->GetImageAcquiredFence();
+
   // Vulkan objects
   VkSemaphore vk_image_acquired_semaphore = *(p_data->GetImageAcquiredSemaphore());
-  VkFence vk_image_acquired_fence = VK_NULL_HANDLE;
+  VkFence vk_image_acquired_fence = *vkex_image_acquired_fence;
 
   // Acquire next image
   VkResult vk_result = InvalidValue<VkResult>::Value;
@@ -1986,7 +2061,25 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_data, uin
   if (vk_result != VK_SUCCESS) {
     return vkex::Result(vk_result);
   }
- 
+
+  // Wait on fence
+  VKEX_VULKAN_RESULT_CALL(
+    vk_result,
+    vkex_image_acquired_fence->WaitForFence();
+  );
+  if (vk_result != VK_SUCCESS) {
+    return vkex::Result(vk_result);
+  }
+
+  // Reset fence
+  VKEX_VULKAN_RESULT_CALL(
+    vk_result,
+    vkex_image_acquired_fence->ResetFence();
+  );
+  if (vk_result != VK_SUCCESS) {
+    return vkex::Result(vk_result);
+  }
+
   return vkex::Result::Success;
 }
 
@@ -2272,7 +2365,8 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
   VkPipelineStageFlags vk_pipeline_stage              = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
   VkSemaphore vk_work_complete_for_render_semaphore   = *(p_data->GetWorkCompleteForRenderSemaphore());
   VkSemaphore vk_work_complete_for_present_semaphore  = *(p_data->GetWorkCompleteForPresentSemaphore());
-  VkFence vk_work_complete_fence                      = *m_frame_fence;
+  //VkFence vk_work_complete_fence                      = *m_frame_fence;
+  VkFence vk_work_complete_fence                      = *(p_data->GetWorkCompelteForPresentFence());
   VkSwapchainKHR vk_swapchain                         = *m_swapchain;
   uint32_t vk_swapchain_image_index                   = m_current_swapchain_image_index;
 
@@ -2576,12 +2670,12 @@ vkex::Result Application::Run(int argn, const char* const* argv)
 
     // Frame fence, time, total, average, rate
     {
-      if (IsApplicationModeWindow()) {
-        vkex::Result vkex_result = ProcessFrameFence();
-        if (!vkex_result) {
-          return vkex_result;
-        }
-      }
+      //if (IsApplicationModeWindow()) {
+      //  vkex::Result vkex_result = ProcessFrameFence();
+      //  if (!vkex_result) {
+      //    return vkex_result;
+      //  }
+      //}
 
       // Current time
       double current_time = GetElapsedTime();
@@ -2658,6 +2752,14 @@ vkex::Result Application::Run(int argn, const char* const* argv)
       DispatchCallRender(m_current_render_data);
       double end_time = GetElapsedTime();
       m_render_fn_time = end_time - start_time;
+    }
+
+    // Present data
+    if (IsApplicationModeWindow()) {
+      vkex::Result vkex_result = ProcessFrameFence(m_current_present_data);
+      if (!vkex_result) {
+        return vkex_result;
+      }
     }
 
     // Acquire next image
