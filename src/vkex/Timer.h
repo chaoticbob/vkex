@@ -637,6 +637,43 @@ int vkex_timer_nanos(const struct vkex_timer* p_timer, double* p_nanos)
   return VKEX_TIMER_SUCCESS;
 }
 
+#if defined(VKEX_WIN32)
+int vkex_timer_win32_sleep(double nanos)
+{
+  const uint64_t k_min_sleep_threshold = 2 * VKEX_TIMER_MILLIS_TO_NANOS;
+
+  uint64_t now = 0;
+  int result = vkex_timer_timestamp(&now);
+  if (result != VKEX_TIMER_SUCCESS) {
+    return result;
+  }
+
+  uint64_t target = now + (uint64_t)nanos;
+ 
+  for (;;) {
+    result = vkex_timer_timestamp(&now);
+    if (result != VKEX_TIMER_SUCCESS) {
+      return result;
+    }
+
+    if (now >= target) {
+      break;
+    }
+
+    uint64_t diff = target - now;
+    if (diff >= k_min_sleep_threshold) {
+      DWORD millis = (DWORD)(diff * VKEX_TIMER_NANOS_TO_MILLIS);
+      Sleep(millis);
+    }
+    else {
+      Sleep(0);
+    }
+  }
+  
+  return VKEX_TIMER_SUCCESS;
+}
+#endif
+
 // =============================================================================
 // vkex_timer_sleep_seconds
 // =============================================================================
@@ -661,7 +698,9 @@ int vkex_timer_sleep_seconds(double seconds)
 #elif defined(VKEX_WIN32)
 int vkex_timer_sleep_seconds(double seconds)
 {
-  return VKEX_TIMER_ERROR_SLEEP_FAILED;
+  double nanos = seconds * VKEX_TIMER_SECONDS_TO_NANOS;
+  vkex_timer_win32_sleep(nanos);
+  return VKEX_TIMER_SUCCESS;
 }
 #endif
 
@@ -689,7 +728,9 @@ int vkex_timer_sleep_millis(double millis)
 #elif defined(VKEX_WIN32)
 int vkex_timer_sleep_millis(double millis)
 {
-  return VKEX_TIMER_ERROR_SLEEP_FAILED;
+  double nanos = millis * (double)VKEX_TIMER_MILLIS_TO_NANOS;
+  vkex_timer_win32_sleep(nanos);
+  return VKEX_TIMER_SUCCESS;
 }
 #endif
 
@@ -717,7 +758,9 @@ int vkex_timer_sleep_micros(double micros)
 #elif defined(VKEX_WIN32)
 int vkex_timer_sleep_micros(double micros)
 {
-  return VKEX_TIMER_ERROR_SLEEP_FAILED;
+  double nanos = micros * (double)VKEX_TIMER_MICROS_TO_NANOS;
+  vkex_timer_win32_sleep(nanos);
+  return VKEX_TIMER_SUCCESS;
 }
 #endif
 
@@ -744,7 +787,8 @@ int vkex_timer_sleep_nanos(double nanos)
 #elif defined(VKEX_WIN32)
 int vkex_timer_sleep_nanos(double nanos)
 {
-  return VKEX_TIMER_ERROR_SLEEP_FAILED;
+  vkex_timer_win32_sleep(nanos);
+  return VKEX_TIMER_SUCCESS;
 }
 #endif
 
