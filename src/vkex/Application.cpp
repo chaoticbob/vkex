@@ -631,11 +631,17 @@ Application::Application(uint32_t width, uint32_t height, const std::string& nam
   m_configuration.window.width  = width;
   m_configuration.window.height = height;
 
-  m_configuration.swapchain.color_format  = kDefaultSwapchainFormat;
-  m_configuration.swapchain.color_space   = kDefaultColorSpace;
-  m_configuration.swapchain.present_mode  = kDefaultPresentMode;
-
-  m_configuration.enable_imgui = true;
+  m_configuration.swapchain.color_format     = kDefaultSwapchainFormat;
+  m_configuration.swapchain.color_space      = kDefaultColorSpace;
+  m_configuration.swapchain.present_mode     = kDefaultPresentMode;
+  m_configuration.swapchain.color_load_op    = kDefaultColorLoadOp;   
+  m_configuration.swapchain.color_store_op   = kDefaultColorStoreOp;  
+  m_configuration.swapchain.depth_load_op    = kDefaultDepthLoadOp;   
+  m_configuration.swapchain.depth_store_op   = kDefaultDepthStoreOp;  
+  m_configuration.swapchain.stencil_load_op  = kDefaultStencilLoadOp; 
+  m_configuration.swapchain.stencil_store_op = kDefaultStencilStoreOp;
+  
+  m_configuration.enable_imgui       = true;
   m_configuration.enable_screen_shot = false;
 
   InitializeAssetDirs();

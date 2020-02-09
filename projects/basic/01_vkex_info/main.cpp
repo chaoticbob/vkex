@@ -32,6 +32,12 @@ using float4x4  = vkex::float4x4;
 
 using ViewConstants = vkex::ConstantBufferData<vkex::ViewConstantsData>;
 
+struct PerFrameData
+{
+  vkex::DescriptorSet descriptor_set  = nullptr;
+  vkex::Buffer        constant_buffer = nullptr;
+};
+
 class VkexInfoApp : public vkex::Application {
 public:
   VkexInfoApp() : vkex::Application(k_window_width, k_window_height, "01_vkex_info") {}
@@ -44,17 +50,18 @@ public:
   void Present(vkex::Application::PresentData* p_data);
 
 private:
-  vkex::ShaderProgram         m_color_shader = nullptr;
-  vkex::DescriptorSetLayout   m_descriptor_set_layout = nullptr;
-  vkex::DescriptorPool        m_color_descriptor_pool = nullptr;
-  vkex::DescriptorSet         m_descriptor_set = nullptr;
-  vkex::PipelineLayout        m_color_pipeline_layout = nullptr;
-  vkex::GraphicsPipeline      m_color_pipeline = nullptr;
-  ViewConstants               m_view_constants = {};
-  vkex::Buffer                m_constant_buffer = nullptr;
-  vkex::Buffer                m_vertex_buffer = nullptr;
-  vkex::Texture               m_texture = nullptr;
-  vkex::Sampler               m_sampler = nullptr;
+  std::vector<PerFrameData> m_per_frame_data        = {};
+  vkex::ShaderProgram       m_color_shader          = nullptr;
+  vkex::DescriptorSetLayout m_descriptor_set_layout = nullptr;
+  vkex::DescriptorPool      m_color_descriptor_pool = nullptr;
+  //vkex::DescriptorSet       m_descriptor_set        = nullptr;
+  vkex::PipelineLayout      m_color_pipeline_layout = nullptr;
+  vkex::GraphicsPipeline    m_color_pipeline        = nullptr;
+  ViewConstants             m_view_constants        = {};
+  //vkex::Buffer              m_constant_buffer       = nullptr;
+  vkex::Buffer              m_vertex_buffer         = nullptr;
+  vkex::Texture             m_texture               = nullptr;
+  vkex::Sampler             m_sampler               = nullptr;
 };
 
 void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& configuration)
@@ -89,25 +96,20 @@ void VkexInfoApp::Setup()
   }
 
   // Descriptor set layouts
-  {    
-    const vkex::ShaderInterface& shader_interface = m_color_shader->GetInterface();
-    vkex::DescriptorSetLayoutCreateInfo create_info = ToVkexCreateInfo(shader_interface.GetSet(0));
+  {
+    const vkex::ShaderInterface&        shader_interface = m_color_shader->GetInterface();
+    vkex::DescriptorSetLayoutCreateInfo create_info      = ToVkexCreateInfo(shader_interface.GetSet(0));
     VKEX_CALL(GetDevice()->CreateDescriptorSetLayout(create_info, &m_descriptor_set_layout));
   }
 
   // Descriptor pool
   {
-    const vkex::ShaderInterface& shader_interface = m_color_shader->GetInterface();
-    vkex::DescriptorPoolCreateInfo create_info = {};
-    create_info.pool_sizes = shader_interface.GetDescriptorPoolSizes();
-    VKEX_CALL(GetDevice()->CreateDescriptorPool(create_info, &m_color_descriptor_pool));
-  }
+    uint32_t frame_count = GetConfiguration().frame_count;
 
-  // Descriptor sets
-  {
-    vkex::DescriptorSetAllocateInfo allocate_info = {};
-    allocate_info.layouts.push_back(m_descriptor_set_layout);
-    VKEX_CALL(m_color_descriptor_pool->AllocateDescriptorSets(allocate_info, &m_descriptor_set));
+    const vkex::ShaderInterface&   shader_interface = m_color_shader->GetInterface();
+    vkex::DescriptorPoolCreateInfo create_info      = {};
+    create_info.pool_sizes                          = frame_count * shader_interface.GetDescriptorPoolSizes();
+    VKEX_CALL(GetDevice()->CreateDescriptorPool(create_info, &m_color_descriptor_pool));
   }
 
   // Pipeline layout
@@ -133,15 +135,6 @@ void VkexInfoApp::Setup()
     create_info.dsv_format                  = GetConfiguration().swapchain.depth_stencil_format;
     vkex::Result vkex_result = vkex::Result::Undefined;
     VKEX_CALL(GetDevice()->CreateGraphicsPipeline(create_info, &m_color_pipeline));
-  }
-
-  // Constant buffer
-  {
-    vkex::BufferCreateInfo create_info = {};
-    create_info.size = m_view_constants.size;
-    create_info.committed = true;
-    create_info.memory_usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-    VKEX_CALL(GetDevice()->CreateConstantBuffer(create_info, &m_constant_buffer));
   }
 
   // Vertex buffer
@@ -179,11 +172,37 @@ void VkexInfoApp::Setup()
     VKEX_CALL(GetDevice()->CreateSampler(create_info, &m_sampler));
   }
 
-  // Update descriptors
+  // Per frame data
   {
-    m_descriptor_set->UpdateDescriptor(VKEX_SHADER_CONSTANTS_BASE_REGISTER, m_constant_buffer);
-    m_descriptor_set->UpdateDescriptor(VKEX_SHADER_TEXTURE_BASE_REGISTER, m_texture);
-    m_descriptor_set->UpdateDescriptor(VKEX_SHADER_SAMPLER_BASE_REGISTER, m_sampler);
+    const uint32_t frame_count = GetFrameCount();
+    m_per_frame_data.resize(frame_count);
+
+    for (uint32_t frame_index = 0; frame_index < frame_count; ++frame_index) {
+      PerFrameData& per_frame_data = m_per_frame_data[frame_index];
+
+      // Descriptor sets
+      {
+        vkex::DescriptorSetAllocateInfo allocate_info = {};
+        allocate_info.layouts.push_back(m_descriptor_set_layout);
+        VKEX_CALL(m_color_descriptor_pool->AllocateDescriptorSets(allocate_info, &per_frame_data.descriptor_set));
+      }
+
+      // Constant buffer
+      {
+        vkex::BufferCreateInfo create_info = {};
+        create_info.size                   = m_view_constants.size;
+        create_info.committed              = true;
+        create_info.memory_usage           = VMA_MEMORY_USAGE_CPU_TO_GPU;
+        VKEX_CALL(GetDevice()->CreateConstantBuffer(create_info, &per_frame_data.constant_buffer));
+      }
+
+      // Update descriptors
+      {
+        per_frame_data.descriptor_set->UpdateDescriptor(VKEX_SHADER_CONSTANTS_BASE_REGISTER, per_frame_data.constant_buffer);
+        per_frame_data.descriptor_set->UpdateDescriptor(VKEX_SHADER_TEXTURE_BASE_REGISTER, m_texture);
+        per_frame_data.descriptor_set->UpdateDescriptor(VKEX_SHADER_SAMPLER_BASE_REGISTER, m_sampler);
+      }
+    }
   }
 }
 
@@ -193,52 +212,63 @@ void VkexInfoApp::Render(vkex::Application::RenderData* p_data)
 
 void VkexInfoApp::Present(vkex::Application::PresentData* p_data)
 {
+  // Frame data
+  uint32_t frame_index = p_data->GetFrameIndex();
+  PerFrameData& frame_data = m_per_frame_data[frame_index];
+
+  // Update constant buffer
+  {
+    float3 eye    = float3(0, 0, 2);
+    float3 center = float3(0, 0, 0);
+    float3 up     = float3(0, 1, 0);
+    float aspect  = GetWindowAspect();
+    vkex::PerspCamera camera(eye, center, up, 60.0f, aspect);
+
+    float t = GetFrameStartTime();
+    float4x4 M = glm::translate(float3(0, 0, -5.0f + 6.0f * sin(t / 4.0f))) * glm::rotate(t / 2.0f, float3(0, 1, 0)) * glm::rotate(t / 4.0f, float3(1, 0, 0));
+    float4x4 V = camera.GetViewMatrix();
+    float4x4 P = camera.GetProjectionMatrix();
+
+    m_view_constants.data.M   = M;
+    m_view_constants.data.V   = V;
+    m_view_constants.data.P   = P;
+    m_view_constants.data.MVP = P*V*M;
+
+    VKEX_CALL(frame_data.constant_buffer->Copy(m_view_constants.size, &m_view_constants.data));
+  }
+
+  // Build command buffer
   auto cmd = p_data->GetCommandBuffer();
-  auto render_pass = p_data->GetRenderPass();
-
-  float3 eye    = float3(0, 0, 2);
-  float3 center = float3(0, 0, 0);
-  float3 up     = float3(0, 1, 0);
-  float aspect  = GetWindowAspect();
-  vkex::PerspCamera camera(eye, center, up, 60.0f, aspect);
-
-  float t = GetFrameStartTime();
-  float4x4 M = glm::translate(float3(0, 0, -5.0f + 6.0f * sin(t / 4.0f))) * glm::rotate(t / 2.0f, float3(0, 1, 0)) * glm::rotate(t / 4.0f, float3(1, 0, 0));
-  float4x4 V = camera.GetViewMatrix();
-  float4x4 P = camera.GetProjectionMatrix();
-
-  m_view_constants.data.M   = M;
-  m_view_constants.data.V   = V;
-  m_view_constants.data.P   = P;
-  m_view_constants.data.MVP = P*V*M;
-
-  VKEX_CALL(m_constant_buffer->Copy(m_view_constants.size, &m_view_constants.data));
-
-  VkClearValue rtv_clear = {};
-  VkClearValue dsv_clear = {};
-  dsv_clear.depthStencil.depth = 1.0f;
-  dsv_clear.depthStencil.stencil = 0xFF;
-  std::vector<VkClearValue> clear_values = { rtv_clear, dsv_clear };
-
   cmd->Begin();
   {
+    VkClearValue rtv_clear = {};
+    VkClearValue dsv_clear = {};
+    dsv_clear.depthStencil.depth = 1.0f;
+    dsv_clear.depthStencil.stencil = 0xFF;
+    std::vector<VkClearValue> clear_values = { rtv_clear, dsv_clear };
+
+    // Draw spinning cube
+    auto render_pass = p_data->GetRenderPass();
     cmd->CmdBeginRenderPass(render_pass, &clear_values);
-    cmd->CmdSetViewport(render_pass->GetFullRenderArea());
-    cmd->CmdSetScissor(render_pass->GetFullRenderArea());
-    cmd->CmdBindPipeline(m_color_pipeline);
-    cmd->CmdBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, *m_color_pipeline_layout, 0, { *m_descriptor_set });
-    cmd->CmdBindVertexBuffers(m_vertex_buffer);
-    cmd->CmdDraw(36, 1, 0, 0);  
+    {
+      cmd->CmdSetViewport(render_pass->GetFullRenderArea());
+      cmd->CmdSetScissor(render_pass->GetFullRenderArea());
+      cmd->CmdBindPipeline(m_color_pipeline);
+      cmd->CmdBindDescriptorSets(VK_PIPELINE_BIND_POINT_GRAPHICS, *m_color_pipeline_layout, 0, {*frame_data.descriptor_set});
+      cmd->CmdBindVertexBuffers(m_vertex_buffer);
+      cmd->CmdDraw(36, 1, 0, 0);  
 
-    std::string window = "Physical Device : " + std::string(GetDevice()->GetDeviceName());
-    if (ImGui::Begin(window.c_str())) {
-      DrawDebugUiPhyiscalDevice(GetDevice()->GetPhysicalDevice());
+      // Debug UI
+      std::string window = "Physical Device : " + std::string(GetDevice()->GetDeviceName());
+      if (ImGui::Begin(window.c_str())) {
+        DrawDebugUiPhyiscalDevice(GetDevice()->GetPhysicalDevice());
+      }
+      ImGui::End();
+
+      // Application Info
+      this->DrawDebugApplicationInfo();
+      this->DrawImGui(cmd);
     }
-    ImGui::End();
-
-    this->DrawDebugApplicationInfo();
-    this->DrawImGui(cmd);
-
     cmd->CmdEndRenderPass();
   }
   cmd->End();

@@ -87,7 +87,7 @@ void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& co
   // Force present mode to VK_PRESENT_MODE_MAILBOX_KHR for now...because #reasons
   configuration.window.resizeable                       = false;
   configuration.swapchain.paced_frame_rate              = 60;
-  configuration.swapchain.present_mode                  = VK_PRESENT_MODE_IMMEDIATE_KHR;
+  configuration.swapchain.present_mode                  = VK_PRESENT_MODE_MAILBOX_KHR;
   configuration.swapchain.depth_stencil_format          = VK_FORMAT_D32_SFLOAT;
   configuration.swapchain.color_load_op                 = VK_ATTACHMENT_LOAD_OP_LOAD;
   configuration.graphics_debug.enable                   = true;
