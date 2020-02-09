@@ -643,8 +643,34 @@ void CCommandBuffer::CmdCopyImage(VkImage srcImage, VkImageLayout srcImageLayout
 {
 }
 
-void CCommandBuffer::CmdBlitImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, const std::vector<VkImageBlit>* pRegions, VkFilter filter)
+void CCommandBuffer::CmdBlitImage(vkex::Image srcImage, VkImageLayout srcImageLayout, VkRect2D srcRect, vkex::Image dstImage, VkImageLayout dstImageLayout, VkRect2D dstRect, VkFilter filter)
 {
+  VkImageAspectFlags srcAspectMask = srcImage->GetAspectFlags();
+  VkImageAspectFlags dstAspectMask = dstImage->GetAspectFlags();
+
+  VkImageBlit region = {};
+  region.srcSubresource.aspectMask      = srcAspectMask;
+  region.srcSubresource.mipLevel        = 0;
+  region.srcSubresource.baseArrayLayer  = 0;
+  region.srcSubresource.layerCount      = 1;
+  region.srcOffsets[0].x                = srcRect.offset.x;
+  region.srcOffsets[0].y                = srcRect.offset.y;
+  region.srcOffsets[0].z                = 0;
+  region.srcOffsets[1].x                = srcRect.offset.x + srcRect.extent.width;
+  region.srcOffsets[1].y                = srcRect.offset.y + srcRect.extent.height;
+  region.srcOffsets[1].z                = 1;
+  region.dstSubresource.aspectMask      = dstAspectMask;
+  region.dstSubresource.mipLevel        = 0;
+  region.dstSubresource.baseArrayLayer  = 0;
+  region.dstSubresource.layerCount      = 1;
+  region.dstOffsets[0].x                = dstRect.offset.x;
+  region.dstOffsets[0].y                = dstRect.offset.y;
+  region.dstOffsets[0].z                = 0;
+  region.dstOffsets[1].x                = dstRect.offset.x + dstRect.extent.width;
+  region.dstOffsets[1].y                = dstRect.offset.y + dstRect.extent.height;
+  region.dstOffsets[1].z                = 1;
+
+  CmdBlitImage(*srcImage, srcImageLayout, *dstImage, dstImageLayout, 1, &region, filter);
 }
 
 void CCommandBuffer::CmdCopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, const std::vector<VkBufferImageCopy>* pRegions)
@@ -951,15 +977,47 @@ void CCommandBuffer::CmdTransitionImageLayout(VkImage image, VkImageAspectFlags 
   this->CmdPipelineBarrier(src_stage_mask, dst_stage_mask, dependency_flags, 0, nullptr, 0, nullptr, 1, &barrier);
 }
 
-void CCommandBuffer::CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage)
+void CCommandBuffer::CmdTransitionImageLayout(vkex::Image image, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer, uint32_t layerCount)
 {
+  VkImage            vk_image    = image->GetVkObject();
+  VkImageAspectFlags aspectMask  = image->GetAspectFlags();
+  uint32_t           mipLevels   = image->GetMipLevels();
+  uint32_t           arrayLayers = image->GetArrayLayers();
+  // Check level count
+  levelCount = (levelCount == VKEX_ALL_MIP_LEVELS) ? mipLevels : std::min(levelCount, mipLevels);
+  // Check layer count
+  layerCount = (layerCount == VKEX_ALL_ARRAY_LAYERS) ? arrayLayers : std::min(layerCount, arrayLayers);
+  // Transition
   this->CmdTransitionImageLayout(
-    *(texture->GetImage()),
-    texture->GetAspectFlags(),
-    0,
-    texture->GetMipLevels(),
-    0,
-    texture->GetArrayLayers(),
+    vk_image,
+    aspectMask,
+    baseMipLevel,
+    levelCount,
+    baseArrayLayer,
+    layerCount,
+    oldLayout,
+    newLayout,
+    newPipelineStage);;
+}
+
+void CCommandBuffer::CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer, uint32_t layerCount)
+{
+  VkImage            vk_image    = texture->GetImage()->GetVkObject();
+  VkImageAspectFlags aspectMask  = texture->GetAspectFlags();
+  uint32_t           mipLevels   = texture->GetMipLevels();
+  uint32_t           arrayLayers = texture->GetArrayLayers();
+  // Check level count
+  levelCount = (levelCount == VKEX_ALL_MIP_LEVELS) ? mipLevels : std::min(levelCount, mipLevels);
+  // Check layer count
+  layerCount = (layerCount == VKEX_ALL_ARRAY_LAYERS) ? arrayLayers : std::min(layerCount, arrayLayers);
+  // Transition
+  this->CmdTransitionImageLayout(
+    vk_image,
+    aspectMask,
+    baseMipLevel,
+    levelCount,
+    baseArrayLayer,
+    layerCount,
     oldLayout,
     newLayout,
     newPipelineStage);

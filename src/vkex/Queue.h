@@ -24,9 +24,40 @@
 namespace vkex {
 
 // =================================================================================================
+// SubmtInfo
+// =================================================================================================
+class SubmitInfo 
+{
+public:
+  SubmitInfo();
+  virtual ~SubmitInfo();
+
+  void AddWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags wait_dst_stage_mask);
+  void AddWaitSemaphore(const vkex::Semaphore& semaphore);
+  void AddCommandBuffer(VkCommandBuffer command_buffer);
+  void AddCommandBuffer(const vkex::CommandBuffer& command_buffer);
+  void AddSignalSemaphore(VkSemaphore semaphore);
+  void AddSignalSemaphore(const vkex::Semaphore& semaphore);
+  void SetFence(VkFence fence);
+  void SetFence(const vkex::Fence& fence);
+
+  const std::vector<VkSemaphore>&          GetWaitSemaphores() const { return m_wait_semaphores; }
+  const std::vector<VkPipelineStageFlags>& GetWaitDstStageMasks() const { return m_wait_dst_stage_masks; }
+  const std::vector<VkCommandBuffer>&      GetCommandBuffers() const { return m_command_buffers; }
+  const std::vector<VkSemaphore>&          GetSignalSemaphores() const { return m_signal_semaphores; }
+  VkFence                                  GetFence() const { return m_fence; }
+
+private:
+  std::vector<VkSemaphore>          m_wait_semaphores       = {};
+  std::vector<VkPipelineStageFlags> m_wait_dst_stage_masks  = {};
+  std::vector<VkCommandBuffer>      m_command_buffers       = {};
+  std::vector<VkSemaphore>          m_signal_semaphores     = {};
+  VkFence                           m_fence                = VK_NULL_HANDLE;
+};
+
+// =================================================================================================
 // Queue
 // =================================================================================================
-
 
 /** @struct QueueCreateInfo 
  *
@@ -98,6 +129,11 @@ public:
    *
    */
   VkResult WaitIdle();
+
+  /** @fn Submit
+   *
+   */
+  vkex::Result Submit(const vkex::SubmitInfo& submit_info);
 
 private:  
   friend class CDevice;

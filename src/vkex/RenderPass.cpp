@@ -59,8 +59,8 @@ vkex::Result CRenderPass::InitializeColorAttachmentsMultiSample()
       rtv               = m_create_info.rtvs[rtv_index];
       vk_flags          = rtv->GetAttachmentDescriptionFlags().flags;
       vk_format         = rtv->GetFormat();
-      vk_samples        = rtv->GetSamples();
       vk_load_op        = rtv->GetLoadpOp();
+      vk_samples        = rtv->GetSamples();
       vk_store_op       = rtv->GetStoreOp();
       vk_initial_layout = rtv->GetInitialLayout();
       vk_final_layout   = rtv->GetFinalLayout();
@@ -330,16 +330,16 @@ vkex::Result CRenderPass::InitializeSubpassDependecies()
   // @TODO: Add more robust subpass handling
 
   VkSubpassDependency dep = {};
-  dep.srcSubpass = VK_SUBPASS_EXTERNAL;
-  dep.dstSubpass = 0;
-  dep.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  dep.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-  dep.srcAccessMask = 0;
-  dep.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-  dep.dependencyFlags = 0;
+  dep.srcSubpass          = VK_SUBPASS_EXTERNAL;
+  dep.dstSubpass          = 0;
+  dep.srcStageMask        = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  dep.dstStageMask        = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+  dep.srcAccessMask       = 0;
+  dep.dstAccessMask       = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+  dep.dependencyFlags     = 0;
   m_vk_subpass_dependencies.push_back(dep);
 
-/*
+  /*
   const uint32_t subpass_count = CountU32(m_vk_subpass_descriptions);
   const uint32_t first_subpass_index = 0;
   const uint32_t last_subpass_index = subpass_count - 1;

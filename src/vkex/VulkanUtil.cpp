@@ -690,6 +690,27 @@ uint32_t FormatSize(VkFormat format)
   return size;
 }
 
+VkClearValue ClearColorValue(float r, float g, float b, float a)
+{
+  VkClearValue value = {};
+  value.color.float32[0] = r;
+  value.color.float32[1] = g;
+  value.color.float32[2] = b;
+  value.color.float32[3] = a;
+  return value;
+}
+
+/** @fn ClearDepthStencilValue
+ *
+ */
+VkClearValue ClearDepthStencilValue(float depth, uint32_t stencil)
+{
+  VkClearValue value = {};
+  value.depthStencil.depth   = depth;
+  value.depthStencil.stencil = stencil;
+  return value;
+}
+
 // =================================================================================================
 // Image Layout Transition Functions
 // =================================================================================================

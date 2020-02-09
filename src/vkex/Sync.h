@@ -121,20 +121,25 @@ public:
     return m_vk_object; 
   }
 
-  /** @fn GetVkObject
+  /** @fn ResetFence
    *
    */
   VkResult ResetFence();
 
-  /** @fn GetVkObject
+  /** @fn GetFenceStatus
    *
    */
   VkResult GetFenceStatus();
 
-  /** @fn GetVkObject
+  /** @fn WaitForFence
    *
    */
   VkResult WaitForFence(uint64_t timeout = UINT64_MAX);
+
+  /** @fn WaitForAndResetFence
+   *
+   */
+  VkResult WaitForAndResetFence(uint64_t timeout = UINT64_MAX);
 
 private:
   friend class CDevice;
@@ -169,6 +174,7 @@ private:
 struct SemaphoreCreateInfo {
   std::string           object_name;
   SemaphoreCreateFlags  flags;
+  VkPipelineStageFlags  wait_dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 };
 
 /** @class ISemaphore
@@ -192,6 +198,16 @@ public:
   VkSemaphore GetVkObject() const { 
     return m_vk_object; 
   }
+
+  /** @fn GetWaitDstStageMask
+   *
+   */
+  VkPipelineStageFlags GetWaitDstStageMask() const;
+
+  /** @fn GetWaitDstStageMask
+   *
+   */
+  void GetWaitDstStageMask(VkPipelineStageFlags mask);
 
 private:
   friend class CDevice;

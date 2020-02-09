@@ -189,6 +189,21 @@ VkResult CFence::WaitForFence(uint64_t timeout)
   return VK_SUCCESS;
 }
 
+VkResult CFence::WaitForAndResetFence(uint64_t timeout)
+{
+  VkResult vk_result = WaitForFence(timeout);
+  if (vk_result != VK_SUCCESS) {
+    return vk_result;
+  }
+
+  vk_result = ResetFence();
+  if (vk_result != VK_SUCCESS) {
+    return vk_result;
+  }
+
+  return VK_SUCCESS;
+}
+
 // =================================================================================================
 // Semaphore
 // =================================================================================================
@@ -263,6 +278,16 @@ vkex::Result CSemaphore::InternalDestroy(const VkAllocationCallbacks* p_allocato
   }
 
   return vkex::Result::Success;
+}
+
+VkPipelineStageFlags CSemaphore::GetWaitDstStageMask() const
+{
+  return m_create_info.wait_dst_stage_mask;
+}
+
+void CSemaphore::GetWaitDstStageMask(VkPipelineStageFlags mask)
+{
+  m_create_info.wait_dst_stage_mask = mask;
 }
 
 } // namespace vkex

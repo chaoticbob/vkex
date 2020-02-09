@@ -32,9 +32,15 @@
 
 namespace vkex {
 
-const VkFormat          kDefaultSwapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
-const VkColorSpaceKHR   kDefaultColorSpace      = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
-const VkPresentModeKHR  kDefaultPresentMode     = VK_PRESENT_MODE_IMMEDIATE_KHR;
+const VkFormat            kDefaultSwapchainFormat = VK_FORMAT_B8G8R8A8_UNORM;
+const VkColorSpaceKHR     kDefaultColorSpace      = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+const VkPresentModeKHR    kDefaultPresentMode     = VK_PRESENT_MODE_IMMEDIATE_KHR;
+const VkAttachmentLoadOp  kDefaultColorLoadOp     = VK_ATTACHMENT_LOAD_OP_CLEAR;
+const VkAttachmentStoreOp kDefaultColorStoreOp    = VK_ATTACHMENT_STORE_OP_STORE;
+const VkAttachmentLoadOp  kDefaultDepthLoadOp     = VK_ATTACHMENT_LOAD_OP_CLEAR;
+const VkAttachmentStoreOp kDefaultDepthStoreOp    = VK_ATTACHMENT_STORE_OP_STORE;
+const VkAttachmentLoadOp  kDefaultStencilLoadOp   = VK_ATTACHMENT_LOAD_OP_CLEAR;
+const VkAttachmentStoreOp kDefaultStencilStoreOp  = VK_ATTACHMENT_STORE_OP_STORE;
 
 enum {
   kDefaultPhysicalDeviceIndex = 0,
@@ -330,7 +336,7 @@ Application::RenderData::RenderData()
 Application::RenderData::~RenderData()
 {
 }
-       
+
 vkex::Result Application::RenderData::InternalCreate(vkex::Device device, uint32_t frame_index, vkex::CommandBuffer cmd)
 {
   m_device = device;
@@ -394,6 +400,21 @@ vkex::Result Application::RenderData::InternalDestroy()
   }
 
   return vkex::Result::Success;
+}
+       
+void Application::RenderData::SetPrevious(Application::RenderData* p_previous)
+{
+  m_previous = p_previous;
+}
+
+void Application::RenderData::AddWaitSemaphore(const vkex::Semaphore& semaphore)
+{
+  m_wait_semaphores.push_back(semaphore);
+}
+
+void Application::RenderData::ClearWaitSemaphores()
+{
+  m_wait_semaphores.clear();
 }
 
 // =================================================================================================
@@ -474,7 +495,7 @@ vkex::Result Application::PresentData::InternalCreate(vkex::Device device, uint3
     fence_create_info.flags.bits.signaled = true;
     VKEX_RESULT_CALL(
       vkex_result,
-      m_device->CreateFence(fence_create_info, &m_work_complete_for_present_fence)
+      m_device->CreateFence(fence_create_info, &m_work_complete_fence)
     );
     if (!vkex_result) {
       return vkex_result;
@@ -530,11 +551,11 @@ vkex::Result Application::PresentData::InternalDestroy()
     }   
   }
   // Work complete for present fence
-  if (m_work_complete_for_present_fence != nullptr) {
+  if (m_work_complete_fence != nullptr) {
     vkex::Result vkex_result = vkex::Result::Undefined;
     VKEX_RESULT_CALL(
       vkex_result,
-      m_device->DestroyFence(m_work_complete_for_present_fence);
+      m_device->DestroyFence(m_work_complete_fence);
     );
     if (!vkex_result) {
       return vkex_result;
@@ -547,6 +568,21 @@ vkex::Result Application::PresentData::InternalDestroy()
 void Application::PresentData::SetRenderPass(vkex::RenderPass render_pass)
 {
   m_render_pass = render_pass; 
+}
+       
+void Application::PresentData::SetPrevious(Application::PresentData* p_previous)
+{
+  m_previous = p_previous;
+}
+
+void Application::PresentData::AddWaitSemaphore(const vkex::Semaphore& semaphore)
+{
+  m_wait_semaphores.push_back(semaphore);
+}
+
+void Application::PresentData::ClearWaitSemaphores()
+{
+  m_wait_semaphores.clear();
 }
  
 // =================================================================================================
@@ -567,11 +603,17 @@ Application::Application(const std::string& name)
   m_configuration.window.height = 480;
   m_configuration.window.cursor_mode = vkex::CursorMode::Visible;
 
-  m_configuration.swapchain.color_format  = kDefaultSwapchainFormat;
-  m_configuration.swapchain.color_space   = kDefaultColorSpace;
-  m_configuration.swapchain.present_mode  = kDefaultPresentMode;
-
-  m_configuration.enable_imgui = true;
+  m_configuration.swapchain.color_format     = kDefaultSwapchainFormat;
+  m_configuration.swapchain.color_space      = kDefaultColorSpace;
+  m_configuration.swapchain.present_mode     = kDefaultPresentMode;
+  m_configuration.swapchain.color_load_op    = kDefaultColorLoadOp;   
+  m_configuration.swapchain.color_store_op   = kDefaultColorStoreOp;  
+  m_configuration.swapchain.depth_load_op    = kDefaultDepthLoadOp;   
+  m_configuration.swapchain.depth_store_op   = kDefaultDepthStoreOp;  
+  m_configuration.swapchain.stencil_load_op  = kDefaultStencilLoadOp; 
+  m_configuration.swapchain.stencil_store_op = kDefaultStencilStoreOp;
+  
+  m_configuration.enable_imgui       = true;
   m_configuration.enable_screen_shot = false;
 
   InitializeAssetDirs();
@@ -1210,8 +1252,8 @@ vkex::Result Application::InitializeVkexSwapchain()
         vkex::RenderTargetViewCreateInfo create_info ={};
         create_info.format         = image_view->GetFormat();
         create_info.samples        = image_view->GetSamples();
-        create_info.load_op        = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        create_info.store_op       = VK_ATTACHMENT_STORE_OP_STORE;
+        create_info.load_op        = m_configuration.swapchain.color_load_op;
+        create_info.store_op       = m_configuration.swapchain.color_store_op;
         create_info.initial_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         create_info.render_layout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
         create_info.final_layout   = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -1238,17 +1280,17 @@ vkex::Result Application::InitializeVkexSwapchain()
         vkex::ImageView image_view = m_depth_stencil_image_views[image_index];
         // Fill out DSV
         vkex::DepthStencilViewCreateInfo create_info = {};
-        create_info.format            = image_view->GetFormat();
-        create_info.samples           = image_view->GetSamples();
-        create_info.depth_load_op     = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        create_info.depth_store_op    = VK_ATTACHMENT_STORE_OP_STORE;
-        create_info.stencil_load_op   = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        create_info.stencil_store_op  = VK_ATTACHMENT_STORE_OP_STORE;
-        create_info.initial_layout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        create_info.final_layout      = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        create_info.final_layout      = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        create_info.clear_value       = m_configuration.swapchain.dsv_clear_value;
-        create_info.attachment     = image_view;
+        create_info.format                           = image_view->GetFormat();
+        create_info.samples                          = image_view->GetSamples();
+        create_info.depth_load_op                    = m_configuration.swapchain.depth_load_op;
+        create_info.depth_store_op                   = m_configuration.swapchain.depth_store_op;
+        create_info.stencil_load_op                  = m_configuration.swapchain.stencil_load_op;
+        create_info.stencil_store_op                 = m_configuration.swapchain.stencil_store_op;
+        create_info.initial_layout                   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        create_info.final_layout                     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        create_info.final_layout                     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        create_info.clear_value                      = m_configuration.swapchain.dsv_clear_value;
+        create_info.attachment                       = image_view;
         vkex::Result vkex_result = vkex::Result::Undefined;
         VKEX_RESULT_CALL(
           vkex_result,
@@ -1262,10 +1304,10 @@ vkex::Result Application::InitializeVkexSwapchain()
       }
       // Create info
       vkex::RenderPassCreateInfo render_pass_create_info = {};
-      render_pass_create_info.flags   = 0;
-      render_pass_create_info.rtvs    = { rtv };
-      render_pass_create_info.dsv     = dsv;
-      render_pass_create_info.extent  = { m_configuration.window.width, m_configuration.window.height };
+      render_pass_create_info.flags                      = 0;
+      render_pass_create_info.rtvs                       = {rtv};
+      render_pass_create_info.dsv                        = dsv;
+      render_pass_create_info.extent                     = {m_configuration.window.width, m_configuration.window.height};
       // Create render pass
       vkex::RenderPass render_pass = nullptr;
       vkex::Result vkex_result = vkex::Result::Undefined;
@@ -1286,10 +1328,12 @@ vkex::Result Application::InitializeVkexSwapchain()
     uint64_t size = vkex::RoundUp<uint64_t>(m_configuration.window.width, 4) *
                     vkex::RoundUp<uint64_t>(m_configuration.window.height, 4) *
                     vkex::FormatSize(m_configuration.swapchain.color_format);
-    vkex::BufferCreateInfo buffer_create_info = {};
-    buffer_create_info.size                           = size;
-    buffer_create_info.usage_flags.bits.transfer_dst  = true;
-    buffer_create_info.memory_usage                   = VMA_MEMORY_USAGE_GPU_TO_CPU;
+    // Create info
+    vkex::BufferCreateInfo buffer_create_info        = {};
+    buffer_create_info.size                          = size;
+    buffer_create_info.usage_flags.bits.transfer_dst = true;
+    buffer_create_info.memory_usage                  = VMA_MEMORY_USAGE_GPU_TO_CPU;
+    // Create buffer
     vkex::Result vkex_result = vkex::Result::Undefined;
     VKEX_RESULT_CALL(
       vkex_result,
@@ -1947,6 +1991,68 @@ vkex::Result Application::CheckConfiguration()
   return vkex::Result::Success;
 }
 
+vkex::Result Application::UpdateCurrentPerFrameData()
+{
+  // NOTE: This is really gross - find a better way to do this.
+  
+  // Render data
+  {
+    // Stack size should always be less than or equal to total frames
+    VKEX_ASSERT(m_render_data_stack.size() <= m_per_frame_render_data.size());
+    // Update current render data and shuffle stack
+    m_current_render_data = m_per_frame_render_data[m_frame_index].get();
+    if (m_render_data_stack.size() == m_per_frame_render_data.size()) {
+      const size_t last_index = m_render_data_stack.size() - 1;
+      for (size_t i = 0; i < last_index; ++i) {
+        m_render_data_stack[i] = m_render_data_stack[i + 1];
+      }
+      m_render_data_stack[last_index] = m_current_render_data;
+    }
+    else {
+      m_render_data_stack.push_back(m_current_render_data);
+    }
+    // Update the previous frame pointers
+    m_render_data_stack[0]->SetPrevious(nullptr);
+    for (size_t i = 0; i < (m_render_data_stack.size() - 1); ++i) {
+      m_render_data_stack[i + 1]->SetPrevious(m_render_data_stack[i]);
+    }
+  }
+
+  // Present data
+  {
+    // Stack size should always be less than or equal to total frames
+    VKEX_ASSERT(m_present_data_stack.size() <= m_per_frame_present_data.size());
+    // Update current present data and shuffle stack
+    m_current_present_data = m_per_frame_present_data[m_frame_index].get();
+    if (m_present_data_stack.size() == m_per_frame_present_data.size()) {
+      const size_t last_index = m_present_data_stack.size() - 1;
+      for (size_t i = 0; i < last_index; ++i) {
+        m_present_data_stack[i] = m_present_data_stack[i + 1];
+      }
+      m_present_data_stack[last_index] = m_current_present_data;
+    }
+    else {
+      m_present_data_stack.push_back(m_current_present_data);
+    }
+    // Update the previous frame pointers
+    m_present_data_stack[0]->SetPrevious(nullptr);
+    for (size_t i = 0; i < (m_present_data_stack.size() - 1); ++i) {
+      m_present_data_stack[i + 1]->SetPrevious(m_present_data_stack[i]);
+    }
+  }
+
+
+  //m_current_render_data = m_per_frame_render_data[m_frame_index].get();
+  //if (IsApplicationModeWindow()) {
+  //  if (m_current_present_data != nullptr) {
+  //      m_previous_present_data = m_current_present_data;
+  //  }
+  //  m_current_present_data = m_per_frame_present_data[m_frame_index].get();
+  //}
+
+  return vkex::Result::Success;
+}
+
 vkex::Result vkex::Application::ProcessRenderFence(Application::RenderData * p_data)
 {
     VkResult vk_result = InvalidValue<VkResult>::Value;
@@ -1979,7 +2085,7 @@ vkex::Result Application::ProcessFrameFence(Application::PresentData* p_data)
   VkResult vk_result = InvalidValue<VkResult>::Value;
   VKEX_VULKAN_RESULT_CALL(
     vk_result,
-    p_data->m_work_complete_for_present_fence->WaitForFence()
+    p_data->m_work_complete_fence->WaitForFence()
   );
   if (vk_result != VK_SUCCESS) {
     return vkex::Result(vk_result);
@@ -1988,7 +2094,7 @@ vkex::Result Application::ProcessFrameFence(Application::PresentData* p_data)
   vk_result = InvalidValue<VkResult>::Value;
   VKEX_VULKAN_RESULT_CALL(
     vk_result,
-    p_data->m_work_complete_for_present_fence->ResetFence()
+    p_data->m_work_complete_fence->ResetFence()
   );
   if (vk_result != VK_SUCCESS) {
     return vkex::Result(vk_result);
@@ -2211,16 +2317,16 @@ void Application::DispatchCallUpdate(double frame_elapsed_time)
   Update(frame_elapsed_time);
 }
 
-void Application::DispatchCallRender(Application::RenderData* p_data)
+void Application::DispatchCallRender(Application::RenderData* p_render_data, Application::PresentData* p_present_data)
 {
-  Render(p_data);
-  SubmitRender(p_data);
+  Render(p_render_data, p_present_data);
+  SubmitRender(p_render_data, p_present_data);
 }
 
-void Application::DispatchCallPresent(Application::PresentData* p_data)
+void Application::DispatchCallPresent(Application::PresentData* p_present_data)
 {
-  Present(p_data);
-  SubmitPresent(p_data);
+  Present(p_present_data);
+  SubmitPresent(p_present_data);
 }
 
 bool Application::IsKeyPressed(KeyboardInput key)
@@ -2262,51 +2368,80 @@ void Application::DrawImGui(vkex::CommandBuffer cmd)
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), *cmd);
 }
 
-vkex::Result Application::SubmitRender(Application::RenderData* p_data)
+vkex::Result Application::SubmitRender(Application::RenderData* p_current_render_data, Application::PresentData* p_current_present_data)
 {
-  VkCommandBuffer vk_command_buffer = *(p_data->GetCommandBuffer());
-  VkPipelineStageFlags vk_pipeline_stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-  VkSemaphore vk_work_complete_semaphore = *(p_data->GetWorkCompleteSemaphore());
-  VkSemaphore vk_present_complete_semaphore = nullptr;
-  if (m_previous_present_data != nullptr){
-    vk_present_complete_semaphore = *(m_previous_present_data->GetWorkCompleteForRenderSemaphore());
-  }
+  VkCommandBuffer       vk_command_buffer             = *(p_current_render_data->GetCommandBuffer());
+  VkSemaphore           vk_work_complete_semaphore    = *(p_current_render_data->GetWorkCompleteSemaphore());
+
+  //VkSemaphore           vk_present_complete_semaphore = (m_previous_present_data != nullptr) 
+  //                                                      ? *(m_previous_present_data->GetWorkCompleteForRenderSemaphore()) 
+  //                                                      : nullptr;
 
   // Submit render work
-  {
-    std::vector<VkSemaphore> vk_wait_semaphores;
-    if (vk_present_complete_semaphore != nullptr) {
-      vk_wait_semaphores.push_back(vk_present_complete_semaphore);
-    }
-    std::vector<VkCommandBuffer>      vk_command_buffers     = {vk_command_buffer};
-    std::vector<VkPipelineStageFlags> vk_pipeline_stages     = {vk_pipeline_stage};
-    std::vector<VkSemaphore>          vk_signal_semaphores   = {vk_work_complete_semaphore};
-    VkFence                           vk_work_complete_fence = *(p_data->m_work_complete_fence);
+    //std::vector<VkSemaphore> vk_wait_semaphores;
+    //if (vk_present_complete_semaphore != nullptr) {
+    //  vk_wait_semaphores.push_back(vk_present_complete_semaphore);
+    //}
 
-    VkSubmitInfo vk_submit_info         = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
-    vk_submit_info.waitSemaphoreCount   = CountU32(vk_wait_semaphores);
-    vk_submit_info.pWaitSemaphores      = DataPtr(vk_wait_semaphores);
-    vk_submit_info.pWaitDstStageMask    = DataPtr(vk_pipeline_stages);
-    vk_submit_info.commandBufferCount   = CountU32(vk_command_buffers);
-    vk_submit_info.pCommandBuffers      = DataPtr(vk_command_buffers);
-    vk_submit_info.signalSemaphoreCount = CountU32(vk_signal_semaphores);
-    vk_submit_info.pSignalSemaphores    = DataPtr(vk_signal_semaphores);
-    // Queue submit
-    VkResult vk_result = InvalidValue<VkResult>::Value;
-    VKEX_VULKAN_RESULT_CALL(
-        vk_result,
-        vkex::QueueSubmit(
-            *m_graphics_queue,
-            1,
-            &vk_submit_info,
-            vk_work_complete_fence)
-    );
-    if (vk_result != VK_SUCCESS) {
-        return vkex::Result(vk_result);
+  // Wait semaphores and destination stage masks
+  std::vector<VkSemaphore>          vk_wait_semaphores      = {};
+  std::vector<VkPipelineStageFlags> vk_wait_dst_stage_masks = {};
+ 
+  if (!p_current_render_data->GetWaitSemaphores().empty()) {
+    const std::vector<vkex::Semaphore>& wait_sempahores = p_current_render_data->GetWaitSemaphores();
+    for (const auto& semaphore : wait_sempahores) {
+      VkSemaphore           vk_sempahore      = semaphore->GetVkObject();
+      VkPipelineStageFlags  vk_dst_stage_mask = semaphore->GetWaitDstStageMask();
+      vk_wait_semaphores.push_back(vk_sempahore);
+      vk_wait_dst_stage_masks.push_back(vk_dst_stage_mask);
     }
-
-    m_render_submitted = true;
   }
+  else {
+    const Application::PresentData* p_previous = p_current_present_data->GetPrevious();
+    if (p_previous != nullptr) {
+      vkex::Semaphore       semaphore         = p_previous->GetWorkCompleteForRenderSemaphore();
+      VkSemaphore           vk_sempahore      = semaphore->GetVkObject();
+      VkPipelineStageFlags  vk_dst_stage_mask = semaphore->GetWaitDstStageMask();
+      vk_wait_semaphores.push_back(vk_sempahore);
+      vk_wait_dst_stage_masks.push_back(vk_dst_stage_mask);
+    }
+  }
+
+  // Command buffers
+  std::vector<VkCommandBuffer>      vk_command_buffers      = { vk_command_buffer };
+
+  // Signal semaphores
+  std::vector<VkSemaphore>          vk_signal_semaphores    = { vk_work_complete_semaphore };
+
+  // Work complete fence
+  VkFence vk_work_complete_fence  = *(p_current_render_data->GetWorkcompleteFence());
+    
+
+  // Submit info
+  VkSubmitInfo vk_submit_info         = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+  vk_submit_info.waitSemaphoreCount   = CountU32(vk_wait_semaphores);
+  vk_submit_info.pWaitSemaphores      = DataPtr(vk_wait_semaphores);
+  vk_submit_info.pWaitDstStageMask    = DataPtr(vk_wait_dst_stage_masks);
+  vk_submit_info.commandBufferCount   = CountU32(vk_command_buffers);
+  vk_submit_info.pCommandBuffers      = DataPtr(vk_command_buffers);
+  vk_submit_info.signalSemaphoreCount = CountU32(vk_signal_semaphores);
+  vk_submit_info.pSignalSemaphores    = DataPtr(vk_signal_semaphores);
+
+  // Queue submit
+  VkResult vk_result = InvalidValue<VkResult>::Value;
+  VKEX_VULKAN_RESULT_CALL(
+      vk_result,
+      vkex::QueueSubmit(
+          *m_graphics_queue,
+          1,
+          &vk_submit_info,
+          vk_work_complete_fence)
+  );
+  if (vk_result != VK_SUCCESS) {
+      return vkex::Result(vk_result);
+  }
+
+  m_render_submitted = true;
 
   return vkex::Result::Success;
 }
@@ -2323,8 +2458,7 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
   VkPipelineStageFlags vk_pipeline_stage              = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
   VkSemaphore vk_work_complete_for_render_semaphore   = *(p_data->GetWorkCompleteForRenderSemaphore());
   VkSemaphore vk_work_complete_for_present_semaphore  = *(p_data->GetWorkCompleteForPresentSemaphore());
-  //VkFence vk_work_complete_fence                      = *m_frame_fence;
-  VkFence vk_work_complete_fence                      = *(p_data->GetWorkCompelteForPresentFence());
+  VkFence vk_work_complete_fence                      = *(p_data->GetWorkCompleteFence());
   VkSwapchainKHR vk_swapchain                         = *m_swapchain;
   uint32_t vk_swapchain_image_index                   = m_current_swapchain_image_index;
 
@@ -2656,13 +2790,19 @@ vkex::Result Application::Run(int argn, const char* const* argv)
     }
 
     // Update current per frame data
-    m_current_render_data = m_per_frame_render_data[m_frame_index].get();
-    if (IsApplicationModeWindow()) {
-      if (m_current_present_data != nullptr) {
-          m_previous_present_data = m_current_present_data;
+    {
+      vkex::Result vkex_result = UpdateCurrentPerFrameData();
+      if (!vkex_result) {
+        return vkex_result;
       }
-      m_current_present_data = m_per_frame_present_data[m_frame_index].get();
     }
+    //m_current_render_data = m_per_frame_render_data[m_frame_index].get();
+    //if (IsApplicationModeWindow()) {
+    //  if (m_current_present_data != nullptr) {
+    //      m_previous_present_data = m_current_present_data;
+    //  }
+    //  m_current_present_data = m_per_frame_present_data[m_frame_index].get();
+    //}
 
     // Start the Dear ImGui frame
     if (IsApplicationModeWindow() && m_configuration.enable_imgui) {
@@ -2700,7 +2840,7 @@ vkex::Result Application::Run(int argn, const char* const* argv)
       }
 
       double start_time = GetElapsedTime();
-      DispatchCallRender(m_current_render_data);
+      DispatchCallRender(m_current_render_data, m_current_present_data);
       double end_time = GetElapsedTime();
       m_render_fn_time = end_time - start_time;
     }
@@ -2734,6 +2874,9 @@ vkex::Result Application::Run(int argn, const char* const* argv)
         double expected_time = m_frame_0_time + (m_elapsed_frame_count * paced_fps);
         double diff = expected_time - current_time;
         if (diff > 0) {
+          //std::stringstream ss;
+          //ss << diff << "\n";
+          //OutputDebugStringA(ss.str().c_str());
           vkex::Timer::SleepSeconds(diff);
         }
       }
@@ -2806,7 +2949,7 @@ uint32_t Application::GetFrameCount() const
   return m_configuration.frame_count;
 }
 
-uint32_t Application::GetFrameIndex() const
+uint32_t Application::GetCurrentFrameIndex() const
 {
   return m_frame_index;
 }
@@ -2839,6 +2982,16 @@ void Application::SetSwapchainPresentMode(VkPresentModeKHR present_mode)
 vkex::Queue Application::GetGraphicsQueue() const
 {
   return m_graphics_queue;
+}
+
+vkex::Application::RenderData* Application::GetCurrentRenderData() const
+{
+  return m_current_render_data;
+}
+
+vkex::Application::PresentData* Application::GetCurrentPresentData() const
+{
+  return m_current_present_data;
 }
 
 void Application::DrawDebugApplicationInfo()

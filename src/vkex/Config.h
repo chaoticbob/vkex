@@ -43,6 +43,13 @@
 #include "vkex/Util.h"
 
 #define VKEX_MINIMUM_REQUIRED_VULKAN_VERSION  VK_MAKE_VERSION(1, 1, 0)
+#define VKEX_ALL_MIP_LEVELS                   0xFFFFFFFF
+#define VKEX_ALL_ARRAY_LAYERS                 0xFFFFFFFF
+
+enum {
+  // Fake this so there isn't a random magic constant 0 hanging out
+  VK_PIPELINE_STAGE_PRESENT_BIT = 0,
+};
 
 namespace vkex {
 

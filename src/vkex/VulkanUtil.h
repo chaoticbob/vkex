@@ -631,7 +631,42 @@ union DescriptorPoolSizes {
     this->input_attachment *= rhs;
     return *this;
   }
+
+
+  DescriptorPoolSizes operator*(uint32_t rhs) 
+  {
+    DescriptorPoolSizes result = {};
+    result.sampler                = rhs * this->sampler;
+    result.combined_image_sampler = rhs * this->combined_image_sampler;
+    result.sampled_image          = rhs * this->sampled_image;
+    result.storage_image          = rhs * this->storage_image;
+    result.uniform_texel_buffer   = rhs * this->uniform_texel_buffer;
+    result.storage_texel_buffer   = rhs * this->storage_texel_buffer;
+    result.uniform_buffer         = rhs * this->uniform_buffer;
+    result.storage_buffer         = rhs * this->storage_buffer;
+    result.uniform_buffer_dynamic = rhs * this->uniform_buffer_dynamic;
+    result.storage_buffer_dynamic = rhs * this->storage_buffer_dynamic;
+    result.input_attachment       = rhs * this->input_attachment;
+    return result;
+  }
 };
+
+inline DescriptorPoolSizes operator*(uint32_t scale, const DescriptorPoolSizes& sizes)
+{
+    DescriptorPoolSizes result = {};
+    result.sampler                = scale * sizes.sampler;
+    result.combined_image_sampler = scale * sizes.combined_image_sampler;
+    result.sampled_image          = scale * sizes.sampled_image;
+    result.storage_image          = scale * sizes.storage_image;
+    result.uniform_texel_buffer   = scale * sizes.uniform_texel_buffer;
+    result.storage_texel_buffer   = scale * sizes.storage_texel_buffer;
+    result.uniform_buffer         = scale * sizes.uniform_buffer;
+    result.storage_buffer         = scale * sizes.storage_buffer;
+    result.uniform_buffer_dynamic = scale * sizes.uniform_buffer_dynamic;
+    result.storage_buffer_dynamic = scale * sizes.storage_buffer_dynamic;
+    result.input_attachment       = scale * sizes.input_attachment;
+    return result;  
+}
 
 // =================================================================================================
 // Vertex Description
@@ -917,6 +952,16 @@ uint32_t FormatComponentCount(VkFormat format);
  *
  */
 uint32_t FormatSize(VkFormat format);
+
+/** @fn ClearColorValue
+ *
+ */
+VkClearValue ClearColorValue(float r = 0.0f, float g = 0.0f, float b = 0.0f, float a = 0.0f);
+
+/** @fn ClearDepthStencilValue
+ *
+ */
+VkClearValue ClearDepthStencilValue(float depth = 1.0f, uint32_t stencil = 0xFF);
 
 // =================================================================================================
 // Image Layout Transition Functions

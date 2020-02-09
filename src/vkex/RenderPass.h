@@ -50,19 +50,23 @@ namespace vkex {
  * 
  */
 struct RenderPassCreateInfo {
-  vkex::RenderPassCreateFlags         flags;
-  std::vector<vkex::RenderTargetView> rtvs;
-  vkex::DepthStencilView              dsv;
-  VkExtent2D                          extent;
+  vkex::RenderPassCreateFlags         flags             = 0;
+  std::vector<vkex::RenderTargetView> rtvs              = {};
+  vkex::DepthStencilView              dsv               = nullptr;
+  VkExtent2D                          extent            = {};
 
   struct {
-    std::vector<VkFormat>             rtv_formats;
-    VkFormat                          dsv_format;
-    VkSampleCountFlagBits             samples;
+    std::vector<VkFormat>             rtv_formats       = {};
+    VkFormat                          dsv_format        = VK_FORMAT_UNDEFINED;
+    VkSampleCountFlagBits             samples           = VK_SAMPLE_COUNT_1_BIT;
   } transient;
 };
 
-/** @class IRenderPass
+// =================================================================================================
+// RenderPass
+// =================================================================================================
+
+/** @class RenderPass
  *
  */ 
 class CRenderPass : public IDeviceObject {

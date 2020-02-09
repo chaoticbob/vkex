@@ -130,7 +130,7 @@ public:
   void  CmdBindVertexBuffers(vkex::Buffer buffer, VkDeviceSize offset = 0);
   void  CmdCopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, const std::vector<VkBufferCopy>* pRegions);
   void  CmdCopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, const std::vector<VkImageCopy>* pRegions);
-  void  CmdBlitImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, const std::vector<VkImageBlit>* pRegions, VkFilter filter);
+  void  CmdBlitImage(vkex::Image srcImage, VkImageLayout srcImageLayout, VkRect2D srcRect, vkex::Image dstImage, VkImageLayout dstImageLayout, VkRect2D dstRect, VkFilter filter = VK_FILTER_LINEAR);
   void  CmdCopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, const std::vector<VkBufferImageCopy>* pRegions);
   void  CmdCopyImageToBuffer(VkImage srcImage, VkImageLayout srcImageLayout, VkBuffer dstBuffer, const std::vector<VkBufferImageCopy>* pRegions);
   void  CmdUpdateBuffer(VkBuffer dstBuffer, VkDeviceSize dstOffset, const std::vector<uint8_t>* pData);
@@ -152,7 +152,8 @@ public:
   void  CmdExecuteCommands(const std::vector<VkCommandBuffer>* pCommandBuffers);
 
   void  CmdTransitionImageLayout(VkImage image, VkImageAspectFlags aspectMask, uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage);
-  void  CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage);
+  void  CmdTransitionImageLayout(vkex::Image image, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel = 0, uint32_t levelCount = VKEX_ALL_MIP_LEVELS, uint32_t baseArrayLayer = 0, uint32_t layerCount = VKEX_ALL_ARRAY_LAYERS);
+  void  CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel = 0, uint32_t levelCount = VKEX_ALL_MIP_LEVELS, uint32_t baseArrayLayer = 0, uint32_t layerCount = VKEX_ALL_ARRAY_LAYERS);
 
 private:
   friend class CCommandPool;

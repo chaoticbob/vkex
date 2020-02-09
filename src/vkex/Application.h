@@ -327,6 +327,24 @@ struct Configuration {
     // Default: { 1.0f, 0xFF }
     VkClearDepthStencilValue  dsv_clear_value;
 
+    // Default: VK_ATTACHMENT_LOAD_OP_CLEAR
+    VkAttachmentLoadOp        color_load_op;
+
+    // Default: VK_ATTACHMENT_STORE_OP_STORE
+    VkAttachmentStoreOp       color_store_op;
+
+    // Default: VK_ATTACHMENT_LOAD_OP_CLEAR
+    VkAttachmentLoadOp        depth_load_op;
+
+    // Default: VK_ATTACHMENT_STORE_OP_STORE
+    VkAttachmentStoreOp       depth_store_op;
+
+    // Default: VK_ATTACHMENT_LOAD_OP_CLEAR
+    VkAttachmentLoadOp        stencil_load_op;
+
+    // Default: VK_ATTACHMENT_STORE_OP_STORE
+    VkAttachmentStoreOp       stencil_store_op;
+
     // Default: 0 (no frame pacing)
     uint32_t                  paced_frame_rate;
   } swapchain;
@@ -357,19 +375,27 @@ public:
   public:
     RenderData();
     ~RenderData();
-    uint32_t            GetFrameIndex() const { return m_frame_index; }
-    vkex::CommandBuffer GetCommandBuffer() { return m_work_cmd; }
-    vkex::Semaphore     GetWorkCompleteSemaphore() const { return m_work_complete_semaphore; }
+    Application::RenderData*      GetPrevious() const { return m_previous; }
+    uint32_t                      GetFrameIndex() const { return m_frame_index; }
+    const std::vector<Semaphore>& GetWaitSemaphores() const { return m_wait_semaphores; }
+    void                          AddWaitSemaphore(const vkex::Semaphore& semaphore);
+    void                          ClearWaitSemaphores();
+    vkex::CommandBuffer           GetCommandBuffer() { return m_work_cmd; }
+    vkex::Semaphore               GetWorkCompleteSemaphore() const { return m_work_complete_semaphore; }
+    vkex::Fence                   GetWorkcompleteFence() const { return m_work_complete_fence; }
   private:
     friend class vkex::Application;
     vkex::Result InternalCreate(vkex::Device device, uint32_t frame_index, vkex::CommandBuffer cmd);
     vkex::Result InternalDestroy();
+    void SetPrevious(Application::RenderData* p_previous);
   private:
-    vkex::Device        m_device = nullptr;
-    uint32_t            m_frame_index = UINT32_MAX;
-    vkex::CommandBuffer m_work_cmd = nullptr;
-    vkex::Semaphore     m_work_complete_semaphore = nullptr;
-    vkex::Fence         m_work_complete_fence = nullptr;
+    Application::RenderData*      m_previous                = nullptr;
+    vkex::Device                  m_device                  = nullptr;
+    uint32_t                      m_frame_index             = UINT32_MAX;
+    std::vector<vkex::Semaphore>  m_wait_semaphores         = {};
+    vkex::CommandBuffer           m_work_cmd                = nullptr;
+    vkex::Semaphore               m_work_complete_semaphore = nullptr;
+    vkex::Fence                   m_work_complete_fence     = nullptr;
   };
 
   /** @class PresentData
@@ -379,29 +405,36 @@ public:
   public:
     PresentData();
     ~PresentData();
-    uint32_t            GetFrameIndex() const { return m_frame_index; }
-    vkex::Semaphore     GetImageAcquiredSemaphore() const { return m_image_acquired_sempahore; }
-    vkex::Fence         GetImageAcquiredFence() const { return m_image_acquired_fence; }
-    vkex::CommandBuffer GetCommandBuffer() { return m_work_cmd; }
-    vkex::Semaphore     GetWorkCompleteForRenderSemaphore() const { return m_work_complete_for_render_semaphore; }
-    vkex::Semaphore     GetWorkCompleteForPresentSemaphore() const { return m_work_complete_for_present_semaphore; }
-    vkex::Fence         GetWorkCompelteForPresentFence() const { return m_work_complete_for_present_fence; }
-    vkex::RenderPass    GetRenderPass() const { return m_render_pass; }
+    Application::PresentData*     GetPrevious() const { return m_previous; }
+    uint32_t                      GetFrameIndex() const { return m_frame_index; }
+    vkex::Semaphore               GetImageAcquiredSemaphore() const { return m_image_acquired_sempahore; }
+    vkex::Fence                   GetImageAcquiredFence() const { return m_image_acquired_fence; }
+    const std::vector<Semaphore>& GetWaitSemaphores() const { return m_wait_semaphores; }
+    void                          AddWaitSemaphore(const vkex::Semaphore& semaphore);
+    void                          ClearWaitSemaphores();
+    vkex::CommandBuffer           GetCommandBuffer() { return m_work_cmd; }
+    vkex::Semaphore               GetWorkCompleteForRenderSemaphore() const { return m_work_complete_for_render_semaphore; }
+    vkex::Semaphore               GetWorkCompleteForPresentSemaphore() const { return m_work_complete_for_present_semaphore; }
+    vkex::Fence                   GetWorkCompleteFence() const { return m_work_complete_fence; }
+    vkex::RenderPass              GetRenderPass() const { return m_render_pass; }
   private:
     friend class vkex::Application;
     vkex::Result InternalCreate(vkex::Device device, uint32_t frame_index, vkex::CommandBuffer cmd);
     vkex::Result InternalDestroy();
     void SetRenderPass(vkex::RenderPass render_pass);
+    void SetPrevious(Application::PresentData* p_previous);
   private:
-    vkex::Device        m_device = nullptr;
-    uint32_t            m_frame_index = UINT32_MAX;
-    vkex::Semaphore     m_image_acquired_sempahore = nullptr;
-    vkex::Fence         m_image_acquired_fence = nullptr;
-    vkex::CommandBuffer m_work_cmd = nullptr;
-    vkex::Semaphore     m_work_complete_for_render_semaphore = nullptr;
-    vkex::Semaphore     m_work_complete_for_present_semaphore = nullptr;
-    vkex::Fence         m_work_complete_for_present_fence = nullptr;
-    vkex::RenderPass    m_render_pass = nullptr;
+    Application::PresentData*     m_previous                            = nullptr;
+    vkex::Device                  m_device                              = nullptr;
+    uint32_t                      m_frame_index                         = UINT32_MAX;
+    vkex::Semaphore               m_image_acquired_sempahore            = nullptr;
+    vkex::Fence                   m_image_acquired_fence                = nullptr;
+    std::vector<vkex::Semaphore>  m_wait_semaphores                     = {};
+    vkex::CommandBuffer           m_work_cmd                            = nullptr;
+    vkex::Semaphore               m_work_complete_for_render_semaphore  = nullptr;
+    vkex::Semaphore               m_work_complete_for_present_semaphore = nullptr;
+    vkex::Fence                   m_work_complete_fence                 = nullptr;
+    vkex::RenderPass              m_render_pass                         = nullptr;
   };
 
   Application(const std::string& name = "");
@@ -455,8 +488,8 @@ public:
   virtual void  KeyUp(KeyboardInput key) {}
   virtual void  KeyDown(KeyboardInput key) {}
   virtual void  Update(double frame_elapsed_time) {}
-  virtual void  Render(Application::RenderData* p_data) {}
-  virtual void  Present(Application::PresentData* p_data) {};
+  virtual void  Render(Application::RenderData* p_current_render_data, Application::PresentData* p_current_present_data) {}
+  virtual void  Present(Application::PresentData* p_current_render_data) {};
 
   // Dispatchers - override these to change the call sequence
   virtual void  DispatchCallAddArgs(vkex::ArgParser& args);
@@ -471,8 +504,8 @@ public:
   virtual void  DispatchCallKeyUp(KeyboardInput key);
   virtual void  DispatchCallKeyDown(KeyboardInput key);
   virtual void  DispatchCallUpdate(double frame_elapsed_time);
-  virtual void  DispatchCallRender(Application::RenderData* p_data);
-  virtual void  DispatchCallPresent(Application::PresentData* p_data);
+  virtual void  DispatchCallRender(Application::RenderData* p_render_data, Application::PresentData* p_present_data);
+  virtual void  DispatchCallPresent(Application::PresentData* p_present_data);
 
   //! @fn IsKeyPressed
   bool IsKeyPressed(KeyboardInput key);
@@ -492,10 +525,10 @@ public:
   void DrawImGui(vkex::CommandBuffer cmd);
   
   //! @fn SubmitPresent
-  vkex::Result SubmitRender(Application::RenderData* p_data);
+  vkex::Result SubmitRender(Application::RenderData* p_current_render_data, Application::PresentData* p_current_present_data);
 
   //! @fn SubmitPresent
-  vkex::Result SubmitPresent(Application::PresentData* p_data);
+  vkex::Result SubmitPresent(Application::PresentData* p_current_render_data);
 
    //! @fn Run
   vkex::Result Run(int argn, const char* const* argv);
@@ -524,8 +557,8 @@ public:
 
   //! @fn GetFrameCount - Returns the number of frames in flight.
   uint32_t GetFrameCount() const;
-  //! @fn GetFrameIndex - Returns the current index of the current frame in flight.
-  uint32_t GetFrameIndex() const;
+  //! @fn GetCurrentFrameIndex - Returns the current index of the current frame in flight.
+  uint32_t GetCurrentFrameIndex() const;
 
   //! @fn GetElapsedFrames - Returns the number of elapsed frames since the application started.
   uint64_t GetElapsedFrames() const {
@@ -566,6 +599,12 @@ public:
 
   //! @fn GetGraphicsQueue
   vkex::Queue GetGraphicsQueue() const;
+
+  //! @fn GetCurrentRenderData()
+  Application::RenderData* GetCurrentRenderData() const;
+
+  //! @fn GetCurrentPresentData()
+  Application::PresentData* GetCurrentPresentData() const;
 
   //! @fn GetAverageVkQueuePresentTime
   float GetAverageVkQueuePresentTime() const {
@@ -641,6 +680,9 @@ private:
   //! @fn CheckConfiguration
   vkex::Result CheckConfiguration();
 
+  //! @fn UpdateCurrentPerFrameData
+  vkex::Result UpdateCurrentPerFrameData();
+
   //! @fn ProcessRenderFence
   vkex::Result ProcessRenderFence(Application::RenderData* p_data);
 
@@ -712,7 +754,7 @@ protected:
   std::vector<PresentData*>     m_present_data_stack;
   vkex::CommandPool             m_present_command_pool = nullptr;
   PresentData*                  m_current_present_data = nullptr;
-  PresentData*                  m_previous_present_data = nullptr;
+  //PresentData*                  m_previous_present_data = nullptr;
 
   vkex::DescriptorPool          m_imgui_descriptor_pool = nullptr;
 

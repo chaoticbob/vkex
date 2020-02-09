@@ -4,3 +4,4 @@ project(projects_basic)
 
 add_subdirectory(01_vkex_info)
 add_subdirectory(02_cube)
+add_subdirectory(03_render_work)
