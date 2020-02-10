@@ -247,10 +247,8 @@ void VkexInfoApp::Present(vkex::Application::PresentData* p_data)
   auto cmd = p_data->GetCommandBuffer();
   cmd->Begin();
   {
-    VkClearValue rtv_clear = {};
-    VkClearValue dsv_clear = {};
-    dsv_clear.depthStencil.depth = 1.0f;
-    dsv_clear.depthStencil.stencil = 0xFF;
+    VkClearValue rtv_clear = vkex::ClearColorValue();
+    VkClearValue dsv_clear = vkex::ClearDepthStencilValue();
     std::vector<VkClearValue> clear_values = { rtv_clear, dsv_clear };
 
     // Draw spinning cube

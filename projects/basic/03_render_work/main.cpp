@@ -394,7 +394,7 @@ void VkexInfoApp::Present(vkex::Application::PresentData* p_data)
     }
 
     // Draw IMGUI
-    VkClearValue              rtv_clear    = vkex::ClearColorValue(0, 0, 0, 0);
+    VkClearValue              rtv_clear    = vkex::ClearColorValue();
     VkClearValue              dsv_clear    = vkex::ClearDepthStencilValue();
     std::vector<VkClearValue> clear_values = {rtv_clear, dsv_clear};
     cmd->CmdBeginRenderPass(render_pass, &clear_values);
