@@ -54,11 +54,9 @@ private:
   vkex::ShaderProgram       m_color_shader          = nullptr;
   vkex::DescriptorSetLayout m_descriptor_set_layout = nullptr;
   vkex::DescriptorPool      m_color_descriptor_pool = nullptr;
-  //vkex::DescriptorSet       m_descriptor_set        = nullptr;
   vkex::PipelineLayout      m_color_pipeline_layout = nullptr;
   vkex::GraphicsPipeline    m_color_pipeline        = nullptr;
   ViewConstants             m_view_constants        = {};
-  //vkex::Buffer              m_constant_buffer       = nullptr;
   vkex::Buffer              m_vertex_buffer         = nullptr;
   vkex::Texture             m_texture               = nullptr;
   vkex::Sampler             m_sampler               = nullptr;
@@ -150,15 +148,15 @@ void VkexInfoApp::Setup()
 
   // Texture
   {
-	  const bool host_visible = false;
+	const bool host_visible = false;
 
-	  // Load file data
-	  auto image_file_path = GetAssetPath("textures/box_panel.jpg");
-	  VKEX_CALL(asset_util::CreateTexture(
-		  image_file_path,
-		  GetGraphicsQueue(),
-		  host_visible,
-		  &m_texture));
+	// Load file data
+	auto image_file_path = GetAssetPath("textures/box_panel.jpg");
+	VKEX_CALL(asset_util::CreateTexture(
+		image_file_path,
+		GetGraphicsQueue(),
+		host_visible,
+		&m_texture));
   }
 
   // Sampler
