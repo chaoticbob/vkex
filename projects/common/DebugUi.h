@@ -19,6 +19,8 @@
 
 #include "vkex/Application.h"
 
+void AddRow(const std::string& label, float value);
+
 void DrawDebugUiPhyiscalDevice(vkex::PhysicalDevice physical_device);
 
 #endif // __COMMON_DEBUG_UI_H__
