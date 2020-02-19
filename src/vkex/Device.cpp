@@ -205,6 +205,70 @@ VkBool32 CPhysicalDevice::SupportsPresent(uint32_t queue_family_index, const vke
 }
 
 // =================================================================================================
+// PhysicalDeviceFeatures
+// =================================================================================================
+PhysicalDeviceFeatures::operator VkPhysicalDeviceFeatures() const
+{
+  VkPhysicalDeviceFeatures result = {};
+  result.robustBufferAccess                      = this->robustBufferAccess;
+  result.fullDrawIndexUint32                     = this->fullDrawIndexUint32;
+  result.imageCubeArray                          = this->imageCubeArray;
+  result.independentBlend                        = this->independentBlend;
+  result.geometryShader                          = this->geometryShader;
+  result.tessellationShader                      = this->tessellationShader;
+  result.sampleRateShading                       = this->sampleRateShading;
+  result.dualSrcBlend                            = this->dualSrcBlend;
+  result.logicOp                                 = this->logicOp;
+  result.multiDrawIndirect                       = this->multiDrawIndirect;
+  result.drawIndirectFirstInstance               = this->drawIndirectFirstInstance;
+  result.depthClamp                              = this->depthClamp;
+  result.depthBiasClamp                          = this->depthBiasClamp;
+  result.fillModeNonSolid                        = this->fillModeNonSolid;
+  result.depthBounds                             = this->depthBounds;
+  result.wideLines                               = this->wideLines;
+  result.largePoints                             = this->largePoints;
+  result.alphaToOne                              = this->alphaToOne;
+  result.multiViewport                           = this->multiViewport;
+  result.samplerAnisotropy                       = this->samplerAnisotropy;
+  result.textureCompressionETC2                  = this->textureCompressionETC2;
+  result.textureCompressionASTC_LDR              = this->textureCompressionASTC_LDR;
+  result.textureCompressionBC                    = this->textureCompressionBC;
+  result.occlusionQueryPrecise                   = this->occlusionQueryPrecise;
+  result.pipelineStatisticsQuery                 = this->pipelineStatisticsQuery;
+  result.vertexPipelineStoresAndAtomics          = this->vertexPipelineStoresAndAtomics;
+  result.fragmentStoresAndAtomics                = this->fragmentStoresAndAtomics;
+  result.shaderTessellationAndGeometryPointSize  = this->shaderTessellationAndGeometryPointSize;
+  result.shaderImageGatherExtended               = this->shaderImageGatherExtended;
+  result.shaderStorageImageExtendedFormats       = this->shaderStorageImageExtendedFormats;
+  result.shaderStorageImageMultisample           = this->shaderStorageImageMultisample;
+  result.shaderStorageImageReadWithoutFormat     = this->shaderStorageImageReadWithoutFormat;
+  result.shaderStorageImageWriteWithoutFormat    = this->shaderStorageImageWriteWithoutFormat;
+  result.shaderUniformBufferArrayDynamicIndexing = this->shaderUniformBufferArrayDynamicIndexing;
+  result.shaderSampledImageArrayDynamicIndexing  = this->shaderSampledImageArrayDynamicIndexing;
+  result.shaderStorageBufferArrayDynamicIndexing = this->shaderStorageBufferArrayDynamicIndexing;
+  result.shaderStorageImageArrayDynamicIndexing  = this->shaderStorageImageArrayDynamicIndexing;
+  result.shaderClipDistance                      = this->shaderClipDistance;
+  result.shaderCullDistance                      = this->shaderCullDistance;
+  result.shaderFloat64                           = this->shaderFloat64;
+  result.shaderInt64                             = this->shaderInt64;
+  result.shaderInt16                             = this->shaderInt16;
+  result.shaderResourceResidency                 = this->shaderResourceResidency;
+  result.shaderResourceMinLod                    = this->shaderResourceMinLod;
+  result.sparseBinding                           = this->sparseBinding;
+  result.sparseResidencyBuffer                   = this->sparseResidencyBuffer;
+  result.sparseResidencyImage2D                  = this->sparseResidencyImage2D;
+  result.sparseResidencyImage3D                  = this->sparseResidencyImage3D;
+  result.sparseResidency2Samples                 = this->sparseResidency2Samples;
+  result.sparseResidency4Samples                 = this->sparseResidency4Samples;
+  result.sparseResidency8Samples                 = this->sparseResidency8Samples;
+  result.sparseResidency16Samples                = this->sparseResidency16Samples;
+  result.sparseResidencyAliased                  = this->sparseResidencyAliased;
+  result.variableMultisampleRate                 = this->variableMultisampleRate;
+  result.inheritedQueries                        = this->inheritedQueries;                    
+  return result;
+}
+
+// =================================================================================================
 // Device
 // =================================================================================================
 CDevice::CDevice()
@@ -259,13 +323,23 @@ vkex::Result CDevice::InitializeExtensions()
   // Set required extensions
   {
     std::vector<std::string> required;
+
+    // Swapchain and related
     if (GetInstance()->IsSwapchainEnabled()) {
       required.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 
-#if defined(VKEX_LINUX_GGP)     
+#if defined(VKEX_GGP)     
       required.push_back(VK_GGP_FRAME_TOKEN_EXTENSION_NAME);
-#endif
+#endif // defined(VKEX_GGP)     
     }
+
+    // Timeline semaphores
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+    if (m_create_info.enabled_features.timelineSemaphore) {
+      required.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+    }
+#endif // defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+
 
     if (m_create_info.physical_device->IsAMD()) {
       required.push_back(VK_AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME);
@@ -477,21 +551,18 @@ vkex::Result CDevice::InternalCreate(
   }
 
   // Features
-  {
-    m_create_info.enabled_features.geometryShader           = VK_TRUE;
-    m_create_info.enabled_features.tessellationShader       = VK_TRUE;
-    m_create_info.enabled_features.dualSrcBlend             = VK_TRUE;
-    m_create_info.enabled_features.occlusionQueryPrecise    = VK_TRUE;
-    m_create_info.enabled_features.pipelineStatisticsQuery  = VK_TRUE;
-    m_create_info.enabled_features.samplerAnisotropy        = VK_TRUE;
-  }
+  VkPhysicalDeviceFeatures vk_physical_device_features = m_create_info.enabled_features;
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+  VkPhysicalDeviceTimelineSemaphoreFeatures vk_timeline_semaphore_feature = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES };
+#endif
 
   // Create info
   {
     m_c_str_extensions = GetCStrings(m_create_info.extensions);
 
+
     m_vk_create_info = { VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO };
-    m_vk_create_info.pNext                    = m_create_info.p_next;
+    m_vk_create_info.pNext                    = nullptr;
     m_vk_create_info.flags                    = 0;
     m_vk_create_info.queueCreateInfoCount     = CountU32(m_vk_queue_create_infos);
     m_vk_create_info.pQueueCreateInfos        = DataPtr(m_vk_queue_create_infos);
@@ -499,7 +570,14 @@ vkex::Result CDevice::InternalCreate(
     m_vk_create_info.ppEnabledLayerNames      = nullptr;
     m_vk_create_info.enabledExtensionCount    = CountU32(m_c_str_extensions);
     m_vk_create_info.ppEnabledExtensionNames  = DataPtr(m_c_str_extensions);
-    m_vk_create_info.pEnabledFeatures         = &m_create_info.enabled_features;
+    m_vk_create_info.pEnabledFeatures         = &vk_physical_device_features;
+
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+    if (m_create_info.enabled_features.timelineSemaphore == VK_TRUE) {
+      vk_timeline_semaphore_feature.timelineSemaphore = VK_TRUE;
+      m_vk_create_info.pNext = &vk_timeline_semaphore_feature;
+    }
+#endif
   }
 
   VKEX_LOG_INFO(ToString(m_vk_create_info));

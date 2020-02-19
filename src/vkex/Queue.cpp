@@ -30,15 +30,16 @@ SubmitInfo::~SubmitInfo()
 {
 }
 
-void SubmitInfo::AddWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags wait_dst_stage_mask)
+void SubmitInfo::AddWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags wait_dst_stage_mask, uint64_t value)
 {
   m_wait_semaphores.push_back(semaphore);
   m_wait_dst_stage_masks.push_back(wait_dst_stage_mask);
+  m_wait_values.push_back(value);
 }
 
 void SubmitInfo::AddWaitSemaphore(const vkex::Semaphore& semaphore)
 {
-  AddWaitSemaphore(semaphore->GetVkObject(), semaphore->GetWaitDstStageMask());
+  AddWaitSemaphore(semaphore->GetVkObject(), semaphore->GetWaitDstStageMask(), VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE);
 }
 
 void SubmitInfo::AddCommandBuffer(VkCommandBuffer command_buffer)
@@ -51,14 +52,15 @@ void SubmitInfo::AddCommandBuffer(const vkex::CommandBuffer& command_buffer)
   AddCommandBuffer(command_buffer->GetVkObject());
 }
 
-void SubmitInfo::AddSignalSemaphore(VkSemaphore semaphore)
+void SubmitInfo::AddSignalSemaphore(VkSemaphore semaphore, uint64_t value)
 {
   m_signal_semaphores.push_back(semaphore);
+  m_wait_values.push_back(value);
 }
 
 void SubmitInfo::AddSignalSemaphore(const vkex::Semaphore& semaphore)
 {
-  AddSignalSemaphore(semaphore->GetVkObject());
+  AddSignalSemaphore(semaphore->GetVkObject(), VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE);
 }
 
 void SubmitInfo::SetFence(VkFence fence)

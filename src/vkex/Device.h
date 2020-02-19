@@ -219,6 +219,72 @@ private:
 };
 
 // =================================================================================================
+// PhysicalDeviceFeatures
+// =================================================================================================
+struct PhysicalDeviceFeatures 
+{
+  VkBool32 robustBufferAccess                      = VK_FALSE;
+  VkBool32 fullDrawIndexUint32                     = VK_FALSE;
+  VkBool32 imageCubeArray                          = VK_FALSE;
+  VkBool32 independentBlend                        = VK_FALSE;
+  VkBool32 geometryShader                          = VK_TRUE;
+  VkBool32 tessellationShader                      = VK_TRUE;
+  VkBool32 sampleRateShading                       = VK_FALSE;
+  VkBool32 dualSrcBlend                            = VK_TRUE;
+  VkBool32 logicOp                                 = VK_FALSE;
+  VkBool32 multiDrawIndirect                       = VK_FALSE;
+  VkBool32 drawIndirectFirstInstance               = VK_FALSE;
+  VkBool32 depthClamp                              = VK_FALSE;
+  VkBool32 depthBiasClamp                          = VK_FALSE;
+  VkBool32 fillModeNonSolid                        = VK_FALSE;
+  VkBool32 depthBounds                             = VK_FALSE;
+  VkBool32 wideLines                               = VK_FALSE;
+  VkBool32 largePoints                             = VK_FALSE;
+  VkBool32 alphaToOne                              = VK_FALSE;
+  VkBool32 multiViewport                           = VK_FALSE;
+  VkBool32 samplerAnisotropy                       = VK_TRUE;
+  VkBool32 textureCompressionETC2                  = VK_FALSE;
+  VkBool32 textureCompressionASTC_LDR              = VK_FALSE;
+  VkBool32 textureCompressionBC                    = VK_FALSE;
+  VkBool32 occlusionQueryPrecise                   = VK_FALSE;
+  VkBool32 pipelineStatisticsQuery                 = VK_TRUE;
+  VkBool32 vertexPipelineStoresAndAtomics          = VK_FALSE;
+  VkBool32 fragmentStoresAndAtomics                = VK_FALSE;
+  VkBool32 shaderTessellationAndGeometryPointSize  = VK_FALSE;
+  VkBool32 shaderImageGatherExtended               = VK_FALSE;
+  VkBool32 shaderStorageImageExtendedFormats       = VK_FALSE;
+  VkBool32 shaderStorageImageMultisample           = VK_FALSE;
+  VkBool32 shaderStorageImageReadWithoutFormat     = VK_FALSE;
+  VkBool32 shaderStorageImageWriteWithoutFormat    = VK_FALSE;
+  VkBool32 shaderUniformBufferArrayDynamicIndexing = VK_FALSE;
+  VkBool32 shaderSampledImageArrayDynamicIndexing  = VK_FALSE;
+  VkBool32 shaderStorageBufferArrayDynamicIndexing = VK_FALSE;
+  VkBool32 shaderStorageImageArrayDynamicIndexing  = VK_FALSE;
+  VkBool32 shaderClipDistance                      = VK_FALSE;
+  VkBool32 shaderCullDistance                      = VK_FALSE;
+  VkBool32 shaderFloat64                           = VK_FALSE;
+  VkBool32 shaderInt64                             = VK_FALSE;
+  VkBool32 shaderInt16                             = VK_FALSE;
+  VkBool32 shaderResourceResidency                 = VK_FALSE;
+  VkBool32 shaderResourceMinLod                    = VK_FALSE;
+  VkBool32 sparseBinding                           = VK_FALSE;
+  VkBool32 sparseResidencyBuffer                   = VK_FALSE;
+  VkBool32 sparseResidencyImage2D                  = VK_FALSE;
+  VkBool32 sparseResidencyImage3D                  = VK_FALSE;
+  VkBool32 sparseResidency2Samples                 = VK_FALSE;
+  VkBool32 sparseResidency4Samples                 = VK_FALSE;
+  VkBool32 sparseResidency8Samples                 = VK_FALSE;
+  VkBool32 sparseResidency16Samples                = VK_FALSE;
+  VkBool32 sparseResidencyAliased                  = VK_FALSE;
+  VkBool32 variableMultisampleRate                 = VK_FALSE;
+  VkBool32 inheritedQueries                        = VK_FALSE;
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+  VkBool32 timelineSemaphore                       = VK_TRUE;
+#endif
+  operator VkPhysicalDeviceFeatures() const;
+};
+
+// =================================================================================================
 // Device
 // =================================================================================================
 
@@ -233,12 +299,10 @@ struct DeviceQueueCreateInfo {
  *
  */
 struct DeviceCreateInfo {
-  const void*                           p_next;
-  PhysicalDevice                        physical_device;
-  std::vector<DeviceQueueCreateInfo>    queue_create_infos;
-  std::vector<std::string>              extensions;
-  VkPhysicalDeviceFeatures              enabled_features;
-  bool                                  safe_values;
+  PhysicalDevice                     physical_device;
+  std::vector<DeviceQueueCreateInfo> queue_create_infos;
+  std::vector<std::string>           extensions;
+  vkex::PhysicalDeviceFeatures       enabled_features;
 };
 
 /** @class IDevice

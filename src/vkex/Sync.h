@@ -172,9 +172,14 @@ private:
  *
  */
 struct SemaphoreCreateInfo {
-  std::string           object_name;
-  SemaphoreCreateFlags  flags;
-  VkPipelineStageFlags  wait_dst_stage_mask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+  std::string           object_name          = "";
+  SemaphoreCreateFlags  create_flags         = 0;
+  VkPipelineStageFlags  wait_dst_stage_mask  = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+  VkSemaphoreType       semaphore_type       = VK_SEMAPHORE_TYPE_BINARY;;
+  uint64_t              initial_value        = 0; // NOTE: must be zero per Vulkan spec
+#endif // defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
 };
 
 /** @class ISemaphore
@@ -204,10 +209,29 @@ public:
    */
   VkPipelineStageFlags GetWaitDstStageMask() const;
 
-  /** @fn GetWaitDstStageMask
+  /** @fn SetWaitDstStageMask
    *
    */
-  void GetWaitDstStageMask(VkPipelineStageFlags mask);
+  void SetWaitDstStageMask(VkPipelineStageFlags mask);
+
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+  /** @fn GetSemaphoreType
+   *
+   */
+  VkSemaphoreType GetSemaphoreType() const {
+    return m_create_info.semaphore_type;
+  }
+
+  /** @fn Signal
+   *
+   */
+  VkResult Signal(uint64_t value);
+
+  /** @fn Wait
+   *
+   */
+  VkResult Wait(uint64_t value, uint64_t timeout = UINT64_MAX);
+#endif // defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
 
 private:
   friend class CDevice;
@@ -230,6 +254,10 @@ private:
   vkex::SemaphoreCreateInfo m_create_info = {};
   VkSemaphoreCreateInfo     m_vk_create_info = {};
   VkSemaphore               m_vk_object = VK_NULL_HANDLE;
+
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+  VkSemaphoreTypeCreateInfo m_vk_type_create_info = {};
+#endif // defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
 };
 
 } // namespace vkex

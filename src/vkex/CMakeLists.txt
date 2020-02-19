@@ -232,12 +232,14 @@ if (LINUX)
       PUBLIC VK_USE_PLATFORM_XCB_KHR
              VKEX_LINUX
              VKEX_LINUX_XCB
+             VKEX_ENABLE_TIMELINE_SEMAPHORE
     )  
   endif()
 elseif (WIN32)
   target_compile_definitions(${PROJECT_NAME}
     PUBLIC VK_USE_PLATFORM_WIN32_KHR
            VKEX_WIN32
+           VKEX_ENABLE_TIMELINE_SEMAPHORE
            _CRT_SECURE_NO_WARNINGS
   )
 endif()

@@ -225,8 +225,16 @@ vkex::Result CSemaphore::InternalCreate(
 
   // Vulkan create info
   {
-    m_vk_create_info = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
-    m_vk_create_info.flags  = m_create_info.flags.flags;
+    m_vk_create_info       = { VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO };
+    m_vk_create_info.pNext = nullptr;
+    m_vk_create_info.flags = m_create_info.create_flags.flags;
+
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+    m_vk_type_create_info               = { VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO };
+    m_vk_type_create_info.semaphoreType = m_create_info.semaphore_type;
+    m_vk_type_create_info.initialValue  = m_create_info.initial_value;
+    m_vk_create_info.pNext              = &m_vk_type_create_info;
+#endif
   }
 
   // Create Vulkan object
@@ -244,24 +252,6 @@ vkex::Result CSemaphore::InternalCreate(
       return vkex::Result(vk_result);
     }
   }
-
-  //// Set object name
-  //if (!m_create_info.object_name.empty()) {
-  //  VkDebugUtilsObjectNameInfoEXT vk_name_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT };
-  //  vk_name_info.objectType   = VK_OBJECT_TYPE_SEMAPHORE;
-  //  vk_name_info.objectHandle = reinterpret_cast<uintptr_t>(m_vk_object);
-  //  vk_name_info.pObjectName  = DataPtr(m_create_info.object_name);
-  //  VkResult vk_result = InvalidValue<VkResult>::Value;
-  //  VKEX_VULKAN_RESULT_CALL(
-  //    vk_result,
-  //    vkex::SetDebugUtilsObjectNameEXT(
-  //      *m_device,
-  //      &vk_name_info)          
-  //  );
-  //  if (vk_result != VK_SUCCESS) {
-  //    return vkex::Result(vk_result);
-  //  }
-  //}
 
   return vkex::Result::Success;
 }
@@ -285,9 +275,37 @@ VkPipelineStageFlags CSemaphore::GetWaitDstStageMask() const
   return m_create_info.wait_dst_stage_mask;
 }
 
-void CSemaphore::GetWaitDstStageMask(VkPipelineStageFlags mask)
+void CSemaphore::SetWaitDstStageMask(VkPipelineStageFlags mask)
 {
   m_create_info.wait_dst_stage_mask = mask;
 }
+
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+VkResult CSemaphore::Signal(uint64_t value)
+{
+  VkSemaphoreSignalInfoKHR signal_info  = {VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO_KHR};
+  signal_info.semaphore                 = m_vk_object;
+  signal_info.value                     = value;
+  VkResult result = vkex::SignalSemaphore(*GetDevice(), &signal_info);
+  if (result != VK_SUCCESS) {
+    return result;
+  }
+  return VK_SUCCESS;
+}
+
+VkResult CSemaphore::Wait(uint64_t value, uint64_t timeout)
+{
+  VkSemaphoreWaitInfoKHR wait_info  = {VK_STRUCTURE_TYPE_SEMAPHORE_WAIT_INFO_KHR};
+  wait_info.flags                   = 0;
+  wait_info.semaphoreCount          = 1;
+  wait_info.pSemaphores             = &m_vk_object;
+  wait_info.pValues                 = &value;
+  VkResult result = vkex::WaitSemaphores(*GetDevice(), &wait_info, timeout);
+  if (result != VK_SUCCESS) {
+    return result;
+  }
+  return VK_SUCCESS;
+}
+#endif // defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
 
 } // namespace vkex

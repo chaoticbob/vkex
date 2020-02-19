@@ -42,9 +42,15 @@
 #include "vkex/ConfigMath.h"
 #include "vkex/Util.h"
 
-#define VKEX_MINIMUM_REQUIRED_VULKAN_VERSION  VK_MAKE_VERSION(1, 1, 0)
-#define VKEX_ALL_MIP_LEVELS                   0xFFFFFFFF
-#define VKEX_ALL_ARRAY_LAYERS                 0xFFFFFFFF
+#if defined(VKEX_GGP)
+# define VKEX_MINIMUM_REQUIRED_VULKAN_VERSION  VK_MAKE_VERSION(1, 1, 0)
+#else
+# define VKEX_MINIMUM_REQUIRED_VULKAN_VERSION  VK_MAKE_VERSION(1, 2, 0)
+#endif 
+
+#define VKEX_ALL_MIP_LEVELS                    0xFFFFFFFF
+#define VKEX_ALL_ARRAY_LAYERS                  0xFFFFFFFF
+#define VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE   ((uint64_t)~0)
 
 enum {
   // Fake this so there isn't a random magic constant 0 hanging out
@@ -91,6 +97,10 @@ enum class ComponentType {
  *
  */
 template <typename T> struct InvalidValue {};
+
+template <> struct InvalidValue<uint64_t> {
+  static const uint64_t Value = static_cast<uint64_t>(~0);
+};
 
 template <> struct InvalidValue<VkResult> {
   static const VkResult Value = static_cast<VkResult>(0x7FFFFFFF);

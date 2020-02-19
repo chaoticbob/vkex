@@ -417,6 +417,14 @@ struct DeviceFunctionTable {
   PFN_vkCmdSetCheckpointNV                               CmdSetCheckpointNV;
   PFN_vkGetQueueCheckpointDataNV                         GetQueueCheckpointDataNV;
 
+  PFN_vkResetQueryPool                                   ResetQueryPool;
+  PFN_vkGetSemaphoreCounterValue                         GetSemaphoreCounterValue;
+  PFN_vkWaitSemaphores                                   WaitSemaphores;
+  PFN_vkSignalSemaphore                                  SignalSemaphore;
+  PFN_vkGetBufferDeviceAddress                           GetBufferDeviceAddress;
+  PFN_vkGetBufferOpaqueCaptureAddress                    GetBufferOpaqueCaptureAddress;
+  PFN_vkGetDeviceMemoryOpaqueCaptureAddress              GetDeviceMemoryOpaqueCaptureAddress;
+
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
   PFN_vkGetAndroidHardwareBufferPropertiesANDROID        GetAndroidHardwareBufferPropertiesANDROID;
   PFN_vkGetMemoryAndroidHardwareBufferANDROID            GetMemoryAndroidHardwareBufferANDROID;
@@ -751,6 +759,14 @@ extern PFN_vkGetMemoryHostPointerPropertiesEXT                GetMemoryHostPoint
 extern PFN_vkCmdWriteBufferMarkerAMD                          CmdWriteBufferMarkerAMD;
 extern PFN_vkCmdSetCheckpointNV                               CmdSetCheckpointNV;
 extern PFN_vkGetQueueCheckpointDataNV                         GetQueueCheckpointDataNV;
+
+extern PFN_vkResetQueryPool                                   ResetQueryPool;
+extern PFN_vkGetSemaphoreCounterValue                         GetSemaphoreCounterValue;
+extern PFN_vkWaitSemaphores                                   WaitSemaphores;
+extern PFN_vkSignalSemaphore                                  SignalSemaphore;
+extern PFN_vkGetBufferDeviceAddress                           GetBufferDeviceAddress;
+extern PFN_vkGetBufferOpaqueCaptureAddress                    GetBufferOpaqueCaptureAddress;
+extern PFN_vkGetDeviceMemoryOpaqueCaptureAddress              GetDeviceMemoryOpaqueCaptureAddress;
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 extern PFN_vkCreateAndroidSurfaceKHR                          CreateAndroidSurfaceKHR;

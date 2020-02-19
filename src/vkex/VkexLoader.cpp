@@ -937,6 +937,14 @@ static void LoadProcAddrDevice(VkDevice device, vkex::GetDeviceProcType fnProcLo
   p_table->CmdSetCheckpointNV                                     = (PFN_vkCmdSetCheckpointNV)fnProcLoad(device, "vkCmdSetCheckpointNV");
   p_table->GetQueueCheckpointDataNV                               = (PFN_vkGetQueueCheckpointDataNV)fnProcLoad(device, "vkGetQueueCheckpointDataNV");
 
+  p_table->ResetQueryPool                                         = (PFN_vkResetQueryPool)fnProcLoad(device, "vkResetQueryPool");
+  p_table->GetSemaphoreCounterValue                               = (PFN_vkGetSemaphoreCounterValue)fnProcLoad(device, "vkGetSemaphoreCounterValue");
+  p_table->WaitSemaphores                                         = (PFN_vkWaitSemaphores)fnProcLoad(device, "vkWaitSemaphores");
+  p_table->SignalSemaphore                                        = (PFN_vkSignalSemaphore)fnProcLoad(device, "vkSignalSemaphore");
+  p_table->GetBufferDeviceAddress                                 = (PFN_vkGetBufferDeviceAddress)fnProcLoad(device, "vkGetBufferDeviceAddress");
+  p_table->GetBufferOpaqueCaptureAddress                          = (PFN_vkGetBufferOpaqueCaptureAddress)fnProcLoad(device, "vkGetBufferOpaqueCaptureAddress");
+  p_table->GetDeviceMemoryOpaqueCaptureAddress                    = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)fnProcLoad(device, "vkGetDeviceMemoryOpaqueCaptureAddress");        
+
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
   p_table->GetAndroidHardwareBufferPropertiesANDROID              = (PFN_vkGetAndroidHardwareBufferPropertiesANDROID)fnProcLoad(device, "vkGetAndroidHardwareBufferPropertiesANDROID");
   p_table->GetMemoryAndroidHardwareBufferANDROID                  = (PFN_vkGetMemoryAndroidHardwareBufferANDROID)fnProcLoad(device, "vkGetMemoryAndroidHardwareBufferANDROID");
@@ -1328,6 +1336,14 @@ static void AssignProcsDevice(const vkex::DeviceFunctionTable* p_table)
   vkex::CmdSetCheckpointNV                                     = p_table->CmdSetCheckpointNV;
   vkex::GetQueueCheckpointDataNV                               = p_table->GetQueueCheckpointDataNV;
 
+  vkex::ResetQueryPool                                         = p_table->ResetQueryPool;
+  vkex::GetSemaphoreCounterValue                               = p_table->GetSemaphoreCounterValue;
+  vkex::WaitSemaphores                                         = p_table->WaitSemaphores;
+  vkex::SignalSemaphore                                        = p_table->SignalSemaphore;
+  vkex::GetBufferDeviceAddress                                 = p_table->GetBufferDeviceAddress;
+  vkex::GetBufferOpaqueCaptureAddress                          = p_table->GetBufferOpaqueCaptureAddress;
+  vkex::GetDeviceMemoryOpaqueCaptureAddress                    = p_table->GetDeviceMemoryOpaqueCaptureAddress;
+
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
   vkex::GetAndroidHardwareBufferPropertiesANDROID              = p_table->GetAndroidHardwareBufferPropertiesANDROID;
   vkex::GetMemoryAndroidHardwareBufferANDROID                  = p_table->GetMemoryAndroidHardwareBufferANDROID;
@@ -1662,6 +1678,14 @@ PFN_vkGetMemoryHostPointerPropertiesEXT                GetMemoryHostPointerPrope
 PFN_vkCmdWriteBufferMarkerAMD                          CmdWriteBufferMarkerAMD = nullptr;
 PFN_vkCmdSetCheckpointNV                               CmdSetCheckpointNV = nullptr;
 PFN_vkGetQueueCheckpointDataNV                         GetQueueCheckpointDataNV = nullptr;
+
+PFN_vkResetQueryPool                                   ResetQueryPool = nullptr;
+PFN_vkGetSemaphoreCounterValue                         GetSemaphoreCounterValue = nullptr;
+PFN_vkWaitSemaphores                                   WaitSemaphores = nullptr;
+PFN_vkSignalSemaphore                                  SignalSemaphore = nullptr;
+PFN_vkGetBufferDeviceAddress                           GetBufferDeviceAddress = nullptr;
+PFN_vkGetBufferOpaqueCaptureAddress                    GetBufferOpaqueCaptureAddress = nullptr;
+PFN_vkGetDeviceMemoryOpaqueCaptureAddress              GetDeviceMemoryOpaqueCaptureAddress = nullptr;
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 PFN_vkCreateAndroidSurfaceKHR                          CreateAndroidSurfaceKHR = nullptr;

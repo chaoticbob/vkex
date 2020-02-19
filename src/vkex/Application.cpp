@@ -799,7 +799,6 @@ vkex::Result Application::InitializeVkexDevice()
 
     vkex::DeviceCreateInfo device_create_info = {};
     device_create_info.physical_device  = physical_device;
-    device_create_info.safe_values      = true;
     device_create_info.queue_create_infos.push_back(queue_create_info);
     vkex::Result vkex_result = vkex::Result::Undefined;
     VKEX_RESULT_CALL(

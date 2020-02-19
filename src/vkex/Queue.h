@@ -17,9 +17,9 @@
 #ifndef __VKEX_QUEUE_H__
 #define __VKEX_QUEUE_H__
 
-#include <vkex/Config.h>
-#include <vkex/Traits.h>
-#include <vkex/VulkanUtil.h>
+#include "vkex/Config.h"
+#include "vkex/Traits.h"
+#include "vkex/VulkanUtil.h"
 
 namespace vkex {
 
@@ -32,11 +32,11 @@ public:
   SubmitInfo();
   virtual ~SubmitInfo();
 
-  void AddWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags wait_dst_stage_mask);
+  void AddWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags wait_dst_stage_mask, uint64_t value = VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE);
   void AddWaitSemaphore(const vkex::Semaphore& semaphore);
   void AddCommandBuffer(VkCommandBuffer command_buffer);
   void AddCommandBuffer(const vkex::CommandBuffer& command_buffer);
-  void AddSignalSemaphore(VkSemaphore semaphore);
+  void AddSignalSemaphore(VkSemaphore semaphore, uint64_t value = VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE);
   void AddSignalSemaphore(const vkex::Semaphore& semaphore);
   void SetFence(VkFence fence);
   void SetFence(const vkex::Fence& fence);
@@ -47,12 +47,18 @@ public:
   const std::vector<VkSemaphore>&          GetSignalSemaphores() const { return m_signal_semaphores; }
   VkFence                                  GetFence() const { return m_fence; }
 
+  const std::vector<uint64_t>&             GetWaitValues() const { return m_wait_values; }
+  const std::vector<uint64_t>&             GetSignalValues() const { return m_signal_values; }
+
 private:
   std::vector<VkSemaphore>          m_wait_semaphores       = {};
   std::vector<VkPipelineStageFlags> m_wait_dst_stage_masks  = {};
   std::vector<VkCommandBuffer>      m_command_buffers       = {};
   std::vector<VkSemaphore>          m_signal_semaphores     = {};
-  VkFence                           m_fence                = VK_NULL_HANDLE;
+  VkFence                           m_fence                 = VK_NULL_HANDLE;
+
+  std::vector<uint64_t>             m_wait_values           = {};
+  std::vector<uint64_t>             m_signal_values         = {};
 };
 
 // =================================================================================================
