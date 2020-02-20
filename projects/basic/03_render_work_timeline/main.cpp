@@ -124,7 +124,7 @@ void VkexInfoApp::SetupPerFrameObjects()
     // Work complete semaphore
     {
       vkex::SemaphoreCreateInfo create_info = {};
-      create_info.semaphore_type = VK_SEMAPHORE_TYPE_TIMELINE;
+      create_info.semaphore_type = VK_SEMAPHORE_TYPE_TIMELINE_KHR;
       create_info.initial_value  = per_frame_data.work_complete_label;
       VKEX_CALL(GetDevice()->CreateSemaphore(create_info, &per_frame_data.work_complete_semaphore));
     }
