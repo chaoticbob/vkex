@@ -937,13 +937,13 @@ static void LoadProcAddrDevice(VkDevice device, vkex::GetDeviceProcType fnProcLo
   p_table->CmdSetCheckpointNV                                     = (PFN_vkCmdSetCheckpointNV)fnProcLoad(device, "vkCmdSetCheckpointNV");
   p_table->GetQueueCheckpointDataNV                               = (PFN_vkGetQueueCheckpointDataNV)fnProcLoad(device, "vkGetQueueCheckpointDataNV");
 
-  p_table->ResetQueryPool                                         = (PFN_vkResetQueryPool)fnProcLoad(device, "vkResetQueryPool");
-  p_table->GetSemaphoreCounterValue                               = (PFN_vkGetSemaphoreCounterValue)fnProcLoad(device, "vkGetSemaphoreCounterValue");
-  p_table->WaitSemaphores                                         = (PFN_vkWaitSemaphores)fnProcLoad(device, "vkWaitSemaphores");
-  p_table->SignalSemaphore                                        = (PFN_vkSignalSemaphore)fnProcLoad(device, "vkSignalSemaphore");
-  p_table->GetBufferDeviceAddress                                 = (PFN_vkGetBufferDeviceAddress)fnProcLoad(device, "vkGetBufferDeviceAddress");
-  p_table->GetBufferOpaqueCaptureAddress                          = (PFN_vkGetBufferOpaqueCaptureAddress)fnProcLoad(device, "vkGetBufferOpaqueCaptureAddress");
-  p_table->GetDeviceMemoryOpaqueCaptureAddress                    = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)fnProcLoad(device, "vkGetDeviceMemoryOpaqueCaptureAddress");        
+  p_table->ResetQueryPool                                         = (PFN_vkResetQueryPool)fnProcLoad(device, "vkResetQueryPoolEXT");
+  p_table->GetSemaphoreCounterValue                               = (PFN_vkGetSemaphoreCounterValue)fnProcLoad(device, "vkGetSemaphoreCounterValueKHR");
+  p_table->WaitSemaphores                                         = (PFN_vkWaitSemaphores)fnProcLoad(device, "vkWaitSemaphoresKHR");
+  p_table->SignalSemaphore                                        = (PFN_vkSignalSemaphore)fnProcLoad(device, "vkSignalSemaphoreKHR");
+  p_table->GetBufferDeviceAddress                                 = (PFN_vkGetBufferDeviceAddress)fnProcLoad(device, "vkGetBufferDeviceAddressKHR");
+  p_table->GetBufferOpaqueCaptureAddress                          = (PFN_vkGetBufferOpaqueCaptureAddress)fnProcLoad(device, "vkGetBufferOpaqueCaptureAddressKHR");
+  p_table->GetDeviceMemoryOpaqueCaptureAddress                    = (PFN_vkGetDeviceMemoryOpaqueCaptureAddress)fnProcLoad(device, "vkGetDeviceMemoryOpaqueCaptureAddressKHR");
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
   p_table->GetAndroidHardwareBufferPropertiesANDROID              = (PFN_vkGetAndroidHardwareBufferPropertiesANDROID)fnProcLoad(device, "vkGetAndroidHardwareBufferPropertiesANDROID");

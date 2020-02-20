@@ -344,6 +344,13 @@ public:
     return m_create_info.physical_device;
   }
 
+  /** @fn GetEnabledFeatures
+   *
+   */
+  const vkex::PhysicalDeviceFeatures& GetEnabledFeatures() const {
+    return m_create_info.enabled_features;
+  }
+
   /** @fn GetLoadedExtensions
    *
    */
