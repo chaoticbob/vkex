@@ -417,13 +417,13 @@ struct DeviceFunctionTable {
   PFN_vkCmdSetCheckpointNV                               CmdSetCheckpointNV;
   PFN_vkGetQueueCheckpointDataNV                         GetQueueCheckpointDataNV;
 
-  PFN_vkResetQueryPool                                   ResetQueryPool;
-  PFN_vkGetSemaphoreCounterValue                         GetSemaphoreCounterValue;
-  PFN_vkWaitSemaphores                                   WaitSemaphores;
-  PFN_vkSignalSemaphore                                  SignalSemaphore;
-  PFN_vkGetBufferDeviceAddress                           GetBufferDeviceAddress;
-  PFN_vkGetBufferOpaqueCaptureAddress                    GetBufferOpaqueCaptureAddress;
-  PFN_vkGetDeviceMemoryOpaqueCaptureAddress              GetDeviceMemoryOpaqueCaptureAddress;
+  PFN_vkResetQueryPoolEXT                                ResetQueryPoolEXT;
+  PFN_vkGetSemaphoreCounterValueKHR                      GetSemaphoreCounterValueKHR;
+  PFN_vkWaitSemaphoresKHR                                WaitSemaphoresKHR;
+  PFN_vkSignalSemaphoreKHR                               SignalSemaphoreKHR;
+  PFN_vkGetBufferDeviceAddressKHR                        GetBufferDeviceAddressKHR;
+  PFN_vkGetBufferOpaqueCaptureAddressKHR                 GetBufferOpaqueCaptureAddressKHR;
+  PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR           GetDeviceMemoryOpaqueCaptureAddressKHR;
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
   PFN_vkGetAndroidHardwareBufferPropertiesANDROID        GetAndroidHardwareBufferPropertiesANDROID;
@@ -760,13 +760,13 @@ extern PFN_vkCmdWriteBufferMarkerAMD                          CmdWriteBufferMark
 extern PFN_vkCmdSetCheckpointNV                               CmdSetCheckpointNV;
 extern PFN_vkGetQueueCheckpointDataNV                         GetQueueCheckpointDataNV;
 
-extern PFN_vkResetQueryPool                                   ResetQueryPool;
-extern PFN_vkGetSemaphoreCounterValue                         GetSemaphoreCounterValue;
-extern PFN_vkWaitSemaphores                                   WaitSemaphores;
-extern PFN_vkSignalSemaphore                                  SignalSemaphore;
-extern PFN_vkGetBufferDeviceAddress                           GetBufferDeviceAddress;
-extern PFN_vkGetBufferOpaqueCaptureAddress                    GetBufferOpaqueCaptureAddress;
-extern PFN_vkGetDeviceMemoryOpaqueCaptureAddress              GetDeviceMemoryOpaqueCaptureAddress;
+extern PFN_vkResetQueryPoolEXT                                ResetQueryPoolEXT;
+extern PFN_vkGetSemaphoreCounterValueKHR                      GetSemaphoreCounterValueKHR;
+extern PFN_vkWaitSemaphoresKHR                                WaitSemaphoresKHR;
+extern PFN_vkSignalSemaphoreKHR                               SignalSemaphoreKHR;
+extern PFN_vkGetBufferDeviceAddressKHR                        GetBufferDeviceAddressKHR;
+extern PFN_vkGetBufferOpaqueCaptureAddressKHR                 GetBufferOpaqueCaptureAddressKHR;
+extern PFN_vkGetDeviceMemoryOpaqueCaptureAddressKHR           GetDeviceMemoryOpaqueCaptureAddressKHR;
 
 #if defined(VK_USE_PLATFORM_ANDROID_KHR)
 extern PFN_vkCreateAndroidSurfaceKHR                          CreateAndroidSurfaceKHR;

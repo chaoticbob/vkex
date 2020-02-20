@@ -33,11 +33,12 @@ public:
   virtual ~SubmitInfo();
 
   void AddWaitSemaphore(VkSemaphore semaphore, VkPipelineStageFlags wait_dst_stage_mask, uint64_t value = VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE);
-  void AddWaitSemaphore(const vkex::Semaphore& semaphore);
+  void AddWaitSemaphore(const vkex::Semaphore& semaphore, uint64_t value = VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE);
   void AddCommandBuffer(VkCommandBuffer command_buffer);
   void AddCommandBuffer(const vkex::CommandBuffer& command_buffer);
   void AddSignalSemaphore(VkSemaphore semaphore, uint64_t value = VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE);
-  void AddSignalSemaphore(const vkex::Semaphore& semaphore);
+  void AddSignalSemaphore(const vkex::Semaphore& semaphore, uint64_t value = VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE);
+
   void SetFence(VkFence fence);
   void SetFence(const vkex::Fence& fence);
 

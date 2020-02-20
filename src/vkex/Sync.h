@@ -177,7 +177,7 @@ struct SemaphoreCreateInfo {
   VkPipelineStageFlags  wait_dst_stage_mask  = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 
 #if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
-  VkSemaphoreType       semaphore_type       = VK_SEMAPHORE_TYPE_BINARY;;
+  VkSemaphoreTypeKHR    semaphore_type       = VK_SEMAPHORE_TYPE_BINARY_KHR;
   uint64_t              initial_value        = 0; // NOTE: must be zero per Vulkan spec
 #endif // defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
 };
@@ -218,7 +218,7 @@ public:
   /** @fn GetSemaphoreType
    *
    */
-  VkSemaphoreType GetSemaphoreType() const {
+  VkSemaphoreTypeKHR GetSemaphoreType() const {
     return m_create_info.semaphore_type;
   }
 
@@ -251,12 +251,12 @@ private:
   vkex::Result InternalDestroy(const VkAllocationCallbacks* p_allocator);
 
 private:
-  vkex::SemaphoreCreateInfo m_create_info = {};
-  VkSemaphoreCreateInfo     m_vk_create_info = {};
-  VkSemaphore               m_vk_object = VK_NULL_HANDLE;
+  vkex::SemaphoreCreateInfo    m_create_info = {};
+  VkSemaphoreCreateInfo        m_vk_create_info = {};
+  VkSemaphore                  m_vk_object = VK_NULL_HANDLE;
 
 #if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
-  VkSemaphoreTypeCreateInfo m_vk_type_create_info = {};
+  VkSemaphoreTypeCreateInfoKHR m_vk_type_create_info = {};
 #endif // defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
 };
 

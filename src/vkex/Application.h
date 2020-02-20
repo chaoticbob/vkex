@@ -378,11 +378,12 @@ public:
     Application::RenderData*      GetPrevious() const { return m_previous; }
     uint32_t                      GetFrameIndex() const { return m_frame_index; }
     const std::vector<Semaphore>& GetWaitSemaphores() const { return m_wait_semaphores; }
-    void                          AddWaitSemaphore(const vkex::Semaphore& semaphore);
+    const std::vector<uint64_t>   GetWaitValues() const { return m_wait_values; }
+    void                          AddWaitSemaphore(const vkex::Semaphore& semaphore, uint64_t value = VKEX_TIMELINE_SEMAPHORE_IGNORE_VALUE);
     void                          ClearWaitSemaphores();
     vkex::CommandBuffer           GetCommandBuffer() { return m_work_cmd; }
     vkex::Semaphore               GetWorkCompleteSemaphore() const { return m_work_complete_semaphore; }
-    vkex::Fence                   GetWorkcompleteFence() const { return m_work_complete_fence; }
+    vkex::Fence                   GetWorkCompleteFence() const { return m_work_complete_fence; }
   private:
     friend class vkex::Application;
     vkex::Result InternalCreate(vkex::Device device, uint32_t frame_index, vkex::CommandBuffer cmd);
@@ -393,6 +394,7 @@ public:
     vkex::Device                  m_device                  = nullptr;
     uint32_t                      m_frame_index             = UINT32_MAX;
     std::vector<vkex::Semaphore>  m_wait_semaphores         = {};
+    std::vector<uint64_t>         m_wait_values             = {};
     vkex::CommandBuffer           m_work_cmd                = nullptr;
     vkex::Semaphore               m_work_complete_semaphore = nullptr;
     vkex::Fence                   m_work_complete_fence     = nullptr;
@@ -410,7 +412,6 @@ public:
     vkex::Semaphore               GetImageAcquiredSemaphore() const { return m_image_acquired_sempahore; }
     vkex::Fence                   GetImageAcquiredFence() const { return m_image_acquired_fence; }
     const std::vector<Semaphore>& GetWaitSemaphores() const { return m_wait_semaphores; }
-    void                          AddWaitSemaphore(const vkex::Semaphore& semaphore);
     void                          ClearWaitSemaphores();
     vkex::CommandBuffer           GetCommandBuffer() { return m_work_cmd; }
     vkex::Semaphore               GetWorkCompleteForRenderSemaphore() const { return m_work_complete_for_render_semaphore; }

@@ -553,7 +553,7 @@ vkex::Result CDevice::InternalCreate(
   // Features
   VkPhysicalDeviceFeatures vk_physical_device_features = m_create_info.enabled_features;
 #if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
-  VkPhysicalDeviceTimelineSemaphoreFeatures vk_timeline_semaphore_feature = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES };
+  VkPhysicalDeviceTimelineSemaphoreFeaturesKHR vk_timeline_semaphore_feature = { VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES_KHR };
 #endif
 
   // Create info

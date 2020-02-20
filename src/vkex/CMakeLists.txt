@@ -226,6 +226,7 @@ if (LINUX)
     target_compile_definitions(${PROJECT_NAME}
       PUBLIC VK_USE_PLATFORM_GGP_KHR
              VKEX_GGP
+			 VKEX_ENABLE_TIMELINE_SEMAPHORE
     )    
   else()
     target_compile_definitions(${PROJECT_NAME}

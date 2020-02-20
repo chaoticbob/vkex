@@ -407,14 +407,16 @@ void Application::RenderData::SetPrevious(Application::RenderData* p_previous)
   m_previous = p_previous;
 }
 
-void Application::RenderData::AddWaitSemaphore(const vkex::Semaphore& semaphore)
+void Application::RenderData::AddWaitSemaphore(const vkex::Semaphore& semaphore, uint64_t value)
 {
   m_wait_semaphores.push_back(semaphore);
+  m_wait_values.push_back(value);
 }
 
 void Application::RenderData::ClearWaitSemaphores()
 {
   m_wait_semaphores.clear();
+  m_wait_values.clear();
 }
 
 // =================================================================================================
@@ -573,11 +575,6 @@ void Application::PresentData::SetRenderPass(vkex::RenderPass render_pass)
 void Application::PresentData::SetPrevious(Application::PresentData* p_previous)
 {
   m_previous = p_previous;
-}
-
-void Application::PresentData::AddWaitSemaphore(const vkex::Semaphore& semaphore)
-{
-  m_wait_semaphores.push_back(semaphore);
 }
 
 void Application::PresentData::ClearWaitSemaphores()
@@ -2375,18 +2372,8 @@ void Application::DrawImGui(vkex::CommandBuffer cmd)
 
 vkex::Result Application::SubmitRender(Application::RenderData* p_current_render_data, Application::PresentData* p_current_present_data)
 {
-  VkCommandBuffer       vk_command_buffer             = *(p_current_render_data->GetCommandBuffer());
-  VkSemaphore           vk_work_complete_semaphore    = *(p_current_render_data->GetWorkCompleteSemaphore());
-
-  //VkSemaphore           vk_present_complete_semaphore = (m_previous_present_data != nullptr) 
-  //                                                      ? *(m_previous_present_data->GetWorkCompleteForRenderSemaphore()) 
-  //                                                      : nullptr;
-
-  // Submit render work
-    //std::vector<VkSemaphore> vk_wait_semaphores;
-    //if (vk_present_complete_semaphore != nullptr) {
-    //  vk_wait_semaphores.push_back(vk_present_complete_semaphore);
-    //}
+  VkCommandBuffer vk_command_buffer          = *(p_current_render_data->GetCommandBuffer());
+  VkSemaphore     vk_work_complete_semaphore = *(p_current_render_data->GetWorkCompleteSemaphore());
 
   // Wait semaphores and destination stage masks
   std::vector<VkSemaphore>          vk_wait_semaphores      = {};
@@ -2413,15 +2400,12 @@ vkex::Result Application::SubmitRender(Application::RenderData* p_current_render
   }
 
   // Command buffers
-  std::vector<VkCommandBuffer>      vk_command_buffers      = { vk_command_buffer };
-
+  std::vector<VkCommandBuffer> vk_command_buffers = { vk_command_buffer };
   // Signal semaphores
-  std::vector<VkSemaphore>          vk_signal_semaphores    = { vk_work_complete_semaphore };
-
+  std::vector<VkSemaphore> vk_signal_semaphores = { vk_work_complete_semaphore };
   // Work complete fence
-  VkFence vk_work_complete_fence  = *(p_current_render_data->GetWorkcompleteFence());
+  VkFence vk_work_complete_fence = *(p_current_render_data->GetWorkCompleteFence());
     
-
   // Submit info
   VkSubmitInfo vk_submit_info         = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
   vk_submit_info.waitSemaphoreCount   = CountU32(vk_wait_semaphores);
@@ -2431,6 +2415,20 @@ vkex::Result Application::SubmitRender(Application::RenderData* p_current_render
   vk_submit_info.pCommandBuffers      = DataPtr(vk_command_buffers);
   vk_submit_info.signalSemaphoreCount = CountU32(vk_signal_semaphores);
   vk_submit_info.pSignalSemaphores    = DataPtr(vk_signal_semaphores);
+
+#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
+  const std::vector<uint64_t>& wait_values   = p_current_render_data->GetWaitValues();
+  std::vector<uint64_t>        signal_values = { 0 };
+  VkTimelineSemaphoreSubmitInfoKHR vk_timeline_semaphore_submit_info = { VK_STRUCTURE_TYPE_TIMELINE_SEMAPHORE_SUBMIT_INFO_KHR };
+  if (GetDevice()->GetEnabledFeatures().timelineSemaphore) {
+    vk_timeline_semaphore_submit_info.waitSemaphoreValueCount   = vkex::CountU32(wait_values);
+    vk_timeline_semaphore_submit_info.pWaitSemaphoreValues      = vkex::DataPtr(wait_values);
+    vk_timeline_semaphore_submit_info.signalSemaphoreValueCount = vkex::CountU32(signal_values);
+    vk_timeline_semaphore_submit_info.pSignalSemaphoreValues    = vkex::DataPtr(signal_values);
+    // Add to pNext
+    vk_submit_info.pNext = &vk_timeline_semaphore_submit_info;
+  }
+#endif // defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
 
   // Queue submit
   VkResult vk_result = InvalidValue<VkResult>::Value;

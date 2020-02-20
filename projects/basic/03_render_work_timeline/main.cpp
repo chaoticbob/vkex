@@ -342,7 +342,9 @@ void VkexInfoApp::Render(Application::RenderData* p_current_render_data, Applica
     }
 
     submit_info.AddCommandBuffer(cmd);
-    submit_info.AddSignalSemaphore(per_frame_data.work_complete_semaphore);
+
+    per_frame_data.work_complete_label += 1;
+    submit_info.AddSignalSemaphore(per_frame_data.work_complete_semaphore, per_frame_data.work_complete_label);
     //submit_info.SetFence(work_complete_fence);
 
     VKEX_CALL(GetGraphicsQueue()->Submit(submit_info));
@@ -350,7 +352,7 @@ void VkexInfoApp::Render(Application::RenderData* p_current_render_data, Applica
 
   // Add render work's signal semaphore to be waited on by present work
   p_current_render_data->ClearWaitSemaphores();
-  p_current_render_data->AddWaitSemaphore(per_frame_data.work_complete_semaphore);
+  p_current_render_data->AddWaitSemaphore(per_frame_data.work_complete_semaphore, per_frame_data.work_complete_label);
 }
 
 void VkexInfoApp::Present(vkex::Application::PresentData* p_data)

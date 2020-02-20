@@ -230,7 +230,7 @@ vkex::Result CSemaphore::InternalCreate(
     m_vk_create_info.flags = m_create_info.create_flags.flags;
 
 #if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
-    m_vk_type_create_info               = { VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO };
+    m_vk_type_create_info               = { VK_STRUCTURE_TYPE_SEMAPHORE_TYPE_CREATE_INFO_KHR };
     m_vk_type_create_info.semaphoreType = m_create_info.semaphore_type;
     m_vk_type_create_info.initialValue  = m_create_info.initial_value;
     m_vk_create_info.pNext              = &m_vk_type_create_info;
@@ -286,7 +286,7 @@ VkResult CSemaphore::Signal(uint64_t value)
   VkSemaphoreSignalInfoKHR signal_info  = {VK_STRUCTURE_TYPE_SEMAPHORE_SIGNAL_INFO_KHR};
   signal_info.semaphore                 = m_vk_object;
   signal_info.value                     = value;
-  VkResult result = vkex::SignalSemaphore(*GetDevice(), &signal_info);
+  VkResult result = vkex::SignalSemaphoreKHR(*GetDevice(), &signal_info);
   if (result != VK_SUCCESS) {
     return result;
   }
@@ -300,7 +300,7 @@ VkResult CSemaphore::Wait(uint64_t value, uint64_t timeout)
   wait_info.semaphoreCount          = 1;
   wait_info.pSemaphores             = &m_vk_object;
   wait_info.pValues                 = &value;
-  VkResult result = vkex::WaitSemaphores(*GetDevice(), &wait_info, timeout);
+  VkResult result = vkex::WaitSemaphoresKHR(*GetDevice(), &wait_info, timeout);
   if (result != VK_SUCCESS) {
     return result;
   }
