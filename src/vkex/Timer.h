@@ -52,6 +52,10 @@
 #include <assert.h>
 #include <stdint.h>
 
+#if defined(__cplusplus)
+#  include <vector>
+#endif
+
 #if defined(VKEX_LINUX) || defined(VKEX_GGP)
 #  include <time.h>
 #  include <unistd.h>
@@ -118,6 +122,9 @@ int vkex_timer_sleep_nanos(double nanos);
 #if defined(__cplusplus)
 namespace vkex {
 
+// =============================================================================
+// Timer
+// =============================================================================
 class Timer {
 public:
   Timer() {}
@@ -221,6 +228,75 @@ public:
 
 private:
   vkex_timer m_timer;
+};
+
+// =============================================================================
+// StopWatch
+// =============================================================================
+class StopWatch
+{
+public:
+  StopWatch(size_t history_size = 100)
+    : m_history_size(history_size) {}
+
+  ~StopWatch() {}
+
+  float GetMinimum() const {
+    return m_maximum;
+  }
+
+  float GetMaximum() const {
+    return m_maximum;
+  }
+
+  float GetAverage() const {
+    return m_average;
+  }
+
+  const std::vector<float>  GetHistory() const {
+    return m_history;
+  }
+
+  void StartLap() {
+    if (m_lap_count == 0) {
+      m_timer.Start();
+    }
+    m_lap_start_time = m_timer.Seconds();
+  }
+
+  void EndLap() {
+    m_lap_end_time = m_timer.Seconds();
+    ++m_lap_count;
+
+    float diff = static_cast<float>(m_lap_end_time - m_lap_start_time);
+    m_total += diff;
+    m_average = m_total / static_cast<float>(m_lap_count);
+
+    size_t n = m_history.size();
+    if (n == m_history_size) {
+      // Shuffle
+      for (size_t i = 0; i < (n - 1); ++i) {
+        m_history[i] = m_history[i + 1];
+      }
+      // Append at end
+      m_history[n - 1] = diff;
+    }
+    else {
+      m_history.push_back(diff);
+    }
+  }
+
+private:
+  vkex::Timer         m_timer;
+  double              m_lap_start_time = 0;
+  double              m_lap_end_time   = 0;
+  uint64_t            m_lap_count      = 0;
+  float               m_mininum        = 0;
+  float               m_maximum        = 0;
+  float               m_total          = 0;
+  float               m_average        = 0;
+  size_t              m_history_size   = 100;
+  std::vector<float>  m_history        = {};
 };
 
 } // namespace vkex

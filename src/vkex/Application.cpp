@@ -2430,6 +2430,7 @@ vkex::Result Application::SubmitRender(Application::RenderData* p_current_render
   }
 #endif // defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
 
+  m_vk_queue_submit_render_work_stop_watch.StartLap();
   // Queue submit
   VkResult vk_result = InvalidValue<VkResult>::Value;
   VKEX_VULKAN_RESULT_CALL(
@@ -2443,6 +2444,7 @@ vkex::Result Application::SubmitRender(Application::RenderData* p_current_render
   if (vk_result != VK_SUCCESS) {
       return vkex::Result(vk_result);
   }
+  m_vk_queue_submit_render_work_stop_watch.EndLap();
 
   m_render_submitted = true;
 
@@ -2490,6 +2492,8 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
     vk_submit_info.pCommandBuffers      = DataPtr(vk_command_buffers);
     vk_submit_info.signalSemaphoreCount = CountU32(vk_signal_semaphores);
     vk_submit_info.pSignalSemaphores    = DataPtr(vk_signal_semaphores);
+
+    m_vk_queue_submit_present_work_stop_watch.StartLap();    
     // Queue submit
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
@@ -2503,6 +2507,7 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
     if (vk_result != VK_SUCCESS) {
       return vkex::Result(vk_result);
     }
+    m_vk_queue_submit_present_work_stop_watch.EndLap();
   }
 
   // Submit present request
@@ -2526,10 +2531,7 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
     // Though, it isn't really needed for this sample
 #endif
 
-    // Time start
-    TimeRange time_range = {};
-    time_range.start = static_cast<float>(GetElapsedTime());
-
+    m_vk_queue_present_stop_watch.StartLap();
     // Queue present
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
@@ -2541,20 +2543,7 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
     if (vk_result != VK_SUCCESS) {
       return vkex::Result(vk_result);
     }
-
-    // End time
-    time_range.end = static_cast<float>(GetElapsedTime());
-    time_range.diff = time_range.end - time_range.start;
-    m_vk_queue_present_times.push_back(time_range);
-    // Average queue present time
-    {
-      m_average_vk_queue_present_time = 0;
-      const size_t n = m_vk_queue_present_times.size();
-      for (size_t i = 0; i < n; ++i) {
-        m_average_vk_queue_present_time += m_vk_queue_present_times[i].diff;
-      }
-      m_average_vk_queue_present_time *= 1.0f / static_cast<float>(n);
-    }
+    m_vk_queue_present_stop_watch.EndLap();
   }
 
   // Write screenshot if flag is set and option is not disabled
@@ -3186,11 +3175,25 @@ void Application::DrawDebugApplicationInfo()
     // Vulkan call times
     {
       ImGui::Columns(2);
+      // vkQueueSubmit:RenderWork
+      {
+        ImGui::Text("vkQueueSubmit:RenderWork"); 
+        ImGui::NextColumn(); 
+        ImGui::Text("%f", m_vk_queue_submit_render_work_stop_watch.GetAverage()); 
+        ImGui::NextColumn(); 
+      }
+      // vkQueueSubmit:PresentWork
+      {
+        ImGui::Text("vkQueueSubmit:PresentWork"); 
+        ImGui::NextColumn(); 
+        ImGui::Text("%f", m_vk_queue_submit_present_work_stop_watch.GetAverage()); 
+        ImGui::NextColumn(); 
+      }
       // vkQueuePresentKHR
       {
         ImGui::Text("vkQueuePresentKHR"); 
         ImGui::NextColumn(); 
-        ImGui::Text("%f", m_average_vk_queue_present_time); 
+        ImGui::Text("%f", m_vk_queue_present_stop_watch.GetAverage()); 
         ImGui::NextColumn(); 
       }
       ImGui::Columns(1);

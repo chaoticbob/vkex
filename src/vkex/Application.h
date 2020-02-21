@@ -607,11 +607,6 @@ public:
   //! @fn GetCurrentPresentData()
   Application::PresentData* GetCurrentPresentData() const;
 
-  //! @fn GetAverageVkQueuePresentTime
-  float GetAverageVkQueuePresentTime() const {
-    return m_average_vk_queue_present_time;
-  }
-
   //! @fn DrawDebugApplicationInfo
   void DrawDebugApplicationInfo();
 
@@ -764,8 +759,9 @@ protected:
   bool                          m_screen_shot = false;
   vkex::Buffer                  m_screenshot_buffer = nullptr;
 
-  HistoryT<TimeRange, 100>      m_vk_queue_present_times;
-  float                         m_average_vk_queue_present_time = 0;
+  vkex::StopWatch               m_vk_queue_submit_render_work_stop_watch;
+  vkex::StopWatch               m_vk_queue_submit_present_work_stop_watch;
+  vkex::StopWatch               m_vk_queue_present_stop_watch;
 };
 
 } // namespace vkex
