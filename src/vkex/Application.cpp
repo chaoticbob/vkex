@@ -2118,6 +2118,7 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_data, uin
   VkSemaphore vk_image_acquired_semaphore = *(p_data->GetImageAcquiredSemaphore());
   VkFence vk_image_acquired_fence = *vkex_image_acquired_fence;
 
+  m_vk_acquire_next_image_stop_watch.StartLap();
   // Acquire next image
   VkResult vk_result = InvalidValue<VkResult>::Value;
   VKEX_VULKAN_RESULT_CALL(
@@ -2131,6 +2132,7 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_data, uin
   if (vk_result != VK_SUCCESS) {
     return vkex::Result(vk_result);
   }
+  m_vk_acquire_next_image_stop_watch.EndLap();
 
   // Wait on fence
   VKEX_VULKAN_RESULT_CALL(
@@ -3187,6 +3189,13 @@ void Application::DrawDebugApplicationInfo()
         ImGui::Text("vkQueueSubmit:PresentWork"); 
         ImGui::NextColumn(); 
         ImGui::Text("%f", m_vk_queue_submit_present_work_stop_watch.GetAverage()); 
+        ImGui::NextColumn(); 
+      }      
+      // vkAcquireNextImageKHR
+      {
+        ImGui::Text("vkAcquireNextImageKHR"); 
+        ImGui::NextColumn(); 
+        ImGui::Text("%f", m_vk_acquire_next_image_stop_watch.GetAverage()); 
         ImGui::NextColumn(); 
       }
       // vkQueuePresentKHR

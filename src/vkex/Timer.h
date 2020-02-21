@@ -242,7 +242,7 @@ public:
   ~StopWatch() {}
 
   float GetMinimum() const {
-    return m_maximum;
+    return m_mininum;
   }
 
   float GetMaximum() const {
@@ -266,10 +266,19 @@ public:
 
   void EndLap() {
     m_lap_end_time = m_timer.Seconds();
-    ++m_lap_count;
 
     float diff = static_cast<float>(m_lap_end_time - m_lap_start_time);
     m_total += diff;
+
+    if (m_lap_count > 0) {
+      m_mininum = (diff < m_mininum) ? diff : m_mininum;
+      m_maximum = (diff > m_maximum) ? diff : m_maximum;
+    }
+    else {
+      m_mininum = m_maximum = diff;
+    }
+
+    ++m_lap_count;
     m_average = m_total / static_cast<float>(m_lap_count);
 
     size_t n = m_history.size();

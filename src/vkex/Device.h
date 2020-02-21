@@ -278,9 +278,11 @@ struct PhysicalDeviceFeatures
   VkBool32 sparseResidencyAliased                  = VK_FALSE;
   VkBool32 variableMultisampleRate                 = VK_FALSE;
   VkBool32 inheritedQueries                        = VK_FALSE;
-#if defined(VKEX_ENABLE_TIMELINE_SEMAPHORE)
-  VkBool32 timelineSemaphore                       = VK_TRUE;
-#endif
+  
+  // Default to VK_FALSE for now until we know that all the
+  // platform support timeline semaphores adequately.
+  VkBool32 timelineSemaphore                       = VK_FALSE;
+
   operator VkPhysicalDeviceFeatures() const;
 };
 

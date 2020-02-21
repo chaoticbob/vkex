@@ -759,6 +759,7 @@ protected:
   bool                          m_screen_shot = false;
   vkex::Buffer                  m_screenshot_buffer = nullptr;
 
+  vkex::StopWatch               m_vk_acquire_next_image_stop_watch;
   vkex::StopWatch               m_vk_queue_submit_render_work_stop_watch;
   vkex::StopWatch               m_vk_queue_submit_present_work_stop_watch;
   vkex::StopWatch               m_vk_queue_present_stop_watch;
