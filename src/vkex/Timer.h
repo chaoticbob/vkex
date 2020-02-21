@@ -266,6 +266,39 @@ public:
 
   void EndLap() {
     m_lap_end_time = m_timer.Seconds();
+    float diff = static_cast<float>(m_lap_end_time - m_lap_start_time);
+
+    size_t n = m_history.size();
+    if (n == m_history_size) {
+      // Shuffle
+      for (size_t i = 0; i < (n - 1); ++i) {
+        m_history[i] = m_history[i + 1];
+      }
+      // Append at end
+      m_history[n - 1] = diff;
+    }
+    else {
+      m_mininum = diff;
+      m_maximum = diff;
+      m_history.push_back(diff);
+    }
+
+    m_total   += diff;
+    m_mininum  = m_history[0];
+    m_mininum  = m_history[0];
+
+    float history_total = 0;
+    for (size_t i = 0; i < n; ++i) {
+      float value = m_history[i];
+      m_mininum = (value < m_mininum) ? value : m_mininum;
+      m_maximum = (value > m_maximum) ? value : m_maximum;
+      history_total += value;
+    }
+
+    m_average = history_total / static_cast<float>(n);
+
+    /*
+    m_lap_end_time = m_timer.Seconds();
 
     float diff = static_cast<float>(m_lap_end_time - m_lap_start_time);
     m_total += diff;
@@ -293,6 +326,7 @@ public:
     else {
       m_history.push_back(diff);
     }
+    */
   }
 
 private:
