@@ -28,7 +28,7 @@
 #include <string>
 #include <vector>
 
-#if defined(__linux__)
+#if defined(__linux__) || defined(__MINGW32__)
  #include <sys/types.h>
  #include <sys/stat.h>
  #include <unistd.h>
