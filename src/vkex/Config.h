@@ -18,9 +18,15 @@
 #define __VKEX_CONFIG_H__
 
 #if defined(VKEX_WIN32)
-# define VC_EXTRALEAN
-# define WIN32_LEAN_AND_MEAN 
-# define NOMINMAX
+# if !defined(NOMINMAX)
+#  define VC_EXTRALEAN
+# endif
+# if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN 
+# endif
+# if !defined(NOMINMAX)
+#  define NOMINMAX
+# endif
 #endif
 
 #include "vkex/VkexLoader.h"
