@@ -2324,64 +2324,6 @@ void Application::ResizeCallback(uint32_t width, uint32_t height)
     m_configuration.window.height = height;
     m_window_surface_invalid = ((width == 0) || (height == 0));
   }
-
-
-  /*
-  bool width_changed = (width != m_configuration.window.width);
-  bool height_changed = (height != m_configuration.window.height);
-  if (width_changed || height_changed) {
-    // If window surface area is zero - mark surface as invalid
-    m_window_surface_invalid = ((width == 0) || (height == 0));
-
-    // This usually hapens when the window is minimized
-    if (m_window_surface_invalid) {
-    }
-    else {
-    }
-
-    // Notify the application of resize event
-    Resize(width, height);
-  }
-  */
-
-/*
-  if (m_window_surface_invalid) {
-  }
-  else {
-    if((width == 0) || (height == 0)) {
-      // If window surface area is zero - mark surface as invalid
-      m_window_surface_invalid = true;
-      // Update the configuration's width and height
-      m_configuration.window.width = width;
-      m_configuration.window.height = height;
-    }
-  }
-
-  if (!m_window_surface_invalid) {
-  }
-
-bool width_changed = (width != m_configuration.window.width);
-bool height_changed = (height != m_configuration.window.height);
-if (width_changed || height_changed) {
-    m_configuration.window.width = width;
-    m_configuration.window.height = height;
-    //m_recreate_swapchain = true;
-    
-    Resize(width, height);
-}
-*/
-
-  /*
-  bool width_changed = (width != m_configuration.window.width);
-  bool height_changed = (height != m_configuration.window.height);
-  if (width_changed || height_changed) {
-    m_configuration.window.width = width;
-    m_configuration.window.height = height;
-    m_recreate_swapchain = true;
-
-    Resize(width, height);
-  }
-  */
 }
 
 void Application::MouseDownCallback(int32_t x, int32_t y, uint32_t buttons)
@@ -2556,56 +2498,37 @@ vkex::Result Application::ProcessFrameFence(Application::PresentData* p_data)
   return vkex::Result::Success;
 }
 
-vkex::Result Application::AcquireNextImage(Application::PresentData* p_data, uint32_t* p_swapchain_image_index)
+vkex::Result Application::AcquireNextImage(Application::PresentData* p_present_data, uint32_t* p_swapchain_image_index)
 {
   if (!IsApplicationModeWindow()) {
     return vkex::Result::ErrorInvalidApplicationMode;
   }
 
   // VKEX objects
-  vkex::Fence vkex_image_acquired_fence = p_data->GetImageAcquiredFence();
+  vkex::Fence vkex_image_acquired_fence = p_present_data->GetImageAcquiredFence();
 
   // Vulkan objects
-  VkSemaphore vk_image_acquired_semaphore = *(p_data->GetImageAcquiredSemaphore());
+  VkSemaphore vk_image_acquired_semaphore = *(p_present_data->GetImageAcquiredSemaphore());
   VkFence vk_image_acquired_fence = *vkex_image_acquired_fence;
 
-  /*
-  // Acquire next image
-  VkResult vk_result = InvalidValue<VkResult>::Value;
-  VKEX_VULKAN_RESULT_CALL(
-    vk_result,
-    m_swapchain->AcquireNextImage(
-      UINT64_MAX, 
-      vk_image_acquired_semaphore, 
-      vk_image_acquired_fence, 
-      p_swapchain_image_index)
-  );
-  if (vk_result != VK_SUCCESS) {
-    return vkex::Result(vk_result);
+  // Use next images from *fake* swapchain if m_recreate_swapchain is set
+  if (m_recreate_swapchain) {
+    *p_swapchain_image_index = m_elapsed_frame_count % m_configuration.swapchain.image_count;
+    
+    // Still need to signal the image acquire semaphore so doesn't break the loop
+    {
+      vkex::SubmitInfo submit_info = {};
+      submit_info.AddSignalSemaphore(vk_image_acquired_semaphore);
+      vkex::Result result = result = GetGraphicsQueue()->Submit(submit_info);
+      VKEX_ASSERT(result == vkex::Result::Success);
+    }
+    
+    // Set present render pass
+    vkex::RenderPass render_pass = m_fake_swapchain_render_passes[*p_swapchain_image_index];
+    p_present_data->SetRenderPass(render_pass);
   }
-
-  // Wait on fence
-  VKEX_VULKAN_RESULT_CALL(
-    vk_result,
-    vkex_image_acquired_fence->WaitForFence();
-  );
-  if (vk_result != VK_SUCCESS) {
-    return vkex::Result(vk_result);
-  }
-
-  // Reset fence
-  VKEX_VULKAN_RESULT_CALL(
-    vk_result,
-    vkex_image_acquired_fence->ResetFence();
-  );
-  if (vk_result != VK_SUCCESS) {
-    return vkex::Result(vk_result);
-  }
-
-  */
-
-  // Acquire next image
-  if (!m_recreate_swapchain) {
+  // Get next image from the REAL swapchain
+  else {
     VkResult vk_result = m_swapchain->AcquireNextImage(
       UINT64_MAX, 
       vk_image_acquired_semaphore, 
@@ -2615,7 +2538,11 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_data, uin
     if (vk_result != VK_SUCCESS) {
       VKEX_LOG_WARN("vkAcquireNextImageKHR returned error/warning: " << ToString(vk_result));
       m_recreate_swapchain = true;
-    } 
+    }
+
+    // Set present render pass
+    vkex::RenderPass render_pass = m_swapchain_render_passes[*p_swapchain_image_index];
+    p_present_data->SetRenderPass(render_pass);
   }
 
   // Only wait and reset fences if m_recreate_swapchain isn't set
@@ -2994,60 +2921,6 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
     }
   }
 
-/*
-  // Submit present request
-  {
-    // Containers
-    std::vector<VkSemaphore> vk_wait_semaphores       = { vk_work_complete_for_present_semaphore };
-    std::vector<VkSwapchainKHR> vk_swapchains         = { vk_swapchain };
-    std::vector<uint32_t> vk_swapchain_image_indices  = { vk_swapchain_image_index };
-
-    // Present info
-    VkPresentInfoKHR vk_present_info = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
-    vk_present_info.waitSemaphoreCount  = CountU32(vk_wait_semaphores);
-    vk_present_info.pWaitSemaphores     = DataPtr(vk_wait_semaphores);
-    vk_present_info.swapchainCount      = CountU32(vk_swapchains);
-    vk_present_info.pSwapchains         = DataPtr(vk_swapchains);
-    vk_present_info.pImageIndices       = DataPtr(vk_swapchain_image_indices);
-    vk_present_info.pResults            = nullptr;
-
-#if defined(VKEX_GGP)
-    // TODO: Add frame token support to be a good citizen...
-    // Though, it isn't really needed for this sample
-#endif
-
-    // Queue present time start
-    TimeRange time_range = {};
-    time_range.start = static_cast<float>(GetElapsedTime());
-
-    // Queue present
-    VkResult vk_result = InvalidValue<VkResult>::Value;
-    VKEX_VULKAN_RESULT_CALL(
-      vk_result,
-      vkex::QueuePresentKHR(
-        *m_present_queue,
-        &vk_present_info)
-    );
-    if (vk_result != VK_SUCCESS) {
-      return vkex::Result(vk_result);
-    }
-
-    // End time
-    time_range.end = static_cast<float>(GetElapsedTime());
-    time_range.diff = time_range.end - time_range.start;
-    m_vk_queue_present_times.push_back(time_range);
-    // Average queue present time
-    {
-      m_average_vk_queue_present_time = 0;
-      const size_t n = m_vk_queue_present_times.size();
-      for (size_t i = 0; i < n; ++i) {
-        m_average_vk_queue_present_time += m_vk_queue_present_times[i].diff;
-      }
-      m_average_vk_queue_present_time *= 1.0f / static_cast<float>(n);
-    }
-  }
-*/
-
   // Submit present request
   if (!m_recreate_swapchain) {
     // Containers
@@ -3333,8 +3206,9 @@ vkex::Result Application::Run(int argn, const char* const* argv)
       m_frame_start_time = current_time;
     }
 
-    // Recreate the swapchain if needed
+    // Recreate the swapchain if needed...
     if (m_recreate_swapchain) {
+      // ...but only if the window's surface is valid!
       if (!m_window_surface_invalid) {
         vkex::Result vkex_result = RecreateVkexSwapchain();
         if (!vkex_result) {
@@ -3351,13 +3225,6 @@ vkex::Result Application::Run(int argn, const char* const* argv)
         return vkex_result;
       }
     }
-    //m_current_render_data = m_per_frame_render_data[m_frame_index].get();
-    //if (IsApplicationModeWindow()) {
-    //  if (m_current_present_data != nullptr) {
-    //      m_previous_present_data = m_current_present_data;
-    //  }
-    //  m_current_present_data = m_per_frame_present_data[m_frame_index].get();
-    //}
 
     // Start the Dear ImGui frame
     if (IsApplicationModeWindow() && m_configuration.enable_imgui) {
@@ -3408,11 +3275,9 @@ vkex::Result Application::Run(int argn, const char* const* argv)
       }
     }
 
-/*
-
-    // Acquire next image
-    m_current_swapchain_image_index = UINT32_MAX;
     if (IsApplicationModeWindow()) {
+      // Acquire next image
+      m_current_swapchain_image_index = UINT32_MAX;
       vkex::Result vkex_result = vkex::Result::Undefined;
       VKEX_RESULT_CALL(
         vkex_result,
@@ -3421,77 +3286,8 @@ vkex::Result Application::Run(int argn, const char* const* argv)
       if (!vkex_result) {
         return vkex_result;
       }
-    }
 
-    // Pace fames - if needed
-    if (m_configuration.swapchain.paced_frame_rate > 0) {
-      if (m_elapsed_frame_count > 0) {
-        double current_time  = GetElapsedTime();
-        double paced_fps     = 1.0 / static_cast<double>(m_configuration.swapchain.paced_frame_rate);
-        double expected_time = m_frame_0_time + (m_elapsed_frame_count * paced_fps);
-        double diff = expected_time - current_time;
-        if (diff > 0) {
-          //std::stringstream ss;
-          //ss << diff << "\n";
-          //OutputDebugStringA(ss.str().c_str());
-          vkex::Timer::SleepSeconds(diff);
-        }
-      }
-      else {
-        m_frame_0_time = GetElapsedTime();
-      }
-    }
-
-    // Set present render pass
-    if (IsApplicationModeWindow()) {
-      vkex::RenderPass render_pass = m_render_passes[m_current_swapchain_image_index];
-      m_current_present_data->SetRenderPass(render_pass);
-    }
-
-    // Call app present
-    if (IsApplicationModeWindow()) {
-      double start_time = GetElapsedTime();
-      DispatchCallPresent(m_current_present_data);
-      double end_time = GetElapsedTime();
-      m_present_fn_time = end_time - start_time;
-    }
-*/
-
-    if (IsApplicationModeWindow()) {
-      if (!m_recreate_swapchain) {
-        // Acquire next image
-        m_current_swapchain_image_index = UINT32_MAX;
-        vkex::Result vkex_result = vkex::Result::Undefined;
-        VKEX_RESULT_CALL(
-          vkex_result,
-          AcquireNextImage(m_current_present_data, &m_current_swapchain_image_index)
-        );
-        if (!vkex_result) {
-          return vkex_result;
-        }
-        
-        // Set present render pass
-        vkex::RenderPass render_pass = m_swapchain_render_passes[m_current_swapchain_image_index];
-        m_current_present_data->SetRenderPass(render_pass);
-      }
-      else {
-        // Acquire next image
-        m_current_swapchain_image_index = m_elapsed_frame_count % m_configuration.swapchain.image_count;
-
-        // Still need to signal the image acquire semaphore so doesn't break the loop
-        {
-          vkex::SubmitInfo submit_info = {};
-          submit_info.AddSignalSemaphore(m_current_present_data->m_image_acquired_sempahore);
-          vkex::Result result = result = GetGraphicsQueue()->Submit(submit_info);
-          VKEX_ASSERT(result == vkex::Result::Success);
-        }
-
-        // Set present render pass
-        vkex::RenderPass render_pass = m_fake_swapchain_render_passes[m_current_swapchain_image_index];
-        m_current_present_data->SetRenderPass(render_pass);
-      }
-
-      // Call app present
+      // Dispatch present
       double start_time = GetElapsedTime();
       DispatchCallPresent(m_current_present_data);
       double end_time = GetElapsedTime();
