@@ -1067,14 +1067,6 @@ vkex::Result Application::InitializeVkexSwapchain()
     }
   }
 
-  // Swapchain memory pool (interesting comments inside implementation)
-  {
-    vkex::Result vkex_result = InitializeVkexSwapchainImageMemoryPool();
-    if (!vkex_result) {
-        return vkex_result;
-    }
-  }
-
   // Swapchain
   {
     vkex::SwapchainCreateInfo swapchain_create_info = {};
@@ -1188,8 +1180,8 @@ vkex::Result Application::InitializeVkexSwapchain()
         if (!vkex_result) {
           return vkex_result;
         }
-        // Add to list
-        m_color_image_views.push_back(image_view);
+        // Store
+        m_swapchain_color_image_views.push_back(image_view);
       }
     }
   }
@@ -1239,8 +1231,8 @@ vkex::Result Application::InitializeVkexSwapchain()
         if (!vkex_result) {
           return vkex_result;
         }
-        // Add to list
-        m_depth_stencil_image_views.push_back(image_view);
+        // Store
+        m_swapchain_depth_stencil_image_views.push_back(image_view);
       }
     }
   }
@@ -1253,7 +1245,7 @@ vkex::Result Application::InitializeVkexSwapchain()
       vkex::RenderTargetView rtv = nullptr;
       {
         // Image view
-        vkex::ImageView image_view = m_color_image_views[image_index];
+        vkex::ImageView image_view = m_swapchain_color_image_views[image_index];
         // Fill out RTV
         vkex::RenderTargetViewCreateInfo create_info ={};
         create_info.format         = image_view->GetFormat();
@@ -1283,7 +1275,7 @@ vkex::Result Application::InitializeVkexSwapchain()
       vkex::DepthStencilView dsv = nullptr;
       if (has_depth_stencil) {
         // Image view
-        vkex::ImageView image_view = m_depth_stencil_image_views[image_index];
+        vkex::ImageView image_view = m_swapchain_depth_stencil_image_views[image_index];
         // Fill out DSV
         vkex::DepthStencilViewCreateInfo create_info = {};
         create_info.format                           = image_view->GetFormat();
@@ -1308,6 +1300,7 @@ vkex::Result Application::InitializeVkexSwapchain()
           return vkex_result;
         }
       }
+
       // Create info
       vkex::RenderPassCreateInfo render_pass_create_info = {};
       render_pass_create_info.flags                      = 0;
@@ -1324,8 +1317,8 @@ vkex::Result Application::InitializeVkexSwapchain()
       if (!vkex_result) {
         return vkex_result;
       }
-
-      m_render_passes.push_back(render_pass);
+      // Store render passes
+      m_swapchain_render_passes.push_back(render_pass);
     }
   }
 
@@ -1359,6 +1352,305 @@ vkex::Result Application::InitializeVkexSwapchain()
     VKEX_LOG_INFO("   " << "Color Space      : " << vkex::ToString(m_configuration.swapchain.color_space));
     VKEX_LOG_INFO("   " << "Size             : " << m_configuration.window.width << "x" << m_configuration.window.height);
     VKEX_LOG_INFO("   " << "Present Mode     : " << vkex::ToString(m_configuration.swapchain.present_mode));
+    VKEX_LOG_INFO("   " << "Paced Frame Rate : " << m_configuration.swapchain.paced_frame_rate);
+    VKEX_LOG_INFO("");
+  }
+
+  return vkex::Result::Success;
+}
+
+vkex::Result Application::InitializeFakeSwapchain()
+{
+   uint32_t image_count = m_swapchain->GetImageCount();
+
+  // Fake swapchain color images
+  {
+    // Queue family index
+    uint32_t queue_family_index = GetGraphicsQueue()->GetVkQueueFamilyIndex();
+    // Image usage
+    vkex::ImageUsageFlags usage = {};
+    usage.bits.transfer_src     = true;
+    usage.bits.transfer_dst     = true;
+    usage.bits.sampled          = true;
+    usage.bits.color_attachment = true;
+    // Images
+    for (uint32_t i = 0; i < image_count; ++i) {
+      vkex::ImageCreateInfo image_create_info = {};
+      image_create_info.create_flags          = 0;
+      image_create_info.image_type            = VK_IMAGE_TYPE_2D;
+      image_create_info.format                = { m_configuration.swapchain.color_format };
+      image_create_info.extent                = { 1, 1, 1 };
+      image_create_info.mip_levels            = 1;
+      image_create_info.array_layers          = 1;
+      image_create_info.samples               = VK_SAMPLE_COUNT_1_BIT;
+      image_create_info.tiling                = VK_IMAGE_TILING_OPTIMAL;
+      image_create_info.usage_flags           = usage;
+      image_create_info.sharing_mode          = VK_SHARING_MODE_EXCLUSIVE;
+      image_create_info.queue_family_indices  = { queue_family_index };
+      image_create_info.initial_layout        = VK_IMAGE_LAYOUT_UNDEFINED;
+      image_create_info.committed             = true;
+      image_create_info.memory_usage          = VMA_MEMORY_USAGE_GPU_ONLY;
+      image_create_info.memory_pool           = m_swapchain_image_memory_pool;
+      image_create_info.vk_object             = VK_NULL_HANDLE;
+      // Create
+      vkex::Image image = nullptr;
+      vkex::Result vkex_result = vkex::Result::Undefined;
+      VKEX_RESULT_CALL(
+        vkex_result,
+        m_device->CreateImage(image_create_info, &image)
+      );
+      if (!vkex_result) {
+        return vkex_result;
+      }
+      // Store
+      m_fake_swapchain_color_images.push_back(image);
+    }
+  }
+
+  // Fake swapchain depth/stencil images
+  {
+    // Queue family index
+    uint32_t queue_family_index = GetGraphicsQueue()->GetVkQueueFamilyIndex();
+    // Image usage
+    vkex::ImageUsageFlags usage = {};
+    usage.bits.sampled                  = true;
+    usage.bits.depth_stencil_attachment = true;
+    // Images
+    for (uint32_t i = 0; i < image_count; ++i) {
+      vkex::ImageCreateInfo image_create_info = {};
+      image_create_info.create_flags          = 0;
+      image_create_info.image_type            = VK_IMAGE_TYPE_2D;
+      image_create_info.format                = { m_configuration.swapchain.depth_stencil_format };
+      image_create_info.extent                = { 1, 1, 1 };
+      image_create_info.mip_levels            = 1;
+      image_create_info.array_layers          = 1;
+      image_create_info.samples               = VK_SAMPLE_COUNT_1_BIT;
+      image_create_info.tiling                = VK_IMAGE_TILING_OPTIMAL;
+      image_create_info.usage_flags           = usage;
+      image_create_info.sharing_mode          = VK_SHARING_MODE_EXCLUSIVE;
+      image_create_info.queue_family_indices  = { queue_family_index };
+      image_create_info.initial_layout        = VK_IMAGE_LAYOUT_UNDEFINED;
+      image_create_info.committed             = true;
+      image_create_info.memory_usage          = VMA_MEMORY_USAGE_GPU_ONLY;
+      image_create_info.memory_pool           = m_swapchain_image_memory_pool;
+      image_create_info.vk_object             = VK_NULL_HANDLE;
+      // Create
+      vkex::Image image = nullptr;
+      vkex::Result vkex_result = vkex::Result::Undefined;
+      VKEX_RESULT_CALL(
+        vkex_result,
+        m_device->CreateImage(image_create_info, &image)
+      );
+      if (!vkex_result) {
+        return vkex_result;
+      }
+      // Store
+      m_fake_swapchain_depth_stencil_images.push_back(image);
+    }
+  }
+
+  // Fake swapchain image views
+  {
+    for (uint32_t image_index = 0; image_index < image_count; ++image_index) {
+      // Color image views
+      {
+        // Get image
+        vkex::Image image = m_fake_swapchain_color_images[image_index];
+        // Create image view
+        {
+          // Image format
+          VkFormat image_format = image->GetFormat();
+          // Image aspect
+          VkImageAspectFlags image_aspect = vkex::DetermineAspectMask(image_format);
+          // Create info
+          vkex::ImageViewCreateInfo image_view_create_info = {};
+          {
+            image_view_create_info.create_flags       = 0;
+            image_view_create_info.image              = image;
+            image_view_create_info.view_type          = VK_IMAGE_VIEW_TYPE_2D;
+            image_view_create_info.format             = image_format;
+            image_view_create_info.samples            = VK_SAMPLE_COUNT_1_BIT;
+            image_view_create_info.components         = vkex::ComponentMappingRGBA();
+            image_view_create_info.subresource_range  = vkex::ImageSubresourceRange(image_aspect);
+          }
+          // Image view
+          vkex::ImageView image_view = nullptr;
+          vkex::Result vkex_result = vkex::Result::Undefined;
+          VKEX_RESULT_CALL(
+            vkex_result,
+            m_device->CreateImageView(
+              image_view_create_info, 
+              &image_view)
+          );
+          if (!vkex_result) {
+            return vkex_result;
+          }
+          // Store
+          m_fake_swapchain_color_image_views.push_back(image_view);
+        }
+      }
+
+      // Depth/stencil images views
+      {
+        // Get image
+        vkex::Image image = m_fake_swapchain_depth_stencil_images[image_index];
+        // Create image view
+        {
+          // Image format
+          VkFormat image_format = image->GetFormat();
+          // Image aspect
+          VkImageAspectFlags image_aspect = vkex::DetermineAspectMask(image_format);
+          // Create info
+          vkex::ImageViewCreateInfo image_view_create_info = {};
+          {
+            image_view_create_info.create_flags       = 0;
+            image_view_create_info.image              = image;
+            image_view_create_info.view_type          = VK_IMAGE_VIEW_TYPE_2D;
+            image_view_create_info.format             = image_format;
+            image_view_create_info.samples            = VK_SAMPLE_COUNT_1_BIT;
+            image_view_create_info.components         = vkex::ComponentMappingRGBA();
+            image_view_create_info.subresource_range  = vkex::ImageSubresourceRange(image_aspect);
+          }
+          // Image view
+          vkex::ImageView image_view = nullptr;
+          vkex::Result vkex_result = vkex::Result::Undefined;
+          VKEX_RESULT_CALL(
+            vkex_result,
+            m_device->CreateImageView(
+              image_view_create_info, 
+              &image_view)
+          );
+          if (!vkex_result) {
+            return vkex_result;
+          }
+          // Store
+          m_fake_swapchain_depth_stencil_image_views.push_back(image_view);
+        }
+      }
+    }
+  }
+
+  // Fake swapchain render passes
+  for (uint32_t image_index = 0; image_index < image_count; ++image_index) {
+    // RTV
+    vkex::RenderTargetView rtv = nullptr;
+    {
+      // Image view
+      vkex::ImageView image_view = m_fake_swapchain_color_image_views[image_index];
+      // Fill out RTV
+      vkex::RenderTargetViewCreateInfo create_info ={};
+      create_info.format         = image_view->GetFormat();
+      create_info.samples        = image_view->GetSamples();
+      create_info.load_op        = m_configuration.swapchain.color_load_op;
+      create_info.store_op       = m_configuration.swapchain.color_store_op;
+      create_info.initial_layout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+      create_info.render_layout  = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+      create_info.final_layout   = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+      create_info.clear_value    = m_configuration.swapchain.rtv_clear_value;
+      create_info.attachment     = image_view;
+      create_info.resolve        = nullptr;
+      vkex::Result vkex_result = vkex::Result::Undefined;
+      VKEX_RESULT_CALL(
+        vkex_result,
+        m_device->CreateRenderTargetView(
+          create_info, 
+          &rtv)
+      );
+      if (!vkex_result) {
+        return vkex_result;
+      }
+    }
+
+    // DSV
+    bool has_depth_stencil = m_configuration.swapchain.depth_stencil_format != VK_FORMAT_UNDEFINED;
+    vkex::DepthStencilView dsv = nullptr;
+    if (has_depth_stencil) {
+      // Image view
+      vkex::ImageView image_view = m_fake_swapchain_depth_stencil_image_views[image_index];
+      // Fill out DSV
+      vkex::DepthStencilViewCreateInfo create_info = {};
+      create_info.format                           = image_view->GetFormat();
+      create_info.samples                          = image_view->GetSamples();
+      create_info.depth_load_op                    = m_configuration.swapchain.depth_load_op;
+      create_info.depth_store_op                   = m_configuration.swapchain.depth_store_op;
+      create_info.stencil_load_op                  = m_configuration.swapchain.stencil_load_op;
+      create_info.stencil_store_op                 = m_configuration.swapchain.stencil_store_op;
+      create_info.initial_layout                   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      create_info.final_layout                     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+      create_info.final_layout                     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+      create_info.clear_value                      = m_configuration.swapchain.dsv_clear_value;
+      create_info.attachment                       = image_view;
+      vkex::Result vkex_result = vkex::Result::Undefined;
+      VKEX_RESULT_CALL(
+        vkex_result,
+        m_device->CreateDepthStencilView(
+          create_info, 
+          &dsv)
+      );
+      if (!vkex_result) {
+        return vkex_result;
+      }
+    }
+
+    // Renderpasses
+    {
+      // Create info
+      vkex::RenderPassCreateInfo render_pass_create_info = {};
+      render_pass_create_info.flags                      = 0;
+      render_pass_create_info.rtvs                       = {rtv};
+      render_pass_create_info.dsv                        = dsv;
+      render_pass_create_info.extent                     = {1, 1};
+      // Create render pass
+      vkex::RenderPass render_pass = nullptr;
+      vkex::Result vkex_result = vkex::Result::Undefined;
+      VKEX_RESULT_CALL(
+        vkex_result,
+        m_device->CreateRenderPass(render_pass_create_info, &render_pass)
+      );
+      if (!vkex_result) {
+        return vkex_result;
+      }
+      // Store render passes
+      m_fake_swapchain_render_passes.push_back(render_pass);
+    }
+  }
+
+  // Transition swapchain color images to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
+  // Transition swapchain depth/stencil images to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+  {
+    uint32_t image_count = m_swapchain->GetImageCount();
+    for (uint32_t image_index = 0; image_index < image_count; ++image_index) {
+      // Color image
+      vkex::Image image = m_fake_swapchain_color_images[image_index];
+      // Transition
+      VKEX_CALL(vkex::TransitionImageLayout(m_graphics_queue,
+          image,
+          image->GetInitialLayout(),
+          VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+          VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT));
+      // Depth/stencil
+      if (m_configuration.swapchain.depth_stencil_format != VK_FORMAT_UNDEFINED) {
+        // Depth/stencil image
+        image = m_fake_swapchain_depth_stencil_images[image_index];
+        // Transition
+        VKEX_CALL(vkex::TransitionImageLayout(m_graphics_queue,
+            image,
+            image->GetInitialLayout(),
+            VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+            VK_PIPELINE_STAGE_VERTEX_SHADER_BIT));        
+      }
+    }
+  }
+
+  // Log fake swapchain creation
+  {
+    VKEX_LOG_INFO("");
+    VKEX_LOG_INFO("Fake Swapchain created : " << vkex::ToHexString(m_swapchain->GetVkObject()));
+    VKEX_LOG_INFO("   " << "Image Count      : " << m_configuration.swapchain.image_count);
+    VKEX_LOG_INFO("   " << "Format           : " << vkex::ToString(m_configuration.swapchain.color_format));
+    VKEX_LOG_INFO("   " << "Color Space      : " << vkex::ToString(m_configuration.swapchain.color_space));
+    VKEX_LOG_INFO("   " << "Size             : " << 1 << "x" << 1);
+    VKEX_LOG_INFO("   " << "Present Mode     : " << "<DON'T CARE>");
     VKEX_LOG_INFO("   " << "Paced Frame Rate : " << m_configuration.swapchain.paced_frame_rate);
     VKEX_LOG_INFO("");
   }
@@ -1516,10 +1808,26 @@ vkex::Result Application::InitializeVkex()
       return vkex_result;
     }
   }
+
+  // Swapchain memory pool (interesting comments inside implementation)
+  if (IsApplicationModeWindow()) {
+    vkex::Result vkex_result = InitializeVkexSwapchainImageMemoryPool();
+    if (!vkex_result) {
+        return vkex_result;
+    }
+  }
     
   // Swapchain
   if (IsApplicationModeWindow()) {
     vkex::Result vkex_result = InitializeVkexSwapchain();
+    if (!vkex_result) {
+      return vkex_result;
+    }
+  }
+
+  // Fake swapchain
+  if (IsApplicationModeWindow()) {
+    vkex::Result vkex_result = InitializeFakeSwapchain();
     if (!vkex_result) {
       return vkex_result;
     }
@@ -1583,7 +1891,7 @@ vkex::Result Application::InitializeImGui()
     init_info.CheckVkResultFn = nullptr;
     bool result = ImGui_ImplVulkan_Init(
       &init_info, 
-      *m_render_passes[0]);
+      *m_swapchain_render_passes[0]);
     if (!result) {
       return vkex::Result::ErrorImGuiInitializeFailed;
     }
@@ -1692,7 +2000,7 @@ vkex::Result Application::DestroyVkexSwapchainImageMemoryPool()
 vkex::Result Application::DestroyVkexSwapchain()
 {
   // Render passes
-  for (auto& render_pass : m_render_passes) {
+  for (auto& render_pass : m_swapchain_render_passes) {
     vkex::Result vkex_result = vkex::Result::Undefined;
     VKEX_RESULT_CALL(
       vkex_result,
@@ -1702,10 +2010,10 @@ vkex::Result Application::DestroyVkexSwapchain()
       return vkex_result;
     }
   }
-  m_render_passes.clear();
+  m_swapchain_render_passes.clear();
 
   // Color image views
-  for (auto& image_view : m_color_image_views) {
+  for (auto& image_view : m_swapchain_color_image_views) {
     vkex::Result vkex_result = vkex::Result::Undefined;
     VKEX_RESULT_CALL(
       vkex_result,
@@ -1715,10 +2023,10 @@ vkex::Result Application::DestroyVkexSwapchain()
       return vkex_result;
     }
   }
-  m_color_image_views.clear();
+  m_swapchain_color_image_views.clear();
 
-  // Color image views
-  for (auto& image_view : m_depth_stencil_image_views) {
+  // Depth/stencil image views
+  for (auto& image_view : m_swapchain_depth_stencil_image_views) {
     vkex::Result vkex_result = vkex::Result::Undefined;
     VKEX_RESULT_CALL(
       vkex_result,
@@ -1728,7 +2036,7 @@ vkex::Result Application::DestroyVkexSwapchain()
       return vkex_result;
     }
   }
-  m_depth_stencil_image_views.clear();
+  m_swapchain_depth_stencil_image_views.clear();
 
   // Swapchain
   VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
@@ -1775,6 +2083,80 @@ vkex::Result Application::DestroyVkexSwapchain()
   return vkex::Result::Success;
 }
 
+vkex::Result Application::DestroyFakeSwapchain()
+{
+  // Render passes
+  for (auto& render_pass : m_fake_swapchain_render_passes) {
+    vkex::Result vkex_result = vkex::Result::Undefined;
+    VKEX_RESULT_CALL(
+      vkex_result,
+      m_device->DestroyRenderPass(render_pass)
+    );
+    if (!vkex_result) {
+      return vkex_result;
+    }
+  }
+  m_fake_swapchain_render_passes.clear();
+
+  // Color image views
+  for (auto& image_view : m_fake_swapchain_color_image_views) {
+    vkex::Result vkex_result = vkex::Result::Undefined;
+    VKEX_RESULT_CALL(
+      vkex_result,
+      m_device->DestroyImageView(image_view)
+    );
+    if (!vkex_result) {
+      return vkex_result;
+    }
+  }
+  m_fake_swapchain_color_image_views.clear();
+
+  // Depth/stencil image views
+  for (auto& image_view : m_fake_swapchain_depth_stencil_image_views) {
+    vkex::Result vkex_result = vkex::Result::Undefined;
+    VKEX_RESULT_CALL(
+      vkex_result,
+      m_device->DestroyImageView(image_view)
+    );
+    if (!vkex_result) {
+      return vkex_result;
+    }
+  }
+  m_fake_swapchain_depth_stencil_image_views.clear();
+
+  // Color images
+  for (auto& image_view : m_fake_swapchain_color_images) {
+    vkex::Result vkex_result = vkex::Result::Undefined;
+    VKEX_RESULT_CALL(
+      vkex_result,
+      m_device->DestroyImage(image_view)
+    );
+    if (!vkex_result) {
+      return vkex_result;
+    }
+  }
+  m_fake_swapchain_color_images.clear();
+
+  // Depth/stencil image
+  for (auto& image_view : m_fake_swapchain_depth_stencil_images) {
+    vkex::Result vkex_result = vkex::Result::Undefined;
+    VKEX_RESULT_CALL(
+      vkex_result,
+      m_device->DestroyImage(image_view)
+    );
+    if (!vkex_result) {
+      return vkex_result;
+    }
+  }
+  m_fake_swapchain_depth_stencil_images.clear();
+
+  VKEX_LOG_INFO("");
+  VKEX_LOG_INFO("Fake swapchain destroyed");
+  VKEX_LOG_INFO("");
+
+  return vkex::Result::Success;
+}
+
 vkex::Result Application::DestroyImGui()
 {
   if (m_imgui_descriptor_pool != nullptr) {
@@ -1808,6 +2190,14 @@ vkex::Result Application::InternalDestroy()
   // Swapchain
   if (IsApplicationModeWindow()) {
     vkex::Result vkex_result = DestroyVkexSwapchain();
+    if (!vkex_result) {
+      return vkex_result;
+    }
+  }
+
+  // Fake swapchain
+  if (IsApplicationModeWindow()) {
+    vkex::Result vkex_result = DestroyFakeSwapchain();
     if (!vkex_result) {
       return vkex_result;
     }
@@ -1929,12 +2319,69 @@ void Application::ResizeCallback(uint32_t width, uint32_t height)
   bool width_changed = (width != m_configuration.window.width);
   bool height_changed = (height != m_configuration.window.height);
   if (width_changed || height_changed) {
+    // Update the configuration's width and height
+    m_configuration.window.width = width;
+    m_configuration.window.height = height;
+    m_window_surface_invalid = ((width == 0) || (height == 0));
+  }
+
+
+  /*
+  bool width_changed = (width != m_configuration.window.width);
+  bool height_changed = (height != m_configuration.window.height);
+  if (width_changed || height_changed) {
+    // If window surface area is zero - mark surface as invalid
+    m_window_surface_invalid = ((width == 0) || (height == 0));
+
+    // This usually hapens when the window is minimized
+    if (m_window_surface_invalid) {
+    }
+    else {
+    }
+
+    // Notify the application of resize event
+    Resize(width, height);
+  }
+  */
+
+/*
+  if (m_window_surface_invalid) {
+  }
+  else {
+    if((width == 0) || (height == 0)) {
+      // If window surface area is zero - mark surface as invalid
+      m_window_surface_invalid = true;
+      // Update the configuration's width and height
+      m_configuration.window.width = width;
+      m_configuration.window.height = height;
+    }
+  }
+
+  if (!m_window_surface_invalid) {
+  }
+
+bool width_changed = (width != m_configuration.window.width);
+bool height_changed = (height != m_configuration.window.height);
+if (width_changed || height_changed) {
+    m_configuration.window.width = width;
+    m_configuration.window.height = height;
+    //m_recreate_swapchain = true;
+    
+    Resize(width, height);
+}
+*/
+
+  /*
+  bool width_changed = (width != m_configuration.window.width);
+  bool height_changed = (height != m_configuration.window.height);
+  if (width_changed || height_changed) {
     m_configuration.window.width = width;
     m_configuration.window.height = height;
     m_recreate_swapchain = true;
 
     Resize(width, height);
   }
+  */
 }
 
 void Application::MouseDownCallback(int32_t x, int32_t y, uint32_t buttons)
@@ -2122,6 +2569,7 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_data, uin
   VkSemaphore vk_image_acquired_semaphore = *(p_data->GetImageAcquiredSemaphore());
   VkFence vk_image_acquired_fence = *vkex_image_acquired_fence;
 
+  /*
   // Acquire next image
   VkResult vk_result = InvalidValue<VkResult>::Value;
   VKEX_VULKAN_RESULT_CALL(
@@ -2152,6 +2600,44 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_data, uin
   );
   if (vk_result != VK_SUCCESS) {
     return vkex::Result(vk_result);
+  }
+
+  */
+
+  // Acquire next image
+  if (!m_recreate_swapchain) {
+    VkResult vk_result = m_swapchain->AcquireNextImage(
+      UINT64_MAX, 
+      vk_image_acquired_semaphore, 
+      vk_image_acquired_fence, 
+      p_swapchain_image_index);
+    
+    if (vk_result != VK_SUCCESS) {
+      VKEX_LOG_WARN("vkAcquireNextImageKHR returned error/warning: " << ToString(vk_result));
+      m_recreate_swapchain = true;
+    } 
+  }
+
+  // Only wait and reset fences if m_recreate_swapchain isn't set
+  if (!m_recreate_swapchain) {
+    VkResult vk_result = InvalidValue<VkResult>::Value;
+    // Wait on fence
+    VKEX_VULKAN_RESULT_CALL(
+      vk_result,
+      vkex_image_acquired_fence->WaitForFence();
+    );
+    if (vk_result != VK_SUCCESS) {
+      return vkex::Result(vk_result);
+    }
+    
+    // Reset fence
+    VKEX_VULKAN_RESULT_CALL(
+      vk_result,
+      vkex_image_acquired_fence->ResetFence();
+    );
+    if (vk_result != VK_SUCCESS) {
+      return vkex::Result(vk_result);
+    }
   }
 
   return vkex::Result::Success;
@@ -2508,6 +2994,7 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
     }
   }
 
+/*
   // Submit present request
   {
     // Containers
@@ -2529,7 +3016,7 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
     // Though, it isn't really needed for this sample
 #endif
 
-    // Time start
+    // Queue present time start
     TimeRange time_range = {};
     time_range.start = static_cast<float>(GetElapsedTime());
 
@@ -2558,6 +3045,66 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
       }
       m_average_vk_queue_present_time *= 1.0f / static_cast<float>(n);
     }
+  }
+*/
+
+  // Submit present request
+  if (!m_recreate_swapchain) {
+    // Containers
+    std::vector<VkSemaphore> vk_wait_semaphores       = { vk_work_complete_for_present_semaphore };
+    std::vector<VkSwapchainKHR> vk_swapchains         = { vk_swapchain };
+    std::vector<uint32_t> vk_swapchain_image_indices  = { vk_swapchain_image_index };
+
+    // Present info
+    VkPresentInfoKHR vk_present_info = { VK_STRUCTURE_TYPE_PRESENT_INFO_KHR };
+    vk_present_info.waitSemaphoreCount  = CountU32(vk_wait_semaphores);
+    vk_present_info.pWaitSemaphores     = DataPtr(vk_wait_semaphores);
+    vk_present_info.swapchainCount      = CountU32(vk_swapchains);
+    vk_present_info.pSwapchains         = DataPtr(vk_swapchains);
+    vk_present_info.pImageIndices       = DataPtr(vk_swapchain_image_indices);
+    vk_present_info.pResults            = nullptr;
+
+#if defined(VKEX_GGP)
+    // TODO: Add frame token support to be a good citizen...
+    // Though, it isn't really needed for this sample
+#endif
+
+    // Queue present time start
+    TimeRange time_range = {};
+    time_range.start = static_cast<float>(GetElapsedTime());
+
+    // Queue present
+    VkResult vk_result = vkex::QueuePresentKHR(
+      *m_present_queue,
+      &vk_present_info);
+    if (vk_result != VK_SUCCESS) {
+      VKEX_LOG_WARN("vkQueuePresentKHR returned error/warning: " << ToString(vk_result));
+      // Mark swapchain recreation
+      if (vk_result == VK_ERROR_OUT_OF_DATE_KHR) {
+          m_recreate_swapchain = true;
+      }
+    }
+
+    // Queue present time end
+    time_range.end = static_cast<float>(GetElapsedTime());
+    time_range.diff = time_range.end - time_range.start;
+    m_vk_queue_present_times.push_back(time_range);
+    // Average queue present time
+    {
+      m_average_vk_queue_present_time = 0;
+      const size_t n = m_vk_queue_present_times.size();
+      for (size_t i = 0; i < n; ++i) {
+        m_average_vk_queue_present_time += m_vk_queue_present_times[i].diff;
+      }
+      m_average_vk_queue_present_time *= 1.0f / static_cast<float>(n);
+    }
+  }
+  // Still need consume the wait semaphore so the queue doesn't stall and break the loop
+  else {
+    vkex::SubmitInfo submit_info = {};
+    submit_info.AddWaitSemaphore(vk_work_complete_for_present_semaphore, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
+    vkex::Result result = result = GetGraphicsQueue()->Submit(submit_info);
+    VKEX_ASSERT(result == vkex::Result::Success);
   }
 
   // Write screenshot if flag is set and option is not disabled
@@ -2788,11 +3335,13 @@ vkex::Result Application::Run(int argn, const char* const* argv)
 
     // Recreate the swapchain if needed
     if (m_recreate_swapchain) {
-      vkex::Result vkex_result = RecreateVkexSwapchain();
-      if (!vkex_result) {
-        return vkex_result;
+      if (!m_window_surface_invalid) {
+        vkex::Result vkex_result = RecreateVkexSwapchain();
+        if (!vkex_result) {
+          return vkex_result;
+        }
+        m_recreate_swapchain = false;
       }
-      m_recreate_swapchain = false;
     }
 
     // Update current per frame data
@@ -2859,6 +3408,8 @@ vkex::Result Application::Run(int argn, const char* const* argv)
       }
     }
 
+/*
+
     // Acquire next image
     m_current_swapchain_image_index = UINT32_MAX;
     if (IsApplicationModeWindow()) {
@@ -2903,6 +3454,68 @@ vkex::Result Application::Run(int argn, const char* const* argv)
       DispatchCallPresent(m_current_present_data);
       double end_time = GetElapsedTime();
       m_present_fn_time = end_time - start_time;
+    }
+*/
+
+    if (IsApplicationModeWindow()) {
+      if (!m_recreate_swapchain) {
+        // Acquire next image
+        m_current_swapchain_image_index = UINT32_MAX;
+        vkex::Result vkex_result = vkex::Result::Undefined;
+        VKEX_RESULT_CALL(
+          vkex_result,
+          AcquireNextImage(m_current_present_data, &m_current_swapchain_image_index)
+        );
+        if (!vkex_result) {
+          return vkex_result;
+        }
+        
+        // Set present render pass
+        vkex::RenderPass render_pass = m_swapchain_render_passes[m_current_swapchain_image_index];
+        m_current_present_data->SetRenderPass(render_pass);
+      }
+      else {
+        // Acquire next image
+        m_current_swapchain_image_index = m_elapsed_frame_count % m_configuration.swapchain.image_count;
+
+        // Still need to signal the image acquire semaphore so doesn't break the loop
+        {
+          vkex::SubmitInfo submit_info = {};
+          submit_info.AddSignalSemaphore(m_current_present_data->m_image_acquired_sempahore);
+          vkex::Result result = result = GetGraphicsQueue()->Submit(submit_info);
+          VKEX_ASSERT(result == vkex::Result::Success);
+        }
+
+        // Set present render pass
+        vkex::RenderPass render_pass = m_fake_swapchain_render_passes[m_current_swapchain_image_index];
+        m_current_present_data->SetRenderPass(render_pass);
+      }
+
+      // Call app present
+      double start_time = GetElapsedTime();
+      DispatchCallPresent(m_current_present_data);
+      double end_time = GetElapsedTime();
+      m_present_fn_time = end_time - start_time;
+    }
+
+
+    // Pace fames - if needed
+    if (m_configuration.swapchain.paced_frame_rate > 0) {
+      if (m_elapsed_frame_count > 0) {
+        double current_time  = GetElapsedTime();
+        double paced_fps     = 1.0 / static_cast<double>(m_configuration.swapchain.paced_frame_rate);
+        double expected_time = m_frame_0_time + (m_elapsed_frame_count * paced_fps);
+        double diff = expected_time - current_time;
+        if (diff > 0) {
+          //std::stringstream ss;
+          //ss << diff << "\n";
+          //OutputDebugStringA(ss.str().c_str());
+          vkex::Timer::SleepSeconds(diff);
+        }
+      }
+      else {
+        m_frame_0_time = GetElapsedTime();
+      }
     }
     
     // Increment present count

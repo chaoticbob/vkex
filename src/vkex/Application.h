@@ -550,7 +550,10 @@ public:
     return m_configuration.window.height; 
   }
 //! @fn GetWindowAspect
-  float GetWindowAspect() const { 
+  float GetWindowAspect() const {
+    if (m_configuration.window.height == 0) {
+      return 1.0f;
+    }
     float aspect = static_cast<float>(m_configuration.window.width) / static_cast<float>(m_configuration.window.height);
     return aspect;
   }
@@ -632,6 +635,9 @@ private:
   //! @fn InitializeVkexSwapchain
   vkex::Result InitializeVkexSwapchain();
 
+  //! @fn InitializeVkexSwapchain
+  vkex::Result InitializeFakeSwapchain();
+
   //! @fn InitializeVkexPerFrameRenderData();
   vkex::Result InitializeVkexPerFrameRenderData();
 
@@ -652,6 +658,9 @@ private:
 
   //! @fn DestroyVkexSwapchain();
   vkex::Result DestroyVkexSwapchain();
+
+  //! @fn DestroyFakeSwapchain();
+  vkex::Result DestroyFakeSwapchain();
 
   //! @fn InitializeImgui
   vkex::Result DestroyImGui();
@@ -733,12 +742,18 @@ protected:
   VmaPool                       m_swapchain_image_memory_pool = VK_NULL_HANDLE;
   vkex::Swapchain               m_swapchain = nullptr;
   uint32_t                      m_current_swapchain_image_index = UINT32_MAX;
-  std::vector<vkex::ImageView>  m_color_image_views;
-  std::vector<vkex::ImageView>  m_depth_stencil_image_views;
-  std::vector<vkex::RenderPass> m_render_passes;
+  std::vector<vkex::ImageView>  m_swapchain_color_image_views;
+  std::vector<vkex::ImageView>  m_swapchain_depth_stencil_image_views;
+  std::vector<vkex::RenderPass> m_swapchain_render_passes;
+  std::vector<vkex::Image>      m_fake_swapchain_color_images;
+  std::vector<vkex::Image>      m_fake_swapchain_depth_stencil_images;
+  std::vector<vkex::ImageView>  m_fake_swapchain_color_image_views;
+  std::vector<vkex::ImageView>  m_fake_swapchain_depth_stencil_image_views;
+  std::vector<vkex::RenderPass> m_fake_swapchain_render_passes;
   uint64_t                      m_elapsed_frame_count = 0;
   uint32_t                      m_frame_index = 0;
   bool                          m_recreate_swapchain = false;
+  bool                          m_window_surface_invalid = false;
 
   double                        m_frame_0_time = 0;
 

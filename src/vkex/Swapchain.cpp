@@ -459,6 +459,11 @@ VkResult CSwapchain::AcquireNextImage(uint64_t timeout, VkSemaphore semaphore, V
     semaphore,
     fence,
     pImageIndex);
+
+  if (vk_result == VK_ERROR_OUT_OF_DATE_KHR) {
+      int stopMe = 1;
+  }
+
   if (vk_result != VK_SUCCESS) {
     return vk_result;
   }
