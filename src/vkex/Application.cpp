@@ -2504,6 +2504,9 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_present_d
     return vkex::Result::ErrorInvalidApplicationMode;
   }
 
+  // Flag to indicate if fence needs resetting
+  bool reset_fence = false;
+
   // VKEX objects
   vkex::Fence vkex_image_acquired_fence = p_present_data->GetImageAcquiredFence();
 
@@ -2534,9 +2537,17 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_present_d
       vk_image_acquired_semaphore, 
       vk_image_acquired_fence, 
       p_swapchain_image_index);
+
+    //
+    // AMD on Windows can return SUBOPTIMAL here. Since SUBOPTIMAL is not an
+    // error the semaphore and fence will get signaled. We'll flag the fence
+    // for reset and let the loop handle the semaphore wait.
+    // 
+    reset_fence = ((vk_result == VK_SUCCESS) || (vk_result == VK_SUBOPTIMAL_KHR));
     
     if (vk_result != VK_SUCCESS) {
-      VKEX_LOG_WARN("vkAcquireNextImageKHR returned error/warning: " << ToString(vk_result));
+      VKEX_LOG_INFO("vkAcquireNextImageKHR returned: " << ToString(vk_result));
+      VKEX_LOG_INFO("Swapchain will be recreated!");
       m_recreate_swapchain = true;
     }
 
@@ -2546,7 +2557,7 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_present_d
   }
 
   // Only wait and reset fences if m_recreate_swapchain isn't set
-  if (!m_recreate_swapchain) {
+  if (reset_fence) {
     VkResult vk_result = InvalidValue<VkResult>::Value;
     // Wait on fence
     VKEX_VULKAN_RESULT_CALL(
@@ -2951,11 +2962,9 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
       *m_present_queue,
       &vk_present_info);
     if (vk_result != VK_SUCCESS) {
-      VKEX_LOG_WARN("vkQueuePresentKHR returned error/warning: " << ToString(vk_result));
-      // Mark swapchain recreation
-      if (vk_result == VK_ERROR_OUT_OF_DATE_KHR) {
-          m_recreate_swapchain = true;
-      }
+      VKEX_LOG_INFO("vkQueuePresentKHR returned: " << ToString(vk_result));
+      VKEX_LOG_INFO("Swapchain will be recreated!");
+      m_recreate_swapchain = true;
     }
 
     // Queue present time end
