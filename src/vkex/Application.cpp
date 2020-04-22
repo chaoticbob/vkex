@@ -1019,6 +1019,19 @@ vkex::Result Application::InitializeVkexSwapchain()
     }
   }
 
+  // Check for valid surface dimensions
+  {
+    auto& vk_surface_capabilities = m_surface->GetVkSurfaceCapabilities2();
+    uint32_t max_width  = vk_surface_capabilities.surfaceCapabilities.maxImageExtent.width;
+    uint32_t max_height = vk_surface_capabilities.surfaceCapabilities.maxImageExtent.height;
+    m_window_surface_invalid = ((max_width == 0) || (max_height == 0));
+    if (m_window_surface_invalid) {
+      m_window_surface_invalid = true;
+      m_instance->DestroySurface(m_surface);
+      return vkex::Result::ErrorInvalidSurfaceExtents;
+    }
+  }
+
   // Image count
   {
     auto& vk_surface_capabilities = m_surface->GetVkSurfaceCapabilities2();
@@ -1047,7 +1060,7 @@ vkex::Result Application::InitializeVkexSwapchain()
         uint32_t max_width = vk_surface_capabilities.surfaceCapabilities.maxImageExtent.width;
         uint32_t max_height = vk_surface_capabilities.surfaceCapabilities.maxImageExtent.height;
         if ((max_width < m_configuration.window.width) || (max_height < m_configuration.window.height)) {
-            VKEX_LOG_WARN("Swapchain extents readjusted from "
+            VKEX_LOG_WARN("Swapchain extents readjusted using maxImageExtent from "
                 << m_configuration.window.width << "x" << m_configuration.window.height
                 << " to "
                 << max_width << "x" << max_height);
@@ -1061,7 +1074,7 @@ vkex::Result Application::InitializeVkexSwapchain()
         uint32_t min_width = vk_surface_capabilities.surfaceCapabilities.minImageExtent.width;
         uint32_t min_height = vk_surface_capabilities.surfaceCapabilities.minImageExtent.height;
         if ((min_width > m_configuration.window.width) || (min_height > m_configuration.window.height)) {
-            VKEX_LOG_WARN("Swapchain extents readjusted from "
+            VKEX_LOG_WARN("Swapchain extents readjusted using minImageExtent from "
                 << m_configuration.window.width << "x" << m_configuration.window.height
                 << " to "
                 << min_width << "x" << min_height);
@@ -3230,10 +3243,10 @@ vkex::Result Application::Run(int argn, const char* const* argv)
       // ...but only if the window's surface is valid!
       if (!m_window_surface_invalid) {
         vkex::Result vkex_result = RecreateVkexSwapchain();
-        if (!vkex_result) {
-          return vkex_result;
+        //m_recreate_swapchain = false;
+        if (vkex_result == vkex::Result::Success) {
+          m_recreate_swapchain = false;
         }
-        m_recreate_swapchain = false;
       }
     }
 
