@@ -290,6 +290,7 @@ struct Configuration {
     uint32_t                  width;
     uint32_t                  height;
     bool                      resizeable;
+    bool                      fullscreen;
     bool                      borderless;
     CursorMode                cursor_mode;
   } window;

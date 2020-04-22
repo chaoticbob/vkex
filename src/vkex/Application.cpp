@@ -713,12 +713,22 @@ vkex::Result Application::InitializeWindow()
     glfwWindowHint(GLFW_RESIZABLE, 
       m_configuration.window.resizeable ? true : false);
 
-    m_window = glfwCreateWindow(
-      static_cast<int>(m_configuration.window.width), 
-      static_cast<int>(m_configuration.window.height), 
-      m_configuration.name.c_str(),
-      nullptr, 
-      nullptr);
+    if (m_configuration.window.fullscreen) {
+      m_window = glfwCreateWindow(
+        static_cast<int>(m_configuration.window.width), 
+        static_cast<int>(m_configuration.window.height), 
+        m_configuration.name.c_str(),
+        glfwGetPrimaryMonitor(), 
+        nullptr);
+    }
+    else {
+      m_window = glfwCreateWindow(
+        static_cast<int>(m_configuration.window.width), 
+        static_cast<int>(m_configuration.window.height), 
+        m_configuration.name.c_str(),
+        nullptr, 
+        nullptr);
+    }
 
     if (m_window == nullptr) {
       vkex::Result vkex_result = vkex::Result::ErrorGlfwWindowCreateFailed;
