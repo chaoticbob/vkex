@@ -120,6 +120,7 @@ vkex::Result CTexture::InternalCreate(
   {
     if (m_create_info.view.derive_from_image) {
       switch (m_create_info.image.image_type) {
+        default: break;
         case VK_IMAGE_TYPE_1D: m_create_info.view.view_type = VK_IMAGE_VIEW_TYPE_1D; break;
         case VK_IMAGE_TYPE_2D: m_create_info.view.view_type = VK_IMAGE_VIEW_TYPE_2D; break;
         case VK_IMAGE_TYPE_3D: m_create_info.view.view_type = VK_IMAGE_VIEW_TYPE_3D; break;

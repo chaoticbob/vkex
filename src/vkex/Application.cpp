@@ -2519,7 +2519,7 @@ vkex::Result Application::AcquireNextImage(Application::PresentData* p_present_d
     {
       vkex::SubmitInfo submit_info = {};
       submit_info.AddSignalSemaphore(vk_image_acquired_semaphore);
-      vkex::Result result = result = GetGraphicsQueue()->Submit(submit_info);
+      vkex::Result result = GetGraphicsQueue()->Submit(submit_info);
       VKEX_ASSERT(result == vkex::Result::Success);
     }
     
@@ -2976,7 +2976,7 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
   else {
     vkex::SubmitInfo submit_info = {};
     submit_info.AddWaitSemaphore(vk_work_complete_for_present_semaphore, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
-    vkex::Result result = result = GetGraphicsQueue()->Submit(submit_info);
+    vkex::Result result = GetGraphicsQueue()->Submit(submit_info);
     VKEX_ASSERT(result == vkex::Result::Success);
   }
 
