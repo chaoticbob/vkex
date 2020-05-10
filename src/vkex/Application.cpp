@@ -2985,9 +2985,19 @@ vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
       *m_present_queue,
       &vk_present_info);
     if (vk_result != VK_SUCCESS) {
+      //
+      // NOTE: In testing on Windows 10, I found that only NVIDIA returns OUT_OF_DATE
+      //       here on window resize or window minimize. 
+      //     
+      //
       VKEX_LOG_INFO("vkQueuePresentKHR returned: " << ToString(vk_result));
       VKEX_LOG_INFO("Swapchain will be recreated!");
       m_recreate_swapchain = true;
+
+    vkex::SubmitInfo submit_info = {};
+    submit_info.AddWaitSemaphore(vk_work_complete_for_present_semaphore, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT);
+    vkex::Result result = GetGraphicsQueue()->Submit(submit_info);
+    VKEX_ASSERT(result == vkex::Result::Success);
     }
 
     // Queue present time end
