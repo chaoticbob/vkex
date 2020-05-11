@@ -16,6 +16,9 @@
 
 cmake_minimum_required(VERSION 3.0 FATAL_ERROR)
 
+# Force these policies to NEW since OLD is deprecated
+cmake_policy(SET CMP0054 NEW)
+
 project(vkex)
 
 # Detect GGP

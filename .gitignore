@@ -2,3 +2,7 @@
 # Generated directories
 /bin
 /lib
+/build-ggp
+/build-linux
+/build-vs2017
+/build-vs2019
