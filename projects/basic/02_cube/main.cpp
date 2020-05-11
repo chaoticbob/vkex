@@ -108,9 +108,11 @@ void VkexInfoApp::Setup()
 
   // Descriptor pool
   {
+    uint32_t frame_count = GetConfiguration().frame_count;
+
     const vkex::ShaderInterface&   shader_interface = m_color_shader->GetInterface();
     vkex::DescriptorPoolCreateInfo create_info      = {};
-    create_info.pool_sizes                          = shader_interface.GetDescriptorPoolSizes();
+    create_info.pool_sizes                          = frame_count * shader_interface.GetDescriptorPoolSizes();
     VKEX_CALL(GetDevice()->CreateDescriptorPool(create_info, &m_color_descriptor_pool));
   }
 

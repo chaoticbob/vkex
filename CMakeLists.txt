@@ -21,6 +21,10 @@ cmake_policy(SET CMP0054 NEW)
 
 project(vkex)
 
+if(DEFINED CMAKE_TOOLCHAIN_FILE)
+  message("Using CMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
+endif()
+
 # Detect GGP
 if (GGP_TOOLCHAIN_PATH)
 	set(GGP TRUE)

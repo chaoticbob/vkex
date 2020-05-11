@@ -84,7 +84,7 @@ endif()
 #  message(FATAL_ERROR "Unsupported platform")
 #endif()
 
-message("Found Vulkan: ${VULKAN_DIR}")
+message("VKEX is using Vulkan found here: ${VULKAN_DIR}")
 message("  Vulkan include directory: ${VULKAN_INCLUDE_DIR}")
 message("  Vulkan library directory: ${VULKAN_LIBRARY_DIR}")
 
