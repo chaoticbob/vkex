@@ -27,9 +27,6 @@ const uint32_t k_window_width  = 1280;
 const uint32_t k_window_height = 720;
 #endif
 
-using float3    = vkex::float3;
-using float4x4  = vkex::float4x4;
-
 class VkexInfoApp : public vkex::Application {
 public:
   VkexInfoApp() : vkex::Application(k_window_width, k_window_height, "00_minimum_program") {}
@@ -61,9 +58,6 @@ void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& co
 
 void VkexInfoApp::Present(vkex::Application::PresentData* p_data)
 {
-  // Frame data
-  uint32_t frame_index = p_data->GetFrameIndex();
-
   // Build command buffer
   auto cmd = p_data->GetCommandBuffer();
   cmd->Begin();
