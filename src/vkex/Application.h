@@ -406,7 +406,7 @@ class PresentData {
 public:
   PresentData();
   ~PresentData();
-  PresentData*     GetPrevious() const { return m_previous; }
+  PresentData*                  GetPrevious() const { return m_previous; }
   uint32_t                      GetFrameIndex() const { return m_frame_index; }
   vkex::Semaphore               GetImageAcquiredSemaphore() const { return m_image_acquired_sempahore; }
   vkex::Fence                   GetImageAcquiredFence() const { return m_image_acquired_fence; }
@@ -425,7 +425,29 @@ private:
   void SetRenderPass(vkex::RenderPass render_pass);
   void SetPrevious(PresentData* p_previous);
 private:
-  PresentData*     m_previous                            = nullptr;
+  //
+  // NOTE: Proper Waiting and Signaling of Semaphores
+  //
+  // m_work_complete_for_render_semaphore - signaled in frame N 
+  // to be waited on in frame N+1 in one of the following ways:
+  //   - Manually waited on in <YOUR_APP>::Render() if work is 
+  //     submitted (see 03_render_work).
+  //   - Automatically by VKEX in vkex::Application::Present() if 
+  //     there is NO work submitted in <YOUR_APP>::Render()
+  // The intent of this semaphore is to block any render work for 
+  // the current frame if the previous frame's render work is 
+  // still on the GPU. Additional note: it's not necessary for
+  // the current frame's render work to wait on the previous 
+  // frame's present work since present is usually asynchronous.
+  //
+  // m_work_complete_for_present_semaphore - signaed in frame N
+  // to be waited in frame N+1. The wait is automatically done
+  // done by VKEX. The intent of this semaphore is to block 
+  // the current frame's present work if the previous frame's
+  // present work is still on the GPU.
+  //
+  //
+  PresentData*                  m_previous                            = nullptr;
   vkex::Device                  m_device                              = nullptr;
   uint32_t                      m_frame_index                         = UINT32_MAX;
   vkex::Semaphore               m_image_acquired_sempahore            = nullptr;

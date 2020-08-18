@@ -2823,19 +2823,6 @@ void Application::DrawImGui(vkex::CommandBuffer cmd)
 
 vkex::Result Application::SubmitRender(RenderData* p_current_render_data, PresentData* p_current_present_data)
 {
-  VkCommandBuffer       vk_command_buffer             = *(p_current_render_data->GetCommandBuffer());
-  VkSemaphore           vk_work_complete_semaphore    = *(p_current_render_data->GetWorkCompleteSemaphore());
-
-  //VkSemaphore           vk_present_complete_semaphore = (m_previous_present_data != nullptr) 
-  //                                                      ? *(m_previous_present_data->GetWorkCompleteForRenderSemaphore()) 
-  //                                                      : nullptr;
-
-  // Submit render work
-    //std::vector<VkSemaphore> vk_wait_semaphores;
-    //if (vk_present_complete_semaphore != nullptr) {
-    //  vk_wait_semaphores.push_back(vk_present_complete_semaphore);
-    //}
-
   // Wait semaphores and destination stage masks
   std::vector<VkSemaphore>          vk_wait_semaphores      = {};
   std::vector<VkPipelineStageFlags> vk_wait_dst_stage_masks = {};
@@ -2860,15 +2847,12 @@ vkex::Result Application::SubmitRender(RenderData* p_current_render_data, Presen
     }
   }
 
-  // Command buffers
-  std::vector<VkCommandBuffer>      vk_command_buffers      = { vk_command_buffer };
-
-  // Signal semaphores
-  std::vector<VkSemaphore>          vk_signal_semaphores    = { vk_work_complete_semaphore };
-
-  // Work complete fence
-  VkFence vk_work_complete_fence  = *(p_current_render_data->GetWorkcompleteFence());
-    
+  // Vulkan objects
+  VkCommandBuffer              vk_command_buffer          = *(p_current_render_data->GetCommandBuffer());
+  VkSemaphore                  vk_work_complete_semaphore = *(p_current_render_data->GetWorkCompleteSemaphore());
+  std::vector<VkCommandBuffer> vk_command_buffers         = { vk_command_buffer };
+  std::vector<VkSemaphore>     vk_signal_semaphores       = { vk_work_complete_semaphore };
+  VkFence                      vk_work_complete_fence     = *(p_current_render_data->GetWorkcompleteFence());    
 
   // Submit info
   VkSubmitInfo vk_submit_info         = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
@@ -2906,22 +2890,22 @@ vkex::Result Application::SubmitPresent(PresentData* p_data)
   }
 
   // Vulkan objects
-  VkSemaphore vk_image_acquired_semaphore             = *(p_data->GetImageAcquiredSemaphore());
-  VkCommandBuffer vk_command_buffer                   = *(p_data->GetCommandBuffer());
-  VkPipelineStageFlags vk_pipeline_stage              = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-  VkSemaphore vk_work_complete_for_render_semaphore   = *(p_data->GetWorkCompleteForRenderSemaphore());
-  VkSemaphore vk_work_complete_for_present_semaphore  = *(p_data->GetWorkCompleteForPresentSemaphore());
-  VkFence vk_work_complete_fence                      = *(p_data->GetWorkCompleteFence());
-  VkSwapchainKHR vk_swapchain                         = *m_swapchain;
-  uint32_t vk_swapchain_image_index                   = m_current_swapchain_image_index;
+  VkSemaphore          vk_image_acquired_semaphore            = *(p_data->GetImageAcquiredSemaphore());
+  VkCommandBuffer      vk_command_buffer                      = *(p_data->GetCommandBuffer());
+  VkPipelineStageFlags vk_pipeline_stage                      = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+  VkSemaphore          vk_work_complete_for_render_semaphore  = *(p_data->GetWorkCompleteForRenderSemaphore());
+  VkSemaphore          vk_work_complete_for_present_semaphore = *(p_data->GetWorkCompleteForPresentSemaphore());
+  VkFence              vk_work_complete_fence                 = *(p_data->GetWorkCompleteFence());
+  VkSwapchainKHR       vk_swapchain                           = *m_swapchain;
+  uint32_t             vk_swapchain_image_index               = m_current_swapchain_image_index;
 
   // Submit present work
   {
     // Containers
-    std::vector<VkSemaphore> vk_wait_semaphores           = { vk_image_acquired_semaphore };
-    std::vector<VkCommandBuffer> vk_command_buffers       = { vk_command_buffer };
-    std::vector<VkPipelineStageFlags> vk_pipeline_stages  = { vk_pipeline_stage };
-    std::vector<VkSemaphore> vk_signal_semaphores         = { vk_work_complete_for_render_semaphore, vk_work_complete_for_present_semaphore };
+    std::vector<VkSemaphore>          vk_wait_semaphores    = { vk_image_acquired_semaphore };
+    std::vector<VkCommandBuffer>      vk_command_buffers    = { vk_command_buffer };
+    std::vector<VkPipelineStageFlags> vk_pipeline_stages    = { vk_pipeline_stage };
+    std::vector<VkSemaphore>          vk_signal_semaphores  = { vk_work_complete_for_render_semaphore, vk_work_complete_for_present_semaphore };
     
     // Add wait for render work if submitted
     if (m_render_submitted) {
@@ -2932,7 +2916,7 @@ vkex::Result Application::SubmitPresent(PresentData* p_data)
     }
 
     // Submit info
-    VkSubmitInfo vk_submit_info = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
+    VkSubmitInfo vk_submit_info         = { VK_STRUCTURE_TYPE_SUBMIT_INFO };
     vk_submit_info.waitSemaphoreCount   = CountU32(vk_wait_semaphores);
     vk_submit_info.pWaitSemaphores      = DataPtr(vk_wait_semaphores);
     vk_submit_info.pWaitDstStageMask    = DataPtr(vk_pipeline_stages);
