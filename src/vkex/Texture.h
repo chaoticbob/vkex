@@ -119,6 +119,11 @@ public:
    */
   const VkExtent3D& GetExtent() const;
 
+  /** @fn GetFullArea
+   *
+   */
+const VkRect2D& GetRect() const;
+
   /** @fn GetSamples
    *
    */
@@ -236,6 +241,7 @@ private:
 
 private:
   vkex::TextureCreateInfo m_create_info = {};
+  VkRect2D                m_rect  = {};
   vkex::Image             m_image = nullptr;
   bool                    m_owns_image = false;
   vkex::ImageView         m_image_view = nullptr;

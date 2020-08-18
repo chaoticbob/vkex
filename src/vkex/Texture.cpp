@@ -35,6 +35,11 @@ vkex::Result CTexture::InternalCreate(
   // Copy create info
   m_create_info = create_info;
 
+  // Rect for 2D textures
+  if (m_create_info.image.image_type == VK_IMAGE_TYPE_2D) {
+    m_rect = {0, 0, m_create_info.image.extent.width, m_create_info.image.extent.height};
+  }
+
   // Image
   if (m_create_info.existing_image != nullptr) {
     m_image = m_create_info.existing_image;
@@ -206,6 +211,11 @@ uint32_t CTexture::GetArrayLayers() const
 const VkExtent3D& CTexture::GetExtent() const
 {
   return m_image->GetExtent();
+}
+
+const VkRect2D& CTexture::GetRect() const
+{
+  return m_rect;
 }
 
 VkSampleCountFlagBits CTexture::GetSamples() const
