@@ -76,7 +76,7 @@ struct TextureCreateInfo {
   } view; 
 };
 
-/** @class IQueue
+/** @class CTexture
  *
  */ 
 class CTexture : public IDeviceObject {

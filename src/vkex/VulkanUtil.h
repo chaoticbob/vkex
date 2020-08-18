@@ -25,6 +25,8 @@
 
 #define VK_LAYER_LUNARG_STANDARD_VALIDATION_LAYER_NAME  "VK_LAYER_LUNARG_standard_validation"
 
+#define VKEX_DESCRIPTOR_TYPE_COUNT 11
+
 namespace vkex {
 
 // =================================================================================================
@@ -586,19 +588,19 @@ union QueryPipelineStatisticFlags {
  */
 union DescriptorPoolSizes {
   struct {
-    uint32_t sampler;
-    uint32_t combined_image_sampler;
-    uint32_t sampled_image;
-    uint32_t storage_image;
-    uint32_t uniform_texel_buffer;
-    uint32_t storage_texel_buffer;
-    uint32_t uniform_buffer;
-    uint32_t storage_buffer;
-    uint32_t uniform_buffer_dynamic;
-    uint32_t storage_buffer_dynamic;
-    uint32_t input_attachment;
+    uint32_t sampler;                   // 1
+    uint32_t combined_image_sampler;    // 2
+    uint32_t sampled_image;             // 3
+    uint32_t storage_image;             // 4
+    uint32_t uniform_texel_buffer;      // 5
+    uint32_t storage_texel_buffer;      // 6
+    uint32_t uniform_buffer;            // 7
+    uint32_t storage_buffer;            // 8
+    uint32_t uniform_buffer_dynamic;    // 9
+    uint32_t storage_buffer_dynamic;    // 10
+    uint32_t input_attachment;          // 11
   };
-  uint32_t sizes[VK_DESCRIPTOR_TYPE_RANGE_SIZE];
+  uint32_t sizes[VKEX_DESCRIPTOR_TYPE_COUNT];
 
   DescriptorPoolSizes& operator+=(const vkex::DescriptorPoolSizes& rhs)
   {

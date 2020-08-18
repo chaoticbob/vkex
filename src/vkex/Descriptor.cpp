@@ -309,7 +309,7 @@ vkex::Result CDescriptorPool::InternalCreate(
       VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT,
     };
     
-    for (uint32_t i = 0; i < VK_DESCRIPTOR_TYPE_RANGE_SIZE; ++i) {
+    for (uint32_t i = 0; i < VKEX_DESCRIPTOR_TYPE_COUNT; ++i) {
       uint32_t descriptorCount = m_create_info.pool_sizes.sizes[i];
       if (descriptorCount == 0) {
         continue;
