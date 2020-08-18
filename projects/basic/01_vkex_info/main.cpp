@@ -46,8 +46,8 @@ public:
   void Configure(const vkex::ArgParser& args, vkex::Configuration& configuration);
   void Setup();
   void Update(double frame_elapsed_time) {}
-  void Render(vkex::Application::RenderData* p_data);
-  void Present(vkex::Application::PresentData* p_data);
+  void Render(vkex::RenderData* p_data);
+  void Present(vkex::PresentData* p_data);
 
 private:
   std::vector<PerFrameData> m_per_frame_data        = {};
@@ -208,11 +208,11 @@ void VkexInfoApp::Setup()
   }
 }
 
-void VkexInfoApp::Render(vkex::Application::RenderData* p_data)
+void VkexInfoApp::Render(vkex::RenderData* p_data)
 {
 }
 
-void VkexInfoApp::Present(vkex::Application::PresentData* p_data)
+void VkexInfoApp::Present(vkex::PresentData* p_data)
 {
   // Frame data
   uint32_t frame_index = p_data->GetFrameIndex();

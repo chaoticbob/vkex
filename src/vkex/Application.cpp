@@ -327,17 +327,17 @@ struct WindowEvents {
 std::unordered_map<GLFWwindow*, Application*> WindowEvents::s_windows;
 
 // =================================================================================================
-// Application::RenderData
+// RenderData
 // =================================================================================================
-Application::RenderData::RenderData()
+RenderData::RenderData()
 {
 }
 
-Application::RenderData::~RenderData()
+RenderData::~RenderData()
 {
 }
 
-vkex::Result Application::RenderData::InternalCreate(vkex::Device device, uint32_t frame_index, vkex::CommandBuffer cmd)
+vkex::Result RenderData::InternalCreate(vkex::Device device, uint32_t frame_index, vkex::CommandBuffer cmd)
 {
   m_device = device;
   m_frame_index = frame_index;
@@ -373,7 +373,7 @@ vkex::Result Application::RenderData::InternalCreate(vkex::Device device, uint32
   return vkex::Result::Success;
 }
 
-vkex::Result Application::RenderData::InternalDestroy()
+vkex::Result RenderData::InternalDestroy()
 {
   // Work complete semaphore
   if (m_work_complete_semaphore != nullptr) {
@@ -402,33 +402,33 @@ vkex::Result Application::RenderData::InternalDestroy()
   return vkex::Result::Success;
 }
        
-void Application::RenderData::SetPrevious(Application::RenderData* p_previous)
+void RenderData::SetPrevious(RenderData* p_previous)
 {
   m_previous = p_previous;
 }
 
-void Application::RenderData::AddWaitSemaphore(const vkex::Semaphore& semaphore)
+void RenderData::AddWaitSemaphore(const vkex::Semaphore& semaphore)
 {
   m_wait_semaphores.push_back(semaphore);
 }
 
-void Application::RenderData::ClearWaitSemaphores()
+void RenderData::ClearWaitSemaphores()
 {
   m_wait_semaphores.clear();
 }
 
 // =================================================================================================
-// Application::PresentData
+// PresentData
 // =================================================================================================
-Application::PresentData::PresentData()
+PresentData::PresentData()
 {
 }
 
-Application::PresentData::~PresentData()
+PresentData::~PresentData()
 {
 }
        
-vkex::Result Application::PresentData::InternalCreate(vkex::Device device, uint32_t frame_index, vkex::CommandBuffer cmd)
+vkex::Result PresentData::InternalCreate(vkex::Device device, uint32_t frame_index, vkex::CommandBuffer cmd)
 {
   m_device = device;
   m_frame_index = frame_index;
@@ -505,7 +505,7 @@ vkex::Result Application::PresentData::InternalCreate(vkex::Device device, uint3
   return vkex::Result::Success;
 }
 
-vkex::Result Application::PresentData::InternalDestroy()
+vkex::Result PresentData::InternalDestroy()
 {
   // Image acquired semaphore
   if (m_image_acquired_sempahore != nullptr) {
@@ -565,22 +565,22 @@ vkex::Result Application::PresentData::InternalDestroy()
   return vkex::Result::Success;
 }
 
-void Application::PresentData::SetRenderPass(vkex::RenderPass render_pass)
+void PresentData::SetRenderPass(vkex::RenderPass render_pass)
 {
   m_render_pass = render_pass; 
 }
        
-void Application::PresentData::SetPrevious(Application::PresentData* p_previous)
+void PresentData::SetPrevious(PresentData* p_previous)
 {
   m_previous = p_previous;
 }
 
-void Application::PresentData::AddWaitSemaphore(const vkex::Semaphore& semaphore)
+void PresentData::AddWaitSemaphore(const vkex::Semaphore& semaphore)
 {
   m_wait_semaphores.push_back(semaphore);
 }
 
-void Application::PresentData::ClearWaitSemaphores()
+void PresentData::ClearWaitSemaphores()
 {
   m_wait_semaphores.clear();
 }
@@ -2471,7 +2471,7 @@ vkex::Result Application::UpdateCurrentPerFrameData()
   return vkex::Result::Success;
 }
 
-vkex::Result vkex::Application::ProcessRenderFence(Application::RenderData * p_data)
+vkex::Result vkex::Application::ProcessRenderFence(RenderData * p_data)
 {
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
@@ -2494,7 +2494,7 @@ vkex::Result vkex::Application::ProcessRenderFence(Application::RenderData * p_d
     return vkex::Result::Success;
 }
 
-vkex::Result Application::ProcessFrameFence(Application::PresentData* p_data)
+vkex::Result Application::ProcessFrameFence(PresentData* p_data)
 {
   if (!IsApplicationModeWindow()) {
     return vkex::Result::ErrorInvalidApplicationMode;
@@ -2521,7 +2521,7 @@ vkex::Result Application::ProcessFrameFence(Application::PresentData* p_data)
   return vkex::Result::Success;
 }
 
-vkex::Result Application::AcquireNextImage(Application::PresentData* p_present_data, uint32_t* p_swapchain_image_index)
+vkex::Result Application::AcquireNextImage(PresentData* p_present_data, uint32_t* p_swapchain_image_index)
 {
   if (!IsApplicationModeWindow()) {
     return vkex::Result::ErrorInvalidApplicationMode;
@@ -2770,13 +2770,13 @@ void Application::DispatchCallUpdate(double frame_elapsed_time)
   Update(frame_elapsed_time);
 }
 
-void Application::DispatchCallRender(Application::RenderData* p_render_data, Application::PresentData* p_present_data)
+void Application::DispatchCallRender(RenderData* p_render_data, PresentData* p_present_data)
 {
   Render(p_render_data, p_present_data);
   SubmitRender(p_render_data, p_present_data);
 }
 
-void Application::DispatchCallPresent(Application::PresentData* p_present_data)
+void Application::DispatchCallPresent(PresentData* p_present_data)
 {
   Present(p_present_data);
   SubmitPresent(p_present_data);
@@ -2821,7 +2821,7 @@ void Application::DrawImGui(vkex::CommandBuffer cmd)
     ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), *cmd);
 }
 
-vkex::Result Application::SubmitRender(Application::RenderData* p_current_render_data, Application::PresentData* p_current_present_data)
+vkex::Result Application::SubmitRender(RenderData* p_current_render_data, PresentData* p_current_present_data)
 {
   VkCommandBuffer       vk_command_buffer             = *(p_current_render_data->GetCommandBuffer());
   VkSemaphore           vk_work_complete_semaphore    = *(p_current_render_data->GetWorkCompleteSemaphore());
@@ -2850,7 +2850,7 @@ vkex::Result Application::SubmitRender(Application::RenderData* p_current_render
     }
   }
   else {
-    const Application::PresentData* p_previous = p_current_present_data->GetPrevious();
+    const PresentData* p_previous = p_current_present_data->GetPrevious();
     if (p_previous != nullptr) {
       vkex::Semaphore       semaphore         = p_previous->GetWorkCompleteForRenderSemaphore();
       VkSemaphore           vk_sempahore      = semaphore->GetVkObject();
@@ -2899,7 +2899,7 @@ vkex::Result Application::SubmitRender(Application::RenderData* p_current_render
   return vkex::Result::Success;
 }
 
-vkex::Result Application::SubmitPresent(Application::PresentData* p_data)
+vkex::Result Application::SubmitPresent(PresentData* p_data)
 {
   if (IsApplicationModeHeadless()) {
     return vkex::Result::ErrorInvalidApplicationMode;
@@ -3441,12 +3441,17 @@ vkex::Queue Application::GetGraphicsQueue() const
   return m_graphics_queue;
 }
 
-vkex::Application::RenderData* Application::GetCurrentRenderData() const
+vkex::Queue Application::GetComputeQueue() const
+{
+  return m_compute_queue;
+}
+
+vkex::RenderData* Application::GetCurrentRenderData() const
 {
   return m_current_render_data;
 }
 
-vkex::Application::PresentData* Application::GetCurrentPresentData() const
+vkex::PresentData* Application::GetCurrentPresentData() const
 {
   return m_current_present_data;
 }

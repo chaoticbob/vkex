@@ -33,7 +33,7 @@ public:
   virtual ~VkexInfoApp() {}
 
   void Configure(const vkex::ArgParser& args, vkex::Configuration& configuration);
-  void Present(vkex::Application::PresentData* p_data);
+  void Present(vkex::PresentData* p_data);
 
 private:
 };
@@ -56,7 +56,7 @@ void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& co
   configuration.graphics_debug.message_type.validation   = true;
 }
 
-void VkexInfoApp::Present(vkex::Application::PresentData* p_data)
+void VkexInfoApp::Present(vkex::PresentData* p_data)
 {
   // Build command buffer
   auto cmd = p_data->GetCommandBuffer();

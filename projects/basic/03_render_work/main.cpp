@@ -64,8 +64,8 @@ public:
   void Update(double frame_elapsed_time)
   {
   }
-  void Render(Application::RenderData* p_current_render_data, Application::PresentData* p_current_present_data);
-  void Present(vkex::Application::PresentData* p_current_present_data);
+  void Render(vkex::RenderData* p_current_render_data, vkex::PresentData* p_current_present_data);
+  void Present(vkex::PresentData* p_current_present_data);
 
   void SetupPerFrameObjects();
 
@@ -269,7 +269,7 @@ void VkexInfoApp::Setup()
   SetupPerFrameObjects();
 }
 
-void VkexInfoApp::Render(Application::RenderData* p_current_render_data, Application::PresentData* p_current_present_data)
+void VkexInfoApp::Render(vkex::RenderData* p_current_render_data, vkex::PresentData* p_current_present_data)
 {
   const uint32_t frame_index         = GetCurrentFrameIndex();
   PerFrameData&  per_frame_data      = m_per_frame_data[frame_index];
@@ -331,7 +331,7 @@ void VkexInfoApp::Render(Application::RenderData* p_current_render_data, Applica
     vkex::SubmitInfo submit_info = {};
 
     if (p_current_present_data->GetPrevious() != nullptr) {
-      const Application::PresentData* p_previous = p_current_present_data->GetPrevious();
+      const vkex::PresentData* p_previous = p_current_present_data->GetPrevious();
       submit_info.AddWaitSemaphore(p_previous->GetWorkCompleteForRenderSemaphore());
     }
 
@@ -347,7 +347,7 @@ void VkexInfoApp::Render(Application::RenderData* p_current_render_data, Applica
   p_current_render_data->AddWaitSemaphore(per_frame_data.work_complete_semaphore);
 }
 
-void VkexInfoApp::Present(vkex::Application::PresentData* p_data)
+void VkexInfoApp::Present(vkex::PresentData* p_data)
 {
   auto cmd         = p_data->GetCommandBuffer();
   auto render_pass = p_data->GetRenderPass();
