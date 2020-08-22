@@ -690,6 +690,11 @@ vkex::Result CDevice::InternalDestroy(const VkAllocationCallbacks* p_allocator)
   return vkex::Result::Success;
 }
 
+bool CDevice::IsDebugEnabled() const
+{
+    return m_instance->IsDebugEnabled();
+}
+
 vkex::Result CDevice::GetQueue(
   VkQueueFlagBits queue_type, 
   uint32_t        queue_family_index, 

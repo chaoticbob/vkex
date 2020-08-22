@@ -31,6 +31,7 @@ namespace vkex {
  *
  */
 struct BufferCreateInfo {
+  std::string                 name;
   VkDeviceSize                size;
   BufferUsageFlags            usage_flags;
   BufferCreateFlags           create_flags;

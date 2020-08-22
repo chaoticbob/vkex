@@ -273,6 +273,11 @@ public:
     return m_instance;
   }
 
+  /** @fn IsDebugEnabled
+   *
+   */
+  bool IsDebugEnabled() const;
+
   /** @fn GetPhysicalDevice
    *
    */

@@ -20,7 +20,7 @@
 
 #include <sstream>
 
-#define VK_LAYER_LUNARG_STANDARD_VALIDATION_LAYER_NAME  "VK_LAYER_LUNARG_standard_validation"
+#define VK_LAYER_KHRONOS_VALIDATION_NAME                "VK_LAYER_KHRONOS_validation"
 
 #define IHV_VENDOR_ID_AMD     0x1002
 #define IHV_VENDOR_ID_INTEL   0x8086
@@ -191,7 +191,7 @@ vkex::Result CInstance::InitializeLayers()
     std::vector<std::string> required;
     
     if (m_create_info.debug_utils.enable) {
-      required.push_back(VK_LAYER_LUNARG_STANDARD_VALIDATION_LAYER_NAME);
+      required.push_back(VK_LAYER_KHRONOS_VALIDATION_NAME);
     }
 
     for (auto& name : required) {
@@ -553,7 +553,7 @@ vkex::Result CInstance::InternalCreate(
 
   // Turn on debug utils if standard validation is found
   {
-    bool found = Contains(m_create_info.layers, std::string(VK_LAYER_LUNARG_STANDARD_VALIDATION_LAYER_NAME));
+    bool found = Contains(m_create_info.layers, std::string(VK_LAYER_KHRONOS_VALIDATION_NAME));
     if (found) {
       m_create_info.debug_utils.enable = true;
     }
@@ -612,7 +612,7 @@ vkex::Result CInstance::InternalCreate(
 
   // Set validation layers loaded
   {
-    auto it = Find(m_create_info.layers, std::string(VK_LAYER_LUNARG_STANDARD_VALIDATION_LAYER_NAME));
+    auto it = Find(m_create_info.layers, std::string(VK_LAYER_KHRONOS_VALIDATION_NAME));
     m_validation_layers_loaded = (it != std::end(m_create_info.layers));
   }
 

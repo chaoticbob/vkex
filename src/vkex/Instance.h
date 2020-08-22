@@ -157,6 +157,13 @@ public:
    */
   vkex::PhysicalDevice FindPhysicalDevice(const PhysicalDeviceCriteria& criteria) const;
 
+  /** @fn IsDebugEnabled
+   *
+   */
+  bool IsDebugEnabled() const {
+    return m_create_info.debug_utils.enable;
+  }
+
   /** @fn IsSwapchainEnabled
    *
    */

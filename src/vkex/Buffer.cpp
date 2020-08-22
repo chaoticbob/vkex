@@ -103,6 +103,23 @@ vkex::Result CBuffer::InternalCreate(
     }
   }
 
+  // Set name if present
+  if (!m_create_info.name.empty() && m_device->IsDebugEnabled()) {
+    VkDebugUtilsObjectNameInfoEXT name_info = {VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT};
+    name_info.objectType   = VK_OBJECT_TYPE_BUFFER ;
+    name_info.objectHandle = (uint64_t)m_vk_object;
+    name_info.pObjectName  = m_create_info.name.c_str();    
+    
+    VkResult vk_result = InvalidValue<VkResult>::Value;
+    VKEX_VULKAN_RESULT_CALL(
+      vk_result,
+      vkex::SetDebugUtilsObjectNameEXT(*m_device, &name_info);
+    );
+    if (vk_result != VK_SUCCESS) {
+      return vkex::Result(vk_result);
+    }
+  }
+
   return vkex::Result::Success;
 }
 

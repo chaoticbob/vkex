@@ -172,9 +172,10 @@ vkex::Result CDescriptorSet::UpdateDescriptor(uint32_t binding, const vkex::Buff
   VkDescriptorType descriptor_type = p_descriptor_binding->descriptorType;
   bool is_storage_buffer = (descriptor_type == VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
   bool is_uniform_buffer = (descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+  bool is_uniform_buffer_dynamic = (descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC);
   bool is_uniform_texel_buffer = (descriptor_type == VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER);
 
-  if (!(is_storage_buffer || is_uniform_buffer || is_uniform_texel_buffer))  {
+  if (!(is_storage_buffer || is_uniform_buffer || is_uniform_buffer_dynamic || is_uniform_texel_buffer))  {
     return vkex::Result::ErrorInvalidDescriptorType;
   }
 
@@ -310,7 +311,7 @@ vkex::Result CDescriptorPool::InternalCreate(
     };
     
     for (uint32_t i = 0; i < VKEX_DESCRIPTOR_TYPE_COUNT; ++i) {
-      uint32_t descriptorCount = m_create_info.pool_sizes.sizes[i];
+      uint32_t descriptorCount = m_create_info.pool_sizes.sizes[i] * m_create_info.size_multiplier;
       if (descriptorCount == 0) {
         continue;
       }
