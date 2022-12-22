@@ -105,16 +105,17 @@ list (APPEND SHARED_SHADER_HDR_FILES
 
 list(APPEND IMGUI_HDR_FILES
   ${IMGUI_DIR}/imgui.h
-  ${IMGUI_DIR}/examples/imgui_impl_glfw.h
-  ${IMGUI_DIR}/examples/imgui_impl_vulkan.h
+  ${IMGUI_DIR}/backends/imgui_impl_glfw.h
+  ${IMGUI_DIR}/backends/imgui_impl_vulkan.h
 )
 
 list(APPEND IMGUI_SRC_FILES
   ${IMGUI_DIR}/imgui.cpp
   ${IMGUI_DIR}/imgui_draw.cpp
+  ${IMGUI_DIR}/imgui_tables.cpp
   ${IMGUI_DIR}/imgui_widgets.cpp
-  ${IMGUI_DIR}/examples/imgui_impl_glfw.cpp
-  ${IMGUI_DIR}/examples/imgui_impl_vulkan.cpp
+  ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+  ${IMGUI_DIR}/backends/imgui_impl_vulkan.cpp
 )
 
 list(APPEND VKEX_HDR_FILES

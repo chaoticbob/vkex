@@ -1219,11 +1219,13 @@ void CCommandPool::FreeCommandBuffers(
       nullptr);
   }
 
-  vkex::FreeCommandBuffers(
-    *m_device,
-    m_vk_object,
-    CountU32(vk_command_buffers),
-    DataPtr(vk_command_buffers));
+  if (!vk_command_buffers.empty()) {
+    vkex::FreeCommandBuffers(
+      *m_device,
+      m_vk_object,
+      CountU32(vk_command_buffers),
+      DataPtr(vk_command_buffers));
+  }
 }
 
 void CCommandPool::FreeCommandBuffers(const std::vector<vkex::CommandBuffer>* p_command_buffers)
