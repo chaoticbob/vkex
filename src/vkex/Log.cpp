@@ -1,12 +1,12 @@
 /*
  Copyright 2018-2023 Google Inc.
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
- 
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,28 +33,28 @@ Log::~Log()
 
 void Log::Initialize(const std::string& file_path)
 {
-  if (s_logger) {
-    return;
-  }
-  s_logger = std::unique_ptr<Log>(new CombinedLog(file_path));
+    if (s_logger) {
+        return;
+    }
+    s_logger = std::unique_ptr<Log>(new CombinedLog(file_path));
 
-  if (!file_path.empty()) {
-    std::stringstream ss;
-    ss << "Opened log file: " << file_path << std::endl;
+    if (!file_path.empty()) {
+        std::stringstream ss;
+        ss << "Opened log file: " << file_path << std::endl;
 #if defined(VKEX_WIN32)
-    OutputDebugStringA(ss.str().c_str());
+        OutputDebugStringA(ss.str().c_str());
 #elif defined(VKEX_LINUX)
-    std::cout << ss.str();
+        std::cout << ss.str();
 #endif
-  }
+    }
 }
 
 Log* Log::Get()
 {
-  if (!s_logger) {
-    s_logger = std::unique_ptr<Log>(new CombinedLog("vkex.log"));
-  }
-  return s_logger.get();
+    if (!s_logger) {
+        s_logger = std::unique_ptr<Log>(new CombinedLog("vkex.log"));
+    }
+    return s_logger.get();
 }
 
 // =================================================================================================
@@ -71,16 +71,16 @@ ConsoleLog::~ConsoleLog()
 void ConsoleLog::Write(const std::string& msg)
 {
 #if defined(VKEX_LINUX) || defined(VKEX_GGP)
-  std::cout << msg;
+    std::cout << msg;
 #elif defined(VKEX_WIN32)
-  OutputDebugStringA(msg.c_str());
+    OutputDebugStringA(msg.c_str());
 #endif
 }
 
 void ConsoleLog::FlushOutput()
 {
 #if defined(VKEX_LINUX) || defined(VKEX_GGP)
-  std::cout << std::flush;
+    std::cout << std::flush;
 #elif defined(VKEX_WIN32)
 #endif
 }
@@ -89,34 +89,34 @@ void ConsoleLog::FlushOutput()
 // FileLog
 // =================================================================================================
 FileLog::FileLog(const std::string& file_path)
-  : m_file_path(file_path)
+    : m_file_path(file_path)
 {
-  m_file = std::ofstream(m_file_path.c_str());
+    m_file = std::ofstream(m_file_path.c_str());
 }
 
 FileLog::~FileLog()
 {
-  if (!m_file.is_open()) {
-    return;
-  }
-  m_file.flush();
-  m_file.close();
+    if (!m_file.is_open()) {
+        return;
+    }
+    m_file.flush();
+    m_file.close();
 }
 
 void FileLog::Write(const std::string& msg)
 {
-  if (!m_file.is_open()) {
-    return;
-  }
-  m_file << msg;
+    if (!m_file.is_open()) {
+        return;
+    }
+    m_file << msg;
 }
 
 void FileLog::FlushOutput()
 {
-  if (!m_file.is_open()) {
-    return;
-  }
-  m_file.flush();
+    if (!m_file.is_open()) {
+        return;
+    }
+    m_file.flush();
 }
 
 // =================================================================================================
@@ -124,8 +124,8 @@ void FileLog::FlushOutput()
 // =================================================================================================
 CombinedLog::CombinedLog(const std::string& file_path)
 {
-  m_console_log = std::make_unique<ConsoleLog>();
-  m_file_log = std::make_unique<FileLog>(file_path);
+    m_console_log = std::make_unique<ConsoleLog>();
+    m_file_log    = std::make_unique<FileLog>(file_path);
 }
 
 CombinedLog::~CombinedLog()
@@ -134,15 +134,14 @@ CombinedLog::~CombinedLog()
 
 void CombinedLog::Write(const std::string& msg)
 {
-  m_console_log->Write(msg);
-  m_file_log->Write(msg);
+    m_console_log->Write(msg);
+    m_file_log->Write(msg);
 }
-
 
 void CombinedLog::FlushOutput()
 {
-  m_console_log->FlushOutput();
-  m_file_log->FlushOutput();
+    m_console_log->FlushOutput();
+    m_file_log->FlushOutput();
 }
 
 } // namespace vkex

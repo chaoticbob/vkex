@@ -544,37 +544,24 @@ vkex::Result CDevice::InternalCreate(
                                 shader_core_properties.shaderArraysPerEngineCount *
                                 shader_core_properties.computeUnitsPerShaderArray;
 
+            // clang-format off
             VKEX_LOG_INFO("AMD Shader Core Properties");
-            VKEX_LOG_INFO("   "
-                          << "Compute Unit Count             : " << cu_count);
-            VKEX_LOG_INFO("   "
-                          << "Shader Engine Count            : " << shader_core_properties.shaderEngineCount);
-            VKEX_LOG_INFO("   "
-                          << "Shader Arrays Per Engine Count : " << shader_core_properties.shaderArraysPerEngineCount);
-            VKEX_LOG_INFO("   "
-                          << "Compute Units Per Shader Array : " << shader_core_properties.computeUnitsPerShaderArray);
-            VKEX_LOG_INFO("   "
-                          << "SIMD Per Compute Unit          : " << shader_core_properties.simdPerComputeUnit);
-            VKEX_LOG_INFO("   "
-                          << "Wavefronts Per SIMD            : " << shader_core_properties.wavefrontsPerSimd);
-            VKEX_LOG_INFO("   "
-                          << "Wavefront Size                 : " << shader_core_properties.wavefrontSize);
-            VKEX_LOG_INFO("   "
-                          << "SGPRs Per SIMD                 : " << shader_core_properties.sgprsPerSimd);
-            VKEX_LOG_INFO("   "
-                          << "Min SGPR Allocation            : " << shader_core_properties.minSgprAllocation);
-            VKEX_LOG_INFO("   "
-                          << "Max SGPR Allocation            : " << shader_core_properties.maxSgprAllocation);
-            VKEX_LOG_INFO("   "
-                          << "SGPR Allocation Granularity    : " << shader_core_properties.sgprAllocationGranularity);
-            VKEX_LOG_INFO("   "
-                          << "VGPRs Per SIMD                 : " << shader_core_properties.vgprsPerSimd);
-            VKEX_LOG_INFO("   "
-                          << "Min VGPR Allocation            : " << shader_core_properties.minVgprAllocation);
-            VKEX_LOG_INFO("   "
-                          << "Max VGPR Allocation            : " << shader_core_properties.maxVgprAllocation);
-            VKEX_LOG_INFO("   "
-                          << "VGPR Allocation Granularity    : " << shader_core_properties.vgprAllocationGranularity);
+            VKEX_LOG_INFO("   " << "Compute Unit Count             : " << cu_count);
+            VKEX_LOG_INFO("   " << "Shader Engine Count            : " << shader_core_properties.shaderEngineCount);
+            VKEX_LOG_INFO("   " << "Shader Arrays Per Engine Count : " << shader_core_properties.shaderArraysPerEngineCount);
+            VKEX_LOG_INFO("   " << "Compute Units Per Shader Array : " << shader_core_properties.computeUnitsPerShaderArray);
+            VKEX_LOG_INFO("   " << "SIMD Per Compute Unit          : " << shader_core_properties.simdPerComputeUnit);
+            VKEX_LOG_INFO("   " << "Wavefronts Per SIMD            : " << shader_core_properties.wavefrontsPerSimd);
+            VKEX_LOG_INFO("   " << "Wavefront Size                 : " << shader_core_properties.wavefrontSize);
+            VKEX_LOG_INFO("   " << "SGPRs Per SIMD                 : " << shader_core_properties.sgprsPerSimd);
+            VKEX_LOG_INFO("   " << "Min SGPR Allocation            : " << shader_core_properties.minSgprAllocation);
+            VKEX_LOG_INFO("   " << "Max SGPR Allocation            : " << shader_core_properties.maxSgprAllocation);
+            VKEX_LOG_INFO("   " << "SGPR Allocation Granularity    : " << shader_core_properties.sgprAllocationGranularity);
+            VKEX_LOG_INFO("   " << "VGPRs Per SIMD                 : " << shader_core_properties.vgprsPerSimd);
+            VKEX_LOG_INFO("   " << "Min VGPR Allocation            : " << shader_core_properties.minVgprAllocation);
+            VKEX_LOG_INFO("   " << "Max VGPR Allocation            : " << shader_core_properties.maxVgprAllocation);
+            VKEX_LOG_INFO("   " << "VGPR Allocation Granularity    : " << shader_core_properties.vgprAllocationGranularity);
+            // clang-format on
         }
         // Extensions
         if (m_vk_create_info.enabledExtensionCount > 0) {

@@ -1,12 +1,12 @@
 /*
  Copyright 2018-2023 Google Inc.
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
- 
+
  http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,29 +32,28 @@ CRenderTargetView::~CRenderTargetView()
 }
 
 vkex::Result CRenderTargetView::InternalCreate(
-  const vkex::RenderTargetViewCreateInfo& create_info,
-  const VkAllocationCallbacks*            p_allocator
-)
+    const vkex::RenderTargetViewCreateInfo& create_info,
+    const VkAllocationCallbacks*            p_allocator)
 {
-  // Copy create info
-  m_create_info = create_info;
+    // Copy create info
+    m_create_info = create_info;
 
-  // Check resource
-  if (m_create_info.attachment == nullptr) {
-    return vkex::Result::ErrorUnexpectedNullPointer;
-  }
+    // Check resource
+    if (m_create_info.attachment == nullptr) {
+        return vkex::Result::ErrorUnexpectedNullPointer;
+    }
 
-  return vkex::Result::Success;
+    return vkex::Result::Success;
 }
 
 vkex::Result CRenderTargetView::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
-  return vkex::Result::Success;
+    return vkex::Result::Success;
 }
 
 vkex::ImageView CRenderTargetView::GetResource() const
 {
-  return m_create_info.attachment;
+    return m_create_info.attachment;
 }
 
 // =================================================================================================
@@ -69,29 +68,28 @@ CDepthStencilView::~CDepthStencilView()
 }
 
 vkex::Result CDepthStencilView::InternalCreate(
-  const vkex::DepthStencilViewCreateInfo& create_info,
-  const VkAllocationCallbacks*            p_allocator
-)
+    const vkex::DepthStencilViewCreateInfo& create_info,
+    const VkAllocationCallbacks*            p_allocator)
 {
-  // Copy create info
-  m_create_info = create_info;
+    // Copy create info
+    m_create_info = create_info;
 
-  // Check resource
-  if (m_create_info.attachment == nullptr) {
-    return vkex::Result::ErrorUnexpectedNullPointer;
-  }
+    // Check resource
+    if (m_create_info.attachment == nullptr) {
+        return vkex::Result::ErrorUnexpectedNullPointer;
+    }
 
-  return vkex::Result::Success;
+    return vkex::Result::Success;
 }
 
 vkex::Result CDepthStencilView::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
-  return vkex::Result::Success;
+    return vkex::Result::Success;
 }
 
 vkex::ImageView CDepthStencilView::GetResource() const
 {
-  return m_create_info.attachment;
+    return m_create_info.attachment;
 }
 
 } // namespace vkex

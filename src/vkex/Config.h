@@ -18,15 +18,15 @@
 #define __VKEX_CONFIG_H__
 
 #if defined(VKEX_WIN32)
-# if !defined(NOMINMAX)
-#  define VC_EXTRALEAN
-# endif
-# if !defined(WIN32_LEAN_AND_MEAN)
-#  define WIN32_LEAN_AND_MEAN 
-# endif
-# if !defined(NOMINMAX)
-#  define NOMINMAX
-# endif
+#    if !defined(NOMINMAX)
+#        define VC_EXTRALEAN
+#    endif
+#    if !defined(WIN32_LEAN_AND_MEAN)
+#        define WIN32_LEAN_AND_MEAN
+#    endif
+#    if !defined(NOMINMAX)
+#        define NOMINMAX
+#    endif
 #endif
 
 #include "vkex/VkexLoader.h"
@@ -48,22 +48,23 @@
 #include "vkex/ConfigMath.h"
 #include "vkex/Util.h"
 
-#define VKEX_MINIMUM_REQUIRED_VULKAN_VERSION  VK_MAKE_VERSION(1, 3, 0)
-#define VKEX_ALL_MIP_LEVELS                   0xFFFFFFFF
-#define VKEX_ALL_ARRAY_LAYERS                 0xFFFFFFFF
+#define VKEX_MINIMUM_REQUIRED_VULKAN_VERSION VK_MAKE_VERSION(1, 3, 0)
+#define VKEX_ALL_MIP_LEVELS                  0xFFFFFFFF
+#define VKEX_ALL_ARRAY_LAYERS                0xFFFFFFFF
 
-enum {
-  // Fake this so there isn't a random magic constant 0 hanging out
-  VK_PIPELINE_STAGE_PRESENT_BIT = 0,
+enum
+{
+    // Fake this so there isn't a random magic constant 0 hanging out
+    VK_PIPELINE_STAGE_PRESENT_BIT = 0,
 };
 
 namespace vkex {
 
 #define VKEX_FOUR_CC(C0, C1, C2, C3) \
-  ((int)(C0 & 0xFF) <<  0) |         \
-  ((int)(C1 & 0xFF) <<  8) |         \
-  ((int)(C2 & 0xFF) << 16) |         \
-  ((int)(C3 & 0xFF) << 24)
+    ((int)(C0 & 0xFF) << 0) |        \
+        ((int)(C1 & 0xFF) << 8) |    \
+        ((int)(C2 & 0xFF) << 16) |   \
+        ((int)(C3 & 0xFF) << 24)
 
 // =================================================================================================
 // Enums
@@ -72,21 +73,22 @@ namespace vkex {
 /** @enum ComponentType
  *
  */
-enum class ComponentType {
-  UNDEFINED = 0,
-  INT8,
-  UINT8,
-  INT16,
-  UINT16,
-  INT32,
-  UINT32,
-  INT64,
-  UINT64,
-  FLOAT16,
-  FLOAT32,
-  FLOAT64,
-  PACKED,
-  COMPRESSED,
+enum class ComponentType
+{
+    UNDEFINED = 0,
+    INT8,
+    UINT8,
+    INT16,
+    UINT16,
+    INT32,
+    UINT32,
+    INT64,
+    UINT64,
+    FLOAT16,
+    FLOAT32,
+    FLOAT64,
+    PACKED,
+    COMPRESSED,
 };
 
 // =================================================================================================
@@ -96,30 +98,45 @@ enum class ComponentType {
 /** @struct InvalidValue
  *
  */
-template <typename T> struct InvalidValue {};
-
-template <> struct InvalidValue<VkResult> {
-  static const VkResult Value = static_cast<VkResult>(0x7FFFFFFF);
+template <typename T>
+struct InvalidValue
+{
 };
 
-template <> struct InvalidValue<VkImageType> {
-  static const VkImageType Value = static_cast<VkImageType>(~0);
+template <>
+struct InvalidValue<VkResult>
+{
+    static const VkResult Value = static_cast<VkResult>(0x7FFFFFFF);
 };
 
-template <> struct InvalidValue<VkImageViewType> {
-  static const VkImageViewType Value = static_cast<VkImageViewType>(~0);
+template <>
+struct InvalidValue<VkImageType>
+{
+    static const VkImageType Value = static_cast<VkImageType>(~0);
 };
 
-template <> struct InvalidValue<VkImageAspectFlags> {
-  static const VkImageAspectFlags Value = static_cast<VkImageAspectFlags>(~0);
+template <>
+struct InvalidValue<VkImageViewType>
+{
+    static const VkImageViewType Value = static_cast<VkImageViewType>(~0);
 };
 
-template <> struct InvalidValue<VkIndexType> {
-  static const VkIndexType Value = static_cast<VkIndexType>(~0);
+template <>
+struct InvalidValue<VkImageAspectFlags>
+{
+    static const VkImageAspectFlags Value = static_cast<VkImageAspectFlags>(~0);
 };
 
-template <> struct InvalidValue<VkDescriptorType> {
-  static const VkDescriptorType Value = static_cast<VkDescriptorType>(~0);
+template <>
+struct InvalidValue<VkIndexType>
+{
+    static const VkIndexType Value = static_cast<VkIndexType>(~0);
+};
+
+template <>
+struct InvalidValue<VkDescriptorType>
+{
+    static const VkDescriptorType Value = static_cast<VkDescriptorType>(~0);
 };
 
 // =================================================================================================
@@ -129,190 +146,204 @@ template <> struct InvalidValue<VkDescriptorType> {
 /** @class Result
  *
  */
-class Result {
+class Result
+{
 public:
-  enum Value {
-    Success                                             =  0,
-    Undefined                                           =  0x7FFFFFFF,
+    enum Value
+    {
+        Success   = 0,
+        Undefined = 0x7FFFFFFF,
 
-    ErrorFailed                                         = -1,
-    ErrorAllocationFailed                               = -2,
-    ErrorUnexpectedNullPointer                          = -3,
-    ErrorOutOfRange                                     = -4,
+        ErrorFailed                = -1,
+        ErrorAllocationFailed      = -2,
+        ErrorUnexpectedNullPointer = -3,
+        ErrorOutOfRange            = -4,
 
-    ErrorInstanceAlreadyExists                          = -100,
-    ErrorInstanceNotAllocated                           = -102,
-    ErrorInvalidInstanceAddress                         = -101,
+        ErrorInstanceAlreadyExists  = -100,
+        ErrorInstanceNotAllocated   = -102,
+        ErrorInvalidInstanceAddress = -101,
 
-    ErrorVkexRequiresAtLeastVulkan11                    = -200,
+        ErrorVkexRequiresAtLeastVulkan11 = -200,
 
-    ErrorFunctionSetNotLoaded                           = -1000,
-    ErrorInstanceProcNotFound                           = -1001,
-    ErrorDeviceProcNotFound                             = -1002,
-    ErrorInstanceLayerNotFound                          = -1003,
-    ErrorInstanceExtensionNotFound                      = -1004,
-    ErrorDeviceExtensionNotFound                        = -1005,
-    ErrorPhysicalDevicesNotFound                        = -1006,
-    ErrorSupportedQueueSlotNotFound                     = -1007,
+        ErrorFunctionSetNotLoaded       = -1000,
+        ErrorInstanceProcNotFound       = -1001,
+        ErrorDeviceProcNotFound         = -1002,
+        ErrorInstanceLayerNotFound      = -1003,
+        ErrorInstanceExtensionNotFound  = -1004,
+        ErrorDeviceExtensionNotFound    = -1005,
+        ErrorPhysicalDevicesNotFound    = -1006,
+        ErrorSupportedQueueSlotNotFound = -1007,
 
-    ErrorInvalidQueueCount                              = -1100,
-    ErrorInvalidQueuePriorityCount                      = -1101,
-    ErrorInvalidSurfaceFormatCount                      = -1102,
-    ErrorInvalidSurfaceExtents                          = -1103,
-    ErrorInvalidQueueFamilyIndex                        = -1104,
-    ErrorInvalidSwapchainImageIndex                     = -1105,
-    ErrorInvalidBufferUsage                             = -1106,
-    ErrorInvalidDestinationImageLayout                  = -1107,
-    ErrorInvalidDescriptorBinding                       = -1108,
-    ErrorInvalidDescriptorType                          = -1109,
+        ErrorInvalidQueueCount             = -1100,
+        ErrorInvalidQueuePriorityCount     = -1101,
+        ErrorInvalidSurfaceFormatCount     = -1102,
+        ErrorInvalidSurfaceExtents         = -1103,
+        ErrorInvalidQueueFamilyIndex       = -1104,
+        ErrorInvalidSwapchainImageIndex    = -1105,
+        ErrorInvalidBufferUsage            = -1106,
+        ErrorInvalidDestinationImageLayout = -1107,
+        ErrorInvalidDescriptorBinding      = -1108,
+        ErrorInvalidDescriptorType         = -1109,
 
-    ErrorInvalidQueueObject                             = -1120,
+        ErrorInvalidQueueObject = -1120,
 
-    ErrorBufferSizeMustBeGreaterThanZero                = -1150,
-    ErrorImageDiemsionsMustBeGreaterThanZero            = -1151,
-    ErrorConstantBufferSizeMustBeGreaterThanZero        = -1152,
-    ErrorStorageBufferSizeMustBeGreaterThanZero         = -1153,
-    ErrorIndexBufferSizeMustBeGreaterThanZero           = -1154,
-    ErrorVertexBufferSizeMustBeGreaterThanZero          = -1155,
-    ErrorIndirectBufferSizeMustBeGreaterThanZero        = -1156,
+        ErrorBufferSizeMustBeGreaterThanZero         = -1150,
+        ErrorImageDiemsionsMustBeGreaterThanZero     = -1151,
+        ErrorConstantBufferSizeMustBeGreaterThanZero = -1152,
+        ErrorStorageBufferSizeMustBeGreaterThanZero  = -1153,
+        ErrorIndexBufferSizeMustBeGreaterThanZero    = -1154,
+        ErrorVertexBufferSizeMustBeGreaterThanZero   = -1155,
+        ErrorIndirectBufferSizeMustBeGreaterThanZero = -1156,
 
-    ErrorResourceIsNull                                 = -1170,
-    ErrorResourceIsNotHostVisible                       = -1171,
-    ErrorResouceSizeIsInsufficient                      = -1172,
+        ErrorResourceIsNull            = -1170,
+        ErrorResourceIsNotHostVisible  = -1171,
+        ErrorResouceSizeIsInsufficient = -1172,
 
-    ErrorVertexShaderLoadFailed                         = -1181,
-    ErrorHullShaderLoadFailed                           = -1182,
-    ErrorDomainShaderLoadFailed                         = -1183,
-    ErrorGeometryShaderLoadFailed                       = -1184,
-    ErrorPixelShaderLoadFailed                          = -1185,
-    ErrorComputeShaderLoadFailed                        = -1186,
+        ErrorVertexShaderLoadFailed   = -1181,
+        ErrorHullShaderLoadFailed     = -1182,
+        ErrorDomainShaderLoadFailed   = -1183,
+        ErrorGeometryShaderLoadFailed = -1184,
+        ErrorPixelShaderLoadFailed    = -1185,
+        ErrorComputeShaderLoadFailed  = -1186,
 
-    ErrorCommandBufferCountMustNotBeZero                = -1200,
-    ErrorCommandBufferCountMustBeOne                    = -1201,
-    ErrorDescriptorSetLayoutsMustBeMoreThanZero         = -1202,
-    ErrorDescriptorSetLayoutsMustBeOne                  = -1203,
-    ErrorDescriptorSetNumberNotFound                    = -1204,
-    ErrorDuplicatetDescriptorBinding                    = -1205,
-    ErrorPipelineMissingRequiredShaderStage             = -1206,
+        ErrorCommandBufferCountMustNotBeZero        = -1200,
+        ErrorCommandBufferCountMustBeOne            = -1201,
+        ErrorDescriptorSetLayoutsMustBeMoreThanZero = -1202,
+        ErrorDescriptorSetLayoutsMustBeOne          = -1203,
+        ErrorDescriptorSetNumberNotFound            = -1204,
+        ErrorDuplicatetDescriptorBinding            = -1205,
+        ErrorPipelineMissingRequiredShaderStage     = -1206,
 
-    ErrorVulkanFunctionFailed                           = -1300,
-    ErrorSpirvReflectionError                           = -1301,
-    ErrorImGuiInitializeFailed                          = -1302,
+        ErrorVulkanFunctionFailed  = -1300,
+        ErrorSpirvReflectionError  = -1301,
+        ErrorImGuiInitializeFailed = -1302,
 
-    // Application
-    ErrorArgsParseFailed                                = -4000,
-    ErrorInvalidApplicationMode                         = -4001,
+        // Application
+        ErrorArgsParseFailed        = -4000,
+        ErrorInvalidApplicationMode = -4001,
 
-    // Window
-    ErrorInvalidWindowWidth                             = -5000,
-    ErrorInvalidWindowHeight                            = -5001,
-    ErrorGlfwInitializeFailed                           = -5002,
-    ErrorGlfwWindowCreateFailed                         = -5003,
-    ErrorWindowEventsAlreadyRegistered                  = -5004,
+        // Window
+        ErrorInvalidWindowWidth            = -5000,
+        ErrorInvalidWindowHeight           = -5001,
+        ErrorGlfwInitializeFailed          = -5002,
+        ErrorGlfwWindowCreateFailed        = -5003,
+        ErrorWindowEventsAlreadyRegistered = -5004,
 
-    // File system
-    ErrorPathDoesNotExist                               = -10000,
-    ErrorPathIsNotFile                                  = -10001,
-    ErrorOpenFileFailed                                 = -10002,
+        // File system
+        ErrorPathDoesNotExist = -10000,
+        ErrorPathIsNotFile    = -10001,
+        ErrorOpenFileFailed   = -10002,
 
-    // Image error
-    ErrorImageLoadFailed                                = -20000,
-    ErrorImageInfoFailed                                = -20001,
-    ErrorImageStorageSizeInsufficient                   = -20002,
-    ErrorImageWriteFailed                               = -20003,
-  };
+        // Image error
+        ErrorImageLoadFailed              = -20000,
+        ErrorImageInfoFailed              = -20001,
+        ErrorImageStorageSizeInsufficient = -20002,
+        ErrorImageWriteFailed             = -20003,
+    };
 
-  Result() {}
+    Result() {}
 
-  Result(Result::Value value)
-    : m_value(value) {}
+    Result(Result::Value value)
+        : m_value(value) {}
 
-  explicit Result(VkResult value)
-    : m_value(ErrorVulkanFunctionFailed), m_vk_result(value)
-  {
-    m_flags.bits.vulkan = true;
-  }
+    explicit Result(VkResult value)
+        : m_value(ErrorVulkanFunctionFailed), m_vk_result(value)
+    {
+        m_flags.bits.vulkan = true;
+    }
 
-  explicit Result(SpvReflectResult value)
-    : m_value(ErrorSpirvReflectionError), m_spv_reflect_result(value)
-  {
-    m_flags.bits.spirv_reflection = true;
-  }
+    explicit Result(SpvReflectResult value)
+        : m_value(ErrorSpirvReflectionError), m_spv_reflect_result(value)
+    {
+        m_flags.bits.spirv_reflection = true;
+    }
 
-  ~Result() {}
+    ~Result() {}
 
-  operator bool() const {
-    bool result = IsSuccess();
-    return result;
-  }
+    operator bool() const
+    {
+        bool result = IsSuccess();
+        return result;
+    }
 
-  bool operator==(const Result& rhs) const {
-    bool result = (m_value == rhs.m_value);
-    return result;
-  }
+    bool operator==(const Result& rhs) const
+    {
+        bool result = (m_value == rhs.m_value);
+        return result;
+    }
 
-  bool operator!=(const Result& rhs) const {
-    bool result = (m_value != rhs.m_value);
-    return result;
-  }
+    bool operator!=(const Result& rhs) const
+    {
+        bool result = (m_value != rhs.m_value);
+        return result;
+    }
 
-  bool operator==(const Result::Value rhs) const {
-    bool result = (m_value == rhs);
-    return result;
-  }
+    bool operator==(const Result::Value rhs) const
+    {
+        bool result = (m_value == rhs);
+        return result;
+    }
 
-  bool operator!=(const Result::Value rhs) const {
-    bool result = (m_value != rhs);
-    return result;
-  }
+    bool operator!=(const Result::Value rhs) const
+    {
+        bool result = (m_value != rhs);
+        return result;
+    }
 
-  bool IsSuccess() const {
-    bool result = (m_value == Result::Value::Success);
-    return result;
-  }
+    bool IsSuccess() const
+    {
+        bool result = (m_value == Result::Value::Success);
+        return result;
+    }
 
-  bool IsWarning() const {
-    bool result = (m_value > Result::Value::Success);
-    return result;
-  }
+    bool IsWarning() const
+    {
+        bool result = (m_value > Result::Value::Success);
+        return result;
+    }
 
-  bool IsError() const {
-    bool result = (m_value < Result::Value::Success);
-    return result;
-  }
+    bool IsError() const
+    {
+        bool result = (m_value < Result::Value::Success);
+        return result;
+    }
 
-  Result::Value GetValue() const {
-    return m_value;
-  }
+    Result::Value GetValue() const
+    {
+        return m_value;
+    }
 
-  VkResult GetVkResult() const {
-    return m_vk_result;
-  }
+    VkResult GetVkResult() const
+    {
+        return m_vk_result;
+    }
 
-  friend std::ostream& operator<<(
-    std::ostream& os,
-    const Result& obj
-  )
-  {
-    os << obj.m_value;
-    return os;
-  }
+    friend std::ostream& operator<<(
+        std::ostream& os,
+        const Result& obj)
+    {
+        os << obj.m_value;
+        return os;
+    }
 
 private:
-  union Flags {
-    struct {
-      bool    vulkan           : 1;
-      bool    spirv_reflection : 1;
-    } bits;
-    uint32_t  flags;
-  };
+    union Flags
+    {
+        struct
+        {
+            bool vulkan           : 1;
+            bool spirv_reflection : 1;
+        } bits;
+        uint32_t flags;
+    };
 
-  Flags               m_flags     = {};
-  Value               m_value     = Value::ErrorFailed;
-  union {
-    VkResult          m_vk_result = VK_SUCCESS;
-    SpvReflectResult  m_spv_reflect_result;
-  };
+    Flags m_flags = {};
+    Value m_value = Value::ErrorFailed;
+    union
+    {
+        VkResult         m_vk_result = VK_SUCCESS;
+        SpvReflectResult m_spv_reflect_result;
+    };
 };
 
 // =================================================================================================
@@ -325,7 +356,7 @@ private:
 template <typename T>
 uint32_t CountU32(const std::vector<T>& v)
 {
-  return static_cast<uint32_t>(v.size());
+    return static_cast<uint32_t>(v.size());
 }
 
 /** @fn DataPtr
@@ -334,7 +365,7 @@ uint32_t CountU32(const std::vector<T>& v)
 template <typename T>
 const T* DataPtr(const std::vector<T>& v)
 {
-  return v.empty() ? nullptr : v.data();
+    return v.empty() ? nullptr : v.data();
 }
 
 /** @fn DataPtr
@@ -342,7 +373,7 @@ const T* DataPtr(const std::vector<T>& v)
  */
 inline const char* DataPtr(const std::string& s)
 {
-  return s.empty() ? nullptr : s.c_str();
+    return s.empty() ? nullptr : s.c_str();
 }
 
 /** @fn GetCStrings
@@ -350,11 +381,11 @@ inline const char* DataPtr(const std::string& s)
  */
 inline std::vector<const char*> GetCStrings(const std::vector<std::string>& v)
 {
-  std::vector<const char*> c_strs;
-  for (const std::string& s : v) {
-    c_strs.push_back(s.c_str());
-  }
-  return c_strs;
+    std::vector<const char*> c_strs;
+    for (const std::string& s : v) {
+        c_strs.push_back(s.c_str());
+    }
+    return c_strs;
 }
 
 /** @fn Find
@@ -363,8 +394,8 @@ inline std::vector<const char*> GetCStrings(const std::vector<std::string>& v)
 template <typename T>
 typename std::vector<T>::const_iterator Find(const std::vector<T>& container, const T& value)
 {
-  auto it = std::find(std::begin(container), std::end(container), value);
-  return it;
+    auto it = std::find(std::begin(container), std::end(container), value);
+    return it;
 }
 
 /** @fn FindIf
@@ -373,8 +404,8 @@ typename std::vector<T>::const_iterator Find(const std::vector<T>& container, co
 template <typename T, typename UnaryPredicate>
 typename std::vector<T>::iterator FindIf(std::vector<T>& container, UnaryPredicate pred)
 {
-  auto it = std::find_if(std::begin(container), std::end(container), pred);
-  return it;
+    auto it = std::find_if(std::begin(container), std::end(container), pred);
+    return it;
 }
 
 /** @fn FindIf
@@ -383,8 +414,8 @@ typename std::vector<T>::iterator FindIf(std::vector<T>& container, UnaryPredica
 template <typename T, typename UnaryPredicate>
 typename std::vector<T>::const_iterator FindIf(const std::vector<T>& container, UnaryPredicate pred)
 {
-  auto it = std::find_if(std::begin(container), std::end(container), pred);
-  return it;
+    auto it = std::find_if(std::begin(container), std::end(container), pred);
+    return it;
 }
 
 /** @fn Contains
@@ -393,9 +424,9 @@ typename std::vector<T>::const_iterator FindIf(const std::vector<T>& container, 
 template <typename T>
 bool Contains(const std::vector<T>& container, const T& value)
 {
-  auto it = Find(container, value);
-  bool found = (it != std::end(container));
-  return found;
+    auto it    = Find(container, value);
+    bool found = (it != std::end(container));
+    return found;
 }
 
 /** @fn ContainsIf
@@ -404,83 +435,83 @@ bool Contains(const std::vector<T>& container, const T& value)
 template <typename T, typename UnaryPredicate>
 bool ContainsIf(const std::vector<T>& container, UnaryPredicate pred)
 {
-  auto it = FindIf(container, pred);
-  bool found = (it != std::end(container));
-  return found;
+    auto it    = FindIf(container, pred);
+    bool found = (it != std::end(container));
+    return found;
 }
 
 // =================================================================================================
 // Macros
 // =================================================================================================
-#define VKEX_ASSERT(COND)                     \
-  if (!(COND)) {                              \
-    VKEX_LOG_RAW("\n*** FATAL ERROR ***");    \
-    VKEX_LOG_FATAL("Type : VKEX ASSERT");     \
-    VKEX_LOG_FATAL("Cond : " << #COND);       \
-    VKEX_LOG_FATAL("File : " << __FILE__);    \
-    VKEX_LOG_FATAL("Line : " << __LINE__);    \
-    assert(false);                            \
-  }
+#define VKEX_ASSERT(COND)                      \
+    if (!(COND)) {                             \
+        VKEX_LOG_RAW("\n*** FATAL ERROR ***"); \
+        VKEX_LOG_FATAL("Type : VKEX ASSERT");  \
+        VKEX_LOG_FATAL("Cond : " << #COND);    \
+        VKEX_LOG_FATAL("File : " << __FILE__); \
+        VKEX_LOG_FATAL("Line : " << __LINE__); \
+        assert(false);                         \
+    }
 
-#define VKEX_ASSERT_MSG(COND, MSG)            \
-  if (!(COND)) {                              \
-    VKEX_LOG_RAW("\n*** FATAL ERROR ***");    \
-    VKEX_LOG_FATAL("Type : VKEX ASSERT");     \
-    VKEX_LOG_FATAL("Cond : " << #COND);       \
-    VKEX_LOG_FATAL("Msg  : " << MSG);         \
-    VKEX_LOG_FATAL("File : " << __FILE__);    \
-    VKEX_LOG_FATAL("Line : " << __LINE__);    \
-    assert(false);                            \
-  }
+#define VKEX_ASSERT_MSG(COND, MSG)             \
+    if (!(COND)) {                             \
+        VKEX_LOG_RAW("\n*** FATAL ERROR ***"); \
+        VKEX_LOG_FATAL("Type : VKEX ASSERT");  \
+        VKEX_LOG_FATAL("Cond : " << #COND);    \
+        VKEX_LOG_FATAL("Msg  : " << MSG);      \
+        VKEX_LOG_FATAL("File : " << __FILE__); \
+        VKEX_LOG_FATAL("Line : " << __LINE__); \
+        assert(false);                         \
+    }
 
-#define VKEX_ASSERT_EXTRA(COND, MSG, EXTRA)   \
-  if (!(COND)) {                              \
-    VKEX_LOG_RAW("\n*** FATAL ERROR ***");    \
-    VKEX_LOG_FATAL("Type : VKEX ASSERT");     \
-    VKEX_LOG_FATAL("Msg  : " << MSG);         \
-    VKEX_LOG_FATAL("File : " << __FILE__);    \
-    VKEX_LOG_FATAL("Line : " << __LINE__);    \
-    VKEX_LOG_RAW(EXTRA);                      \
-    assert(false);                            \
-  }
+#define VKEX_ASSERT_EXTRA(COND, MSG, EXTRA)    \
+    if (!(COND)) {                             \
+        VKEX_LOG_RAW("\n*** FATAL ERROR ***"); \
+        VKEX_LOG_FATAL("Type : VKEX ASSERT");  \
+        VKEX_LOG_FATAL("Msg  : " << MSG);      \
+        VKEX_LOG_FATAL("File : " << __FILE__); \
+        VKEX_LOG_FATAL("Line : " << __LINE__); \
+        VKEX_LOG_RAW(EXTRA);                   \
+        assert(false);                         \
+    }
 
-#define VKEX_CALL(FN_CALL)                                        \
-  {                                                               \
-    vkex::Result vkex_result_from_fn_call = FN_CALL;              \
-    if (!vkex_result_from_fn_call) {                              \
-      VKEX_LOG_RAW("\n*** FATAL ERROR ***");                      \
-      VKEX_LOG_FATAL("Type     : VKEX FUNCTION FAILED");          \
-      VKEX_LOG_FATAL("Function : " << #FN_CALL);                  \
-      VKEX_LOG_FATAL("Return   : " << vkex_result_from_fn_call);  \
-      VKEX_LOG_FATAL("File     : " << __FILE__);                  \
-      VKEX_LOG_FATAL("Line     : " << __LINE__);                  \
-      assert(false);                                              \
-    }                                                             \
-  }
+#define VKEX_CALL(FN_CALL)                                             \
+    {                                                                  \
+        vkex::Result vkex_result_from_fn_call = FN_CALL;               \
+        if (!vkex_result_from_fn_call) {                               \
+            VKEX_LOG_RAW("\n*** FATAL ERROR ***");                     \
+            VKEX_LOG_FATAL("Type     : VKEX FUNCTION FAILED");         \
+            VKEX_LOG_FATAL("Function : " << #FN_CALL);                 \
+            VKEX_LOG_FATAL("Return   : " << vkex_result_from_fn_call); \
+            VKEX_LOG_FATAL("File     : " << __FILE__);                 \
+            VKEX_LOG_FATAL("Line     : " << __LINE__);                 \
+            assert(false);                                             \
+        }                                                              \
+    }
 
-#define VKEX_RESULT_CALL(RES, FN_CALL)                  \
-  RES = FN_CALL;                                        \
-  if (!RES) {                                           \
-    VKEX_LOG_RAW("\n*** FATAL ERROR ***");              \
-    VKEX_LOG_FATAL("Type     : VKEX FUNCTION FAILED");  \
-    VKEX_LOG_FATAL("Function : " << #FN_CALL);          \
-    VKEX_LOG_FATAL("Return   : " << RES);               \
-    VKEX_LOG_FATAL("File     : " << __FILE__);          \
-    VKEX_LOG_FATAL("Line     : " << __LINE__);          \
-    assert(false);                                      \
-  }
+#define VKEX_RESULT_CALL(RES, FN_CALL)                     \
+    RES = FN_CALL;                                         \
+    if (!RES) {                                            \
+        VKEX_LOG_RAW("\n*** FATAL ERROR ***");             \
+        VKEX_LOG_FATAL("Type     : VKEX FUNCTION FAILED"); \
+        VKEX_LOG_FATAL("Function : " << #FN_CALL);         \
+        VKEX_LOG_FATAL("Return   : " << RES);              \
+        VKEX_LOG_FATAL("File     : " << __FILE__);         \
+        VKEX_LOG_FATAL("Line     : " << __LINE__);         \
+        assert(false);                                     \
+    }
 
-#define VKEX_VULKAN_RESULT_CALL(RES, FN_CALL)             \
-  RES = FN_CALL;                                          \
-  if (RES != VK_SUCCESS) {                                \
-    VKEX_LOG_RAW("\n*** FATAL ERROR ***");                \
-    VKEX_LOG_FATAL("Type     : VULKAN FUNCTION FAILED");  \
-    VKEX_LOG_FATAL("Function : " << #FN_CALL);            \
-    VKEX_LOG_FATAL("Return   : " << vkex::ToString(RES)); \
-    VKEX_LOG_FATAL("File     : " << __FILE__);            \
-    VKEX_LOG_FATAL("Line     : " << __LINE__);            \
-    assert(false);                                        \
-  }
+#define VKEX_VULKAN_RESULT_CALL(RES, FN_CALL)                 \
+    RES = FN_CALL;                                            \
+    if (RES != VK_SUCCESS) {                                  \
+        VKEX_LOG_RAW("\n*** FATAL ERROR ***");                \
+        VKEX_LOG_FATAL("Type     : VULKAN FUNCTION FAILED");  \
+        VKEX_LOG_FATAL("Function : " << #FN_CALL);            \
+        VKEX_LOG_FATAL("Return   : " << vkex::ToString(RES)); \
+        VKEX_LOG_FATAL("File     : " << __FILE__);            \
+        VKEX_LOG_FATAL("Line     : " << __LINE__);            \
+        assert(false);                                        \
+    }
 
 } // namespace vkex
 

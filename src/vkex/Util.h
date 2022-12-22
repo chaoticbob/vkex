@@ -24,33 +24,32 @@ namespace vkex {
 template <typename T>
 T RoundUp(T value, T multiple)
 {
-  static_assert(
-    std::is_integral<T>::value,
-    "T must be an integral type"
-  );
+    static_assert(
+        std::is_integral<T>::value,
+        "T must be an integral type");
 
-  assert(multiple && ((multiple & (multiple - 1)) == 0));
-  return (value + multiple - 1) & ~(multiple - 1);
+    assert(multiple && ((multiple & (multiple - 1)) == 0));
+    return (value + multiple - 1) & ~(multiple - 1);
 }
 
 inline uint32_t CountFlagBits(uint32_t value)
 {
-  uint32_t count = 0;
-  while (value > 0) {
-    count += (value & 1) ? 1 : 0;
-    value >>= 1;
-  }
-  return count;
+    uint32_t count = 0;
+    while (value > 0) {
+        count += (value & 1) ? 1 : 0;
+        value >>= 1;
+    }
+    return count;
 }
 
-inline uint32_t GetHighestBitIndex(uint32_t value) 
+inline uint32_t GetHighestBitIndex(uint32_t value)
 {
-  uint32_t index = 0;
-  while (value > 0) {
-    index +=  1;
-    value >>= 1;
-  }
-  return index;
+    uint32_t index = 0;
+    while (value > 0) {
+        index += 1;
+        value >>= 1;
+    }
+    return index;
 }
 
 } // namespace vkex

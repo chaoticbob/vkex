@@ -18,9 +18,9 @@
 #define __VKEX_LOG_H__
 
 #if defined(VKEX_WIN32)
- #define VC_EXTRALEAN
- #define WIN32_LEAN_AND_MEAN
- #include <Windows.h>
+#    define VC_EXTRALEAN
+#    define WIN32_LEAN_AND_MEAN
+#    include <Windows.h>
 #endif
 
 #include <fstream>
@@ -32,113 +32,120 @@
 namespace vkex {
 
 /** @class Log
-*
-*/
-class Log {
+ *
+ */
+class Log
+{
 public:
-  Log();
-  virtual ~Log();
+    Log();
+    virtual ~Log();
 
-  static void Initialize(const std::string& file_path);
-  static Log* Get();
+    static void Initialize(const std::string& file_path);
+    static Log* Get();
 
-  void Flush() {
-    Write(m_stream.str());
-    FlushOutput();
-    m_stream.str(std::string());
-    m_stream.clear();
-  }
-
-  template <typename T>
-  Log& operator<<(const T& value) {
-    m_stream << value;
-    return *this;
-  }
-
-  Log& operator<<(std::ostream&(*manip)(std::ostream&)) {
-    if (manip == (std::basic_ostream<char>&(*)(std::basic_ostream<char>&))&std::endl) {
-      m_stream << std::endl;
-      Flush();
+    void Flush()
+    {
+        Write(m_stream.str());
+        FlushOutput();
+        m_stream.str(std::string());
+        m_stream.clear();
     }
-    return *this;
-  }
+
+    template <typename T>
+    Log& operator<<(const T& value)
+    {
+        m_stream << value;
+        return *this;
+    }
+
+    Log& operator<<(std::ostream& (*manip)(std::ostream&))
+    {
+        if (manip == (std::basic_ostream<char> & (*)(std::basic_ostream<char>&)) & std::endl) {
+            m_stream << std::endl;
+            Flush();
+        }
+        return *this;
+    }
 
 protected:
-  virtual void Write(const std::string& msg) = 0;
-  virtual void FlushOutput() = 0;
+    virtual void Write(const std::string& msg) = 0;
+    virtual void FlushOutput()                 = 0;
 
 private:
-  std::stringstream m_stream;
+    std::stringstream m_stream;
 };
 
 /** @class ConsoleLog
  *
  */
-class ConsoleLog : public Log {
+class ConsoleLog : public Log
+{
 public:
-  ConsoleLog();
-  virtual ~ConsoleLog();
+    ConsoleLog();
+    virtual ~ConsoleLog();
 
 protected:
-  virtual void Write(const std::string& msg);
-  virtual void FlushOutput();
-  friend class CombinedLog;
+    virtual void Write(const std::string& msg);
+    virtual void FlushOutput();
+    friend class CombinedLog;
 };
 
 /** @class File
-*
-*/
-class FileLog : public Log {
+ *
+ */
+class FileLog : public Log
+{
 public:
-  FileLog(const std::string& file_path);
-  virtual ~FileLog();
+    FileLog(const std::string& file_path);
+    virtual ~FileLog();
 
 protected:
-  virtual void Write(const std::string& msg);
-  virtual void FlushOutput();
-  friend class CombinedLog;
+    virtual void Write(const std::string& msg);
+    virtual void FlushOutput();
+    friend class CombinedLog;
 
 private:
-  std::string   m_file_path;
-  std::ofstream m_file;
+    std::string   m_file_path;
+    std::ofstream m_file;
 };
 
 /** @class CombinedLog
-*
-*/
-class CombinedLog : public Log {
+ *
+ */
+class CombinedLog : public Log
+{
 public:
-  CombinedLog(const std::string& file_path);
-  virtual ~CombinedLog();
+    CombinedLog(const std::string& file_path);
+    virtual ~CombinedLog();
 
 protected:
-  virtual void Write(const std::string& msg);
-  virtual void FlushOutput();
+    virtual void Write(const std::string& msg);
+    virtual void FlushOutput();
 
 private:
-  std::unique_ptr<ConsoleLog> m_console_log;
-  std::unique_ptr<FileLog>    m_file_log;
+    std::unique_ptr<ConsoleLog> m_console_log;
+    std::unique_ptr<FileLog>    m_file_log;
 };
 
 } // namespace vkex
 
 #define VKEX_LOG_RAW(MSG) \
-  (*vkex::Log::Get()) << MSG << std::endl
+    (*vkex::Log::Get()) << MSG << std::endl
 
 #define VKEX_LOG_INFO(MSG) \
-  (*vkex::Log::Get()) << MSG << std::endl
+    (*vkex::Log::Get()) << MSG << std::endl
 
 #define VKEX_LOG_WARN(MSG) \
-  (*vkex::Log::Get()) << "[WARNING] " << MSG << std::endl
+    (*vkex::Log::Get()) << "[WARNING] " << MSG << std::endl
 
 #define VKEX_LOG_DEBUG(MSG) \
-  (*vkex::Log::Get()) << "[DEBUG] " << MSG << std::endl
+    (*vkex::Log::Get()) << "[DEBUG] " << MSG << std::endl
 
 #define VKEX_LOG_ERROR(MSG) \
-  (*vkex::Log::Get()) << "[ERROR] " << MSG << std::endl
+    (*vkex::Log::Get()) << "[ERROR] " << MSG << std::endl
 
 #define VKEX_LOG_FATAL(MSG) \
-  (*vkex::Log::Get()) << "[FATAL ERROR] " << MSG << std::endl
+    (*vkex::Log::Get()) << "[FATAL ERROR] " << MSG << std::endl
 
 /*
 #define VKEX_LOG_INFO(MSG) \
