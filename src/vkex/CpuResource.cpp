@@ -14,7 +14,7 @@
  limitations under the License.
 */
 
-#include <vkex/CpuResource.h>
+#include "vkex/CpuResource.h"
 
 namespace vkex {
 

@@ -17,8 +17,8 @@
 #ifndef __VKEX_SWAPCHAIN_H__
 #define __VKEX_SWAPCHAIN_H__
 
-#include <vkex/Config.h>
-#include <vkex/Traits.h>
+#include "vkex/Config.h"
+#include "vkex/Traits.h"
 
 namespace vkex {
 

@@ -17,8 +17,8 @@
 #ifndef __VKEX_GEOMETRY_H__
 #define __VKEX_GEOMETRY_H__
 
-#include <vkex/Config.h>
-#include <vkex/CpuResource.h>
+#include "vkex/Config.h"
+#include "vkex/CpuResource.h"
 
 namespace vkex {
 

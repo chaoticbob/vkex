@@ -14,8 +14,8 @@
  limitations under the License.
 */
 
-#include <vkex/Texture.h>
-#include <vkex/Device.h>
+#include "vkex/Texture.h"
+#include "vkex/Device.h"
 
 namespace vkex {
 

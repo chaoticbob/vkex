@@ -17,7 +17,7 @@
 #ifndef __VKEX_TO_STRING_H__
 #define __VKEX_TO_STRING_H__
 
-#include <vkex/Config.h>
+#include "vkex/Config.h"
 
 #include <iomanip>
 #include <type_traits>

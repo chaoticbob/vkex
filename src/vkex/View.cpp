@@ -14,9 +14,9 @@
  limitations under the License.
 */
 
-#include <vkex/View.h>
-#include <vkex/Device.h>
-#include <vkex/Image.h>
+#include "vkex/View.h"
+#include "vkex/Device.h"
+#include "vkex/Image.h"
 
 namespace vkex {
 

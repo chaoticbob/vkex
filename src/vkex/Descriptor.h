@@ -17,9 +17,9 @@
 #ifndef __VKEX_DESCRIPTOR_H__
 #define __VKEX_DESCRIPTOR_H__
 
-#include <vkex/Config.h>
-#include <vkex/Traits.h>
-#include <vkex/VulkanUtil.h>
+#include "vkex/Config.h"
+#include "vkex/Traits.h"
+#include "vkex/VulkanUtil.h"
 
 namespace vkex {
 

@@ -17,10 +17,10 @@
 #ifndef __VKEX_IMAGE_H__
 #define __VKEX_IMAGE_H__
 
-#include <vkex/Config.h>
-#include <vkex/Traits.h>
-#include <vkex/VulkanUtil.h>
-#include <vk_mem_alloc.h>
+#include "vkex/Config.h"
+#include "vkex/Traits.h"
+#include "vkex/VulkanUtil.h"
+#include "vk_mem_alloc.h"
 
 namespace vkex {
 

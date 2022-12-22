@@ -388,7 +388,7 @@ vkex::Result CRenderPass::InternalCreate(
   m_is_transient = false;
   if (m_create_info.rtvs.empty() && (m_create_info.dsv == nullptr)) {
     m_is_transient = (!m_create_info.transient.rtv_formats.empty()) || 
-                     (m_create_info.transient.dsv_format != VK_NULL_HANDLE);
+                     (m_create_info.transient.dsv_format != VK_FORMAT_UNDEFINED);
   }
 
   // Determine if has depth/stencil

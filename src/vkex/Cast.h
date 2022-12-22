@@ -17,8 +17,8 @@
 #ifndef __VKEX_CAST_H__
 #define __VKEX_CAST_H__
 
-#include <vkex/Descriptor.h>
-#include <vkex/VulkanUtil.h>
+#include "vkex/Descriptor.h"
+#include "vkex/VulkanUtil.h"
 
 namespace vkex {
 

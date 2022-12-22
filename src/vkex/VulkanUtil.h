@@ -17,7 +17,7 @@
 #ifndef __VKEX_VULKAN_UTIL_H__
 #define __VKEX_VULKAN_UTIL_H__
 
-#include <vkex/Config.h>
+#include "vkex/Config.h"
 
 #define VKEX_IHV_VENDOR_ID_AMD     0x1002
 #define VKEX_IHV_VENDOR_ID_INTEL   0x8086

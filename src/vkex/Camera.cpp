@@ -14,8 +14,8 @@
  limitations under the License.
 */
 
-#include <vkex/Camera.h>
-#include <vkex/VulkanUtil.h>
+#include "vkex/Camera.h"
+#include "vkex/VulkanUtil.h"
 
 namespace vkex {
 

@@ -17,8 +17,8 @@
 #ifndef __VKEX_CPU_RESOURCE_H__
 #define __VKEX_CPU_RESOURCE_H__
 
-#include <vkex/Config.h>
-#include <vkex/VulkanUtil.h>
+#include "vkex/Config.h"
+#include "vkex/VulkanUtil.h"
 
 namespace vkex {
 

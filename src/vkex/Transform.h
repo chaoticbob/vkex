@@ -17,7 +17,7 @@
 #ifndef __VKEX_TRANSFORM_H__
 #define __VKEX_TRANSFORM_H__
 
-#include <vkex/Config.h>
+#include "vkex/Config.h"
 
 namespace vkex {
 

@@ -17,9 +17,9 @@
 #ifndef __VKEX_PIPELINE_H__
 #define __VKEX_PIPELINE_H__
 
-#include <vkex/Config.h>
-#include <vkex/Buffer.h>
-#include <vkex/Traits.h>
+#include "vkex/Config.h"
+#include "vkex/Buffer.h"
+#include "vkex/Traits.h"
 
 namespace vkex {
 

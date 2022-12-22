@@ -17,16 +17,16 @@
 #ifndef __VKEX_APPLICATION_H__
 #define __VKEX_APPLICATION_H__
 
-#include <vkex/ArgParser.h>
-#include <vkex/Bitmap.h>
-#include <vkex/Camera.h>
-#include <vkex/Cast.h>
-#include <vkex/FileSystem.h>
-#include <vkex/Geometry.h>
-#include <vkex/Instance.h>
-#include <vkex/Timer.h>
-#include <vkex/ToString.h>
-#include <vkex/Transform.h>
+#include "vkex/ArgParser.h"
+#include "vkex/Bitmap.h"
+#include "vkex/Camera.h"
+#include "vkex/Cast.h"
+#include "vkex/FileSystem.h"
+#include "vkex/Geometry.h"
+#include "vkex/Instance.h"
+#include "vkex/Timer.h"
+#include "vkex/ToString.h"
+#include "vkex/Transform.h"
 
 #include <GLFW/glfw3.h>
 #if defined(VKEX_LINUX)

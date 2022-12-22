@@ -17,18 +17,18 @@
 #ifndef __VKEX_VKEX_H__
 #define __VKEX_VKEX_H__
 
-#include <vkex/Application.h>
-#include <vkex/Buffer.h>
-#include <vkex/Command.h>
-#include <vkex/Config.h>
-#include <vkex/Descriptor.h>
-#include <vkex/Device.h>
-#include <vkex/Image.h>
-#include <vkex/Instance.h>
-#include <vkex/Pipeline.h>
-#include <vkex/RenderPass.h>
-#include <vkex/Swapchain.h>
-#include <vkex/Sync.h>
-#include <vkex/View.h> 
+#include "vkex/Application.h"
+#include "vkex/Buffer.h"
+#include "vkex/Command.h"
+#include "vkex/Config.h"
+#include "vkex/Descriptor.h"
+#include "vkex/Device.h"
+#include "vkex/Image.h"
+#include "vkex/Instance.h"
+#include "vkex/Pipeline.h"
+#include "vkex/RenderPass.h"
+#include "vkex/Swapchain.h"
+#include "vkex/Sync.h"
+#include "vkex/View.h" 
 
 #endif // __VKEX_VKEX_H__
