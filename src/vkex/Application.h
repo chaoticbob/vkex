@@ -635,10 +635,10 @@ public:
   vkex::Queue GetComputeQueue() const;
 
   //! @fn GetCurrentRenderData()
-  Application::RenderData* GetCurrentRenderData() const;
+  vkex::RenderData* GetCurrentRenderData() const;
 
   //! @fn GetCurrentPresentData()
-  Application::PresentData* GetCurrentPresentData() const;
+  vkex::PresentData* GetCurrentPresentData() const;
 
   //! @fn GetAverageVkQueuePresentTime
   float GetAverageVkQueuePresentTime() const {

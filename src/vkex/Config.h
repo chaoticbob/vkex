@@ -48,7 +48,7 @@
 #include "vkex/ConfigMath.h"
 #include "vkex/Util.h"
 
-#define VKEX_MINIMUM_REQUIRED_VULKAN_VERSION  VK_MAKE_VERSION(1, 1, 0)
+#define VKEX_MINIMUM_REQUIRED_VULKAN_VERSION  VK_MAKE_VERSION(1, 3, 0)
 #define VKEX_ALL_MIP_LEVELS                   0xFFFFFFFF
 #define VKEX_ALL_ARRAY_LAYERS                 0xFFFFFFFF
 

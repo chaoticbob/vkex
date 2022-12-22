@@ -454,7 +454,7 @@ vkex::Result Bitmap::Create(
   // Force 4 channels since some Vulkan implementations won't have 3 channel
   // image support
   unsigned char* p_image =
-    stbi_load(file_path.c_str(), &width, &height, &channels, required_channels);
+    stbi_load(file_path.string().c_str(), &width, &height, &channels, required_channels);
   if (p_image == nullptr) {
     return vkex::Result::ErrorImageLoadFailed;
   }
@@ -606,7 +606,7 @@ vkex::Result Bitmap::GetDataFootprint(
   int width    = 0;
   int height   = 0;
   int channels = 0;
-  int res      = stbi_info(file_path.c_str(), &width, &height, &channels);
+  int res      = stbi_info(file_path.string().c_str(), &width, &height, &channels);
   if (res != 1) {
     return vkex::Result::ErrorImageInfoFailed;
   }
@@ -695,7 +695,7 @@ vkex::Result Bitmap::WriteJPG(
 )
 {
   int result = stbi_write_jpg(
-    file_path.c_str(),
+    file_path.string().c_str(),
     static_cast<int>(width),
     static_cast<int>(height),
     static_cast<int>(component_count),

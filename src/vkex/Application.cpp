@@ -659,19 +659,32 @@ Application* Application::Get()
 
 void Application::InitializeAssetDirs()
 {
-  fs::path app_path = GetApplicationPath();
-  VKEX_LOG_INFO("Application path: " << app_path);
-  fs::path base_dir = app_path.parent();  
-  AddAssetDir(base_dir);
-  size_t n = base_dir.part_count();
-  for (size_t i = 0; i < n; ++i) {
-    fs::path asset_dir = base_dir / "assets";
+  fs::path dir = GetApplicationPath();
+  VKEX_LOG_INFO("Application path: " << dir);
+  auto root = dir.root_path();
+  while (true) {
+    auto asset_dir = dir / "assets";
     if (fs::exists(asset_dir)) {
       AddAssetDir(asset_dir);
       VKEX_LOG_INFO("Added asset path: " << asset_dir);
     }
-    base_dir = base_dir.parent();
+    if (dir == root) {
+      break;
+    }
+    dir = dir.parent_path();
   }
+
+  //fs::path base_dir = app_path.parent_path();
+  //AddAssetDir(base_dir);
+  //size_t n = base_dir.part_count();
+  //for (size_t i = 0; i < n; ++i) {
+  //  fs::path asset_dir = base_dir / "assets";
+  //  if (fs::exists(asset_dir)) {
+  //    AddAssetDir(asset_dir);
+  //    VKEX_LOG_INFO("Added asset path: " << asset_dir);
+  //  }
+  //  base_dir = base_dir.parent();
+  //}
 }
 
 static const char* ToString(vkex::CursorMode value)
@@ -3079,7 +3092,7 @@ vkex::Result Application::SubmitPresent(PresentData* p_data)
     {
       std::stringstream file_name;
       file_name << "screenshot_" << std::setfill('0') << std::setw(6) << m_elapsed_frame_count << ".jpg";
-      fs::path file_path = GetApplicationPath().parent() / file_name.str();
+      fs::path file_path = GetApplicationPath().parent_path() / file_name.str();
       uint32_t component_count = FormatComponentCount(m_configuration.swapchain.color_format);
       uint32_t pixel_stride = FormatSize(m_configuration.swapchain.color_format);
       uint32_t row_stride = m_configuration.window.width * pixel_stride;

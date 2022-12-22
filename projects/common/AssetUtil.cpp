@@ -20,7 +20,7 @@ namespace asset_util {
 
 std::vector<uint8_t> LoadFile(const vkex::fs::path& file_path)
 {
-  if (!vkex::fs::exists(file_path) || !vkex::fs::is_file(file_path)) {
+  if (!vkex::fs::exists(file_path) || !vkex::fs::is_regular_file(file_path)) {
     VKEX_LOG_ERROR("File does not exist: " << file_path);
     return std::vector<uint8_t>();
   }
