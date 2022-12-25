@@ -23,65 +23,65 @@
 
 namespace vkex {
 
-// =================================================================================================
-// Event
-// =================================================================================================
-
-/** @struct EventCreateInfo
- *
- */
-struct EventCreateInfo
-{
-    std::string        object_name;
-    VkEventCreateFlags flags;
-};
-
-/** @class IEvent
- *
- */
-class CEvent : public IDeviceObject
-{
-public:
-    CEvent();
-    ~CEvent();
-
-    /** @fn operator VkEvent()
-     *
-     */
-    operator VkEvent() const
-    {
-        return m_vk_object;
-    }
-
-    /** @fn GetVkObject
-     *
-     */
-    VkEvent GetVkObject() const
-    {
-        return m_vk_object;
-    }
-
-private:
-    friend class CDevice;
-    friend class IObjectStorageFunctions;
-
-    /** @fn InternalCreate
-     *
-     */
-    vkex::Result InternalCreate(
-        const vkex::EventCreateInfo& create_info,
-        const VkAllocationCallbacks* p_allocator);
-
-    /** @fn InternalDestroy
-     *
-     */
-    vkex::Result InternalDestroy(const VkAllocationCallbacks* p_allocator);
-
-private:
-    vkex::EventCreateInfo m_create_info    = {};
-    VkEventCreateInfo     m_vk_create_info = {};
-    VkEvent               m_vk_object      = VK_NULL_HANDLE;
-};
+//// =================================================================================================
+//// Event
+//// =================================================================================================
+//
+///** @struct EventCreateInfo
+// *
+// */
+//struct EventCreateInfo
+//{
+//    std::string        object_name;
+//    VkEventCreateFlags flags;
+//};
+//
+///** @class IEvent
+// *
+// */
+//class CEvent : public IDeviceObject
+//{
+//public:
+//    CEvent();
+//    ~CEvent();
+//
+//    /** @fn operator VkEvent()
+//     *
+//     */
+//    operator VkEvent() const
+//    {
+//        return m_vk_object;
+//    }
+//
+//    /** @fn GetVkObject
+//     *
+//     */
+//    VkEvent GetVkObject() const
+//    {
+//        return m_vk_object;
+//    }
+//
+//private:
+//    friend class CDevice;
+//    friend class IObjectStorageFunctions;
+//
+//    /** @fn InternalCreate
+//     *
+//     */
+//    vkex::Result InternalCreate(
+//        const vkex::EventCreateInfo& create_info,
+//        const VkAllocationCallbacks* p_allocator);
+//
+//    /** @fn InternalDestroy
+//     *
+//     */
+//    vkex::Result InternalDestroy(const VkAllocationCallbacks* p_allocator);
+//
+//private:
+//    vkex::EventCreateInfo m_create_info    = {};
+//    VkEventCreateInfo     m_vk_create_info = {};
+//    VkEvent               m_vk_object      = VK_NULL_HANDLE;
+//};
 
 // =================================================================================================
 // Fence

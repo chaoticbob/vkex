@@ -57,7 +57,7 @@ vkex::Result CCommandBuffer::Begin(VkCommandBufferUsageFlags flags)
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::BeginCommandBuffer(
+        vkBeginCommandBuffer(
             m_create_info.vk_object,
             &vk_begin_info));
     if (vk_result != VK_SUCCESS) {
@@ -72,7 +72,7 @@ vkex::Result CCommandBuffer::End()
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::EndCommandBuffer(
+        vkEndCommandBuffer(
             m_create_info.vk_object));
     if (vk_result != VK_SUCCESS) {
         return vkex::Result(vk_result);
@@ -87,7 +87,7 @@ vkex::Result CCommandBuffer::End()
 void CCommandBuffer::CmdBindPipeline(VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdBindPipeline(
+    vkCmdBindPipeline(
         vk_command_buffer,
         pipelineBindPoint,
         pipeline);
@@ -96,7 +96,7 @@ void CCommandBuffer::CmdBindPipeline(VkPipelineBindPoint pipelineBindPoint, VkPi
 void CCommandBuffer::CmdSetViewport(uint32_t firstViewport, uint32_t viewportCount, const VkViewport* pViewports)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetViewport(
+    vkCmdSetViewport(
         vk_command_buffer,
         firstViewport,
         viewportCount,
@@ -106,7 +106,7 @@ void CCommandBuffer::CmdSetViewport(uint32_t firstViewport, uint32_t viewportCou
 void CCommandBuffer::CmdSetScissor(uint32_t firstScissor, uint32_t scissorCount, const VkRect2D* pScissors)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetScissor(
+    vkCmdSetScissor(
         vk_command_buffer,
         firstScissor,
         scissorCount,
@@ -116,7 +116,7 @@ void CCommandBuffer::CmdSetScissor(uint32_t firstScissor, uint32_t scissorCount,
 void CCommandBuffer::CmdSetLineWidth(float lineWidth)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetLineWidth(
+    vkCmdSetLineWidth(
         vk_command_buffer,
         lineWidth);
 }
@@ -124,7 +124,7 @@ void CCommandBuffer::CmdSetLineWidth(float lineWidth)
 void CCommandBuffer::CmdSetDepthBias(float depthBiasConstantFactor, float depthBiasClamp, float depthBiasSlopeFactor)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetDepthBias(
+    vkCmdSetDepthBias(
         vk_command_buffer,
         depthBiasConstantFactor,
         depthBiasClamp,
@@ -134,7 +134,7 @@ void CCommandBuffer::CmdSetDepthBias(float depthBiasConstantFactor, float depthB
 void CCommandBuffer::CmdSetBlendConstants(const float blendConstants[4])
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetBlendConstants(
+    vkCmdSetBlendConstants(
         vk_command_buffer,
         blendConstants);
 }
@@ -142,7 +142,7 @@ void CCommandBuffer::CmdSetBlendConstants(const float blendConstants[4])
 void CCommandBuffer::CmdSetDepthBounds(float minDepthBounds, float maxDepthBounds)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetDepthBounds(
+    vkCmdSetDepthBounds(
         vk_command_buffer,
         minDepthBounds,
         maxDepthBounds);
@@ -151,7 +151,7 @@ void CCommandBuffer::CmdSetDepthBounds(float minDepthBounds, float maxDepthBound
 void CCommandBuffer::CmdSetStencilCompareMask(VkStencilFaceFlags faceMask, uint32_t compareMask)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetStencilCompareMask(
+    vkCmdSetStencilCompareMask(
         vk_command_buffer,
         faceMask,
         compareMask);
@@ -160,7 +160,7 @@ void CCommandBuffer::CmdSetStencilCompareMask(VkStencilFaceFlags faceMask, uint3
 void CCommandBuffer::CmdSetStencilWriteMask(VkStencilFaceFlags faceMask, uint32_t writeMask)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetStencilWriteMask(
+    vkCmdSetStencilWriteMask(
         vk_command_buffer,
         faceMask,
         writeMask);
@@ -169,7 +169,7 @@ void CCommandBuffer::CmdSetStencilWriteMask(VkStencilFaceFlags faceMask, uint32_
 void CCommandBuffer::CmdSetStencilReference(VkStencilFaceFlags faceMask, uint32_t reference)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetStencilReference(
+    vkCmdSetStencilReference(
         vk_command_buffer,
         faceMask,
         reference);
@@ -178,7 +178,7 @@ void CCommandBuffer::CmdSetStencilReference(VkStencilFaceFlags faceMask, uint32_
 void CCommandBuffer::CmdBindDescriptorSets(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t firstSet, uint32_t descriptorSetCount, const VkDescriptorSet* pDescriptorSets, uint32_t dynamicOffsetCount, const uint32_t* pDynamicOffsets)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdBindDescriptorSets(
+    vkCmdBindDescriptorSets(
         vk_command_buffer,
         pipelineBindPoint,
         layout,
@@ -192,7 +192,7 @@ void CCommandBuffer::CmdBindDescriptorSets(VkPipelineBindPoint pipelineBindPoint
 void CCommandBuffer::CmdBindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, VkIndexType indexType)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdBindIndexBuffer(
+    vkCmdBindIndexBuffer(
         vk_command_buffer,
         buffer,
         offset,
@@ -202,7 +202,7 @@ void CCommandBuffer::CmdBindIndexBuffer(VkBuffer buffer, VkDeviceSize offset, Vk
 void CCommandBuffer::CmdBindVertexBuffers(uint32_t firstBinding, uint32_t bindingCount, const VkBuffer* pBuffers, const VkDeviceSize* pOffsets)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdBindVertexBuffers(
+    vkCmdBindVertexBuffers(
         vk_command_buffer,
         firstBinding,
         bindingCount,
@@ -213,7 +213,7 @@ void CCommandBuffer::CmdBindVertexBuffers(uint32_t firstBinding, uint32_t bindin
 void CCommandBuffer::CmdDraw(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex, uint32_t firstInstance)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdDraw(
+    vkCmdDraw(
         vk_command_buffer,
         vertexCount,
         instanceCount,
@@ -224,7 +224,7 @@ void CCommandBuffer::CmdDraw(uint32_t vertexCount, uint32_t instanceCount, uint3
 void CCommandBuffer::CmdDrawIndexed(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdDrawIndexed(
+    vkCmdDrawIndexed(
         vk_command_buffer,
         indexCount,
         instanceCount,
@@ -236,7 +236,7 @@ void CCommandBuffer::CmdDrawIndexed(uint32_t indexCount, uint32_t instanceCount,
 void CCommandBuffer::CmdDrawIndirect(VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdDrawIndirect(
+    vkCmdDrawIndirect(
         vk_command_buffer,
         buffer,
         offset,
@@ -247,7 +247,7 @@ void CCommandBuffer::CmdDrawIndirect(VkBuffer buffer, VkDeviceSize offset, uint3
 void CCommandBuffer::CmdDrawIndexedIndirect(VkBuffer buffer, VkDeviceSize offset, uint32_t drawCount, uint32_t stride)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdDrawIndexedIndirect(
+    vkCmdDrawIndexedIndirect(
         vk_command_buffer,
         buffer,
         offset,
@@ -258,7 +258,7 @@ void CCommandBuffer::CmdDrawIndexedIndirect(VkBuffer buffer, VkDeviceSize offset
 void CCommandBuffer::CmdDispatch(uint32_t groupCountX, uint32_t groupCountY, uint32_t groupCountZ)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdDispatch(
+    vkCmdDispatch(
         vk_command_buffer,
         groupCountX,
         groupCountY,
@@ -268,7 +268,7 @@ void CCommandBuffer::CmdDispatch(uint32_t groupCountX, uint32_t groupCountY, uin
 void CCommandBuffer::CmdDispatchIndirect(VkBuffer buffer, VkDeviceSize offset)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdDispatchIndirect(
+    vkCmdDispatchIndirect(
         vk_command_buffer,
         buffer,
         offset);
@@ -277,7 +277,7 @@ void CCommandBuffer::CmdDispatchIndirect(VkBuffer buffer, VkDeviceSize offset)
 void CCommandBuffer::CmdCopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferCopy* pRegions)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdCopyBuffer(
+    vkCmdCopyBuffer(
         vk_command_buffer,
         srcBuffer,
         dstBuffer,
@@ -288,7 +288,7 @@ void CCommandBuffer::CmdCopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, uint3
 void CCommandBuffer::CmdCopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageCopy* pRegions)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdCopyImage(
+    vkCmdCopyImage(
         vk_command_buffer,
         srcImage,
         srcImageLayout,
@@ -301,7 +301,7 @@ void CCommandBuffer::CmdCopyImage(VkImage srcImage, VkImageLayout srcImageLayout
 void CCommandBuffer::CmdBlitImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageBlit* pRegions, VkFilter filter)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdBlitImage(
+    vkCmdBlitImage(
         vk_command_buffer,
         srcImage,
         srcImageLayout,
@@ -315,7 +315,7 @@ void CCommandBuffer::CmdBlitImage(VkImage srcImage, VkImageLayout srcImageLayout
 void CCommandBuffer::CmdCopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkBufferImageCopy* pRegions)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdCopyBufferToImage(
+    vkCmdCopyBufferToImage(
         vk_command_buffer,
         srcBuffer,
         dstImage,
@@ -327,7 +327,7 @@ void CCommandBuffer::CmdCopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, 
 void CCommandBuffer::CmdCopyImageToBuffer(VkImage srcImage, VkImageLayout srcImageLayout, VkBuffer dstBuffer, uint32_t regionCount, const VkBufferImageCopy* pRegions)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdCopyImageToBuffer(
+    vkCmdCopyImageToBuffer(
         vk_command_buffer,
         srcImage,
         srcImageLayout,
@@ -339,7 +339,7 @@ void CCommandBuffer::CmdCopyImageToBuffer(VkImage srcImage, VkImageLayout srcIma
 void CCommandBuffer::CmdUpdateBuffer(VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize dataSize, const void* pData)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdUpdateBuffer(
+    vkCmdUpdateBuffer(
         vk_command_buffer,
         dstBuffer,
         dstOffset,
@@ -350,7 +350,7 @@ void CCommandBuffer::CmdUpdateBuffer(VkBuffer dstBuffer, VkDeviceSize dstOffset,
 void CCommandBuffer::CmdFillBuffer(VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size, uint32_t data)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdFillBuffer(
+    vkCmdFillBuffer(
         vk_command_buffer,
         dstBuffer,
         dstOffset,
@@ -361,7 +361,7 @@ void CCommandBuffer::CmdFillBuffer(VkBuffer dstBuffer, VkDeviceSize dstOffset, V
 void CCommandBuffer::CmdClearColorImage(VkImage image, VkImageLayout imageLayout, const VkClearColorValue* pColor, uint32_t rangeCount, const VkImageSubresourceRange* pRanges)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdClearColorImage(
+    vkCmdClearColorImage(
         vk_command_buffer,
         image,
         imageLayout,
@@ -373,7 +373,7 @@ void CCommandBuffer::CmdClearColorImage(VkImage image, VkImageLayout imageLayout
 void CCommandBuffer::CmdClearDepthStencilImage(VkImage image, VkImageLayout imageLayout, const VkClearDepthStencilValue* pDepthStencil, uint32_t rangeCount, const VkImageSubresourceRange* pRanges)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdClearDepthStencilImage(
+    vkCmdClearDepthStencilImage(
         vk_command_buffer,
         image,
         imageLayout,
@@ -385,7 +385,7 @@ void CCommandBuffer::CmdClearDepthStencilImage(VkImage image, VkImageLayout imag
 void CCommandBuffer::CmdClearAttachments(uint32_t attachmentCount, const VkClearAttachment* pAttachments, uint32_t rectCount, const VkClearRect* pRects)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdClearAttachments(
+    vkCmdClearAttachments(
         vk_command_buffer,
         attachmentCount,
         pAttachments,
@@ -396,7 +396,7 @@ void CCommandBuffer::CmdClearAttachments(uint32_t attachmentCount, const VkClear
 void CCommandBuffer::CmdResolveImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, uint32_t regionCount, const VkImageResolve* pRegions)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdResolveImage(
+    vkCmdResolveImage(
         vk_command_buffer,
         srcImage,
         srcImageLayout,
@@ -409,7 +409,7 @@ void CCommandBuffer::CmdResolveImage(VkImage srcImage, VkImageLayout srcImageLay
 void CCommandBuffer::CmdSetEvent(VkEvent event, VkPipelineStageFlags stageMask)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdSetEvent(
+    vkCmdSetEvent(
         vk_command_buffer,
         event,
         stageMask);
@@ -418,7 +418,7 @@ void CCommandBuffer::CmdSetEvent(VkEvent event, VkPipelineStageFlags stageMask)
 void CCommandBuffer::CmdResetEvent(VkEvent event, VkPipelineStageFlags stageMask)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdResetEvent(
+    vkCmdResetEvent(
         vk_command_buffer,
         event,
         stageMask);
@@ -427,7 +427,7 @@ void CCommandBuffer::CmdResetEvent(VkEvent event, VkPipelineStageFlags stageMask
 void CCommandBuffer::CmdWaitEvents(uint32_t eventCount, const VkEvent* pEvents, VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier* pImageMemoryBarriers)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdWaitEvents(
+    vkCmdWaitEvents(
         vk_command_buffer,
         eventCount,
         pEvents,
@@ -444,7 +444,7 @@ void CCommandBuffer::CmdWaitEvents(uint32_t eventCount, const VkEvent* pEvents, 
 void CCommandBuffer::CmdPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPipelineStageFlags dstStageMask, VkDependencyFlags dependencyFlags, uint32_t memoryBarrierCount, const VkMemoryBarrier* pMemoryBarriers, uint32_t bufferMemoryBarrierCount, const VkBufferMemoryBarrier* pBufferMemoryBarriers, uint32_t imageMemoryBarrierCount, const VkImageMemoryBarrier* pImageMemoryBarriers)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdPipelineBarrier(
+    vkCmdPipelineBarrier(
         vk_command_buffer,
         srcStageMask,
         dstStageMask,
@@ -460,7 +460,7 @@ void CCommandBuffer::CmdPipelineBarrier(VkPipelineStageFlags srcStageMask, VkPip
 void CCommandBuffer::CmdBeginQuery(VkQueryPool queryPool, uint32_t query, VkQueryControlFlags flags)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdBeginQuery(
+    vkCmdBeginQuery(
         vk_command_buffer,
         queryPool,
         query,
@@ -470,7 +470,7 @@ void CCommandBuffer::CmdBeginQuery(VkQueryPool queryPool, uint32_t query, VkQuer
 void CCommandBuffer::CmdEndQuery(VkQueryPool queryPool, uint32_t query)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdEndQuery(
+    vkCmdEndQuery(
         vk_command_buffer,
         queryPool,
         query);
@@ -479,7 +479,7 @@ void CCommandBuffer::CmdEndQuery(VkQueryPool queryPool, uint32_t query)
 void CCommandBuffer::CmdResetQueryPool(VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdResetQueryPool(
+    vkCmdResetQueryPool(
         vk_command_buffer,
         queryPool,
         firstQuery,
@@ -489,7 +489,7 @@ void CCommandBuffer::CmdResetQueryPool(VkQueryPool queryPool, uint32_t firstQuer
 void CCommandBuffer::CmdWriteTimestamp(VkPipelineStageFlagBits pipelineStage, VkQueryPool queryPool, uint32_t query)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdWriteTimestamp(
+    vkCmdWriteTimestamp(
         vk_command_buffer,
         pipelineStage,
         queryPool,
@@ -499,7 +499,7 @@ void CCommandBuffer::CmdWriteTimestamp(VkPipelineStageFlagBits pipelineStage, Vk
 void CCommandBuffer::CmdCopyQueryPoolResults(VkQueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize stride, VkQueryResultFlags flags)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdCopyQueryPoolResults(
+    vkCmdCopyQueryPoolResults(
         vk_command_buffer,
         queryPool,
         firstQuery,
@@ -513,7 +513,7 @@ void CCommandBuffer::CmdCopyQueryPoolResults(VkQueryPool queryPool, uint32_t fir
 void CCommandBuffer::CmdPushConstants(VkPipelineLayout layout, VkShaderStageFlags stageFlags, uint32_t offset, uint32_t size, const void* pValues)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdPushConstants(
+    vkCmdPushConstants(
         vk_command_buffer,
         layout,
         stageFlags,
@@ -525,7 +525,7 @@ void CCommandBuffer::CmdPushConstants(VkPipelineLayout layout, VkShaderStageFlag
 void CCommandBuffer::CmdBeginRenderPass(const VkRenderPassBeginInfo* pRenderPassBegin, VkSubpassContents contents)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdBeginRenderPass(
+    vkCmdBeginRenderPass(
         vk_command_buffer,
         pRenderPassBegin,
         contents);
@@ -534,7 +534,7 @@ void CCommandBuffer::CmdBeginRenderPass(const VkRenderPassBeginInfo* pRenderPass
 void CCommandBuffer::CmdNextSubpass(VkSubpassContents contents)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdNextSubpass(
+    vkCmdNextSubpass(
         vk_command_buffer,
         contents);
 }
@@ -542,17 +542,29 @@ void CCommandBuffer::CmdNextSubpass(VkSubpassContents contents)
 void CCommandBuffer::CmdEndRenderPass()
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdEndRenderPass(
+    vkCmdEndRenderPass(
         vk_command_buffer);
 }
 
 void CCommandBuffer::CmdExecuteCommands(uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers)
 {
     VkCommandBuffer vk_command_buffer = GetVkObject();
-    vkex::CmdExecuteCommands(
+    vkCmdExecuteCommands(
         vk_command_buffer,
         commandBufferCount,
         pCommandBuffers);
+}
+
+void CCommandBuffer::CmdBeginRendering(const VkRenderingInfo* pRenderingInfo)
+{
+}
+
+void CCommandBuffer::CmdEndRendering()
+{
+}
+
+void CCommandBuffer::CmdPushDescriptorSetKHR(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t set, uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites)
+{
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -1051,7 +1063,7 @@ vkex::Result CCommandPool::InternalCreate(
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::CreateCommandPool(
+            vkCreateCommandPool(
                 *m_device,
                 &m_vk_create_info,
                 p_allocator,
@@ -1075,7 +1087,7 @@ vkex::Result CCommandPool::InternalDestroy(const VkAllocationCallbacks* p_alloca
     FreeCommandBuffers(&command_buffers);
 
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyCommandPool(
+        vkDestroyCommandPool(
             *m_device,
             m_vk_object,
             p_allocator);
@@ -1103,7 +1115,7 @@ vkex::Result CCommandPool::AllocateCommandBuffers(
     VkResult                     vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::AllocateCommandBuffers(
+        vkAllocateCommandBuffers(
             *m_device,
             &vk_allocate_info,
             vk_command_buffers.data()));
@@ -1211,7 +1223,7 @@ void CCommandPool::FreeCommandBuffers(
     }
 
     if (!vk_command_buffers.empty()) {
-        vkex::FreeCommandBuffers(
+        vkFreeCommandBuffers(
             *m_device,
             m_vk_object,
             CountU32(vk_command_buffers),

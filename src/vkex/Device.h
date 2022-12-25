@@ -35,6 +35,38 @@
 
 namespace vkex {
 
+struct PhysicalDeviceFeatures
+{
+    VkPhysicalDeviceFeatures core = {};
+
+    struct
+    {
+        VkPhysicalDeviceDepthClampZeroOneFeaturesEXT     depthClampZeroOne     = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_EXT};
+        VkPhysicalDeviceDepthClipControlFeaturesEXT      depthClipControl      = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT};
+        VkPhysicalDeviceDepthClipEnableFeaturesEXT       depthClipEnable       = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT};
+        VkPhysicalDeviceDescriptorBufferFeaturesEXT      descriptorBuffer      = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT};
+        VkPhysicalDeviceDescriptorIndexingFeatures       descriptorIndexing    = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES};
+        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT  extendedDynamicState  = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT};
+        VkPhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT};
+        VkPhysicalDeviceExtendedDynamicState3FeaturesEXT extendedDynamicState3 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT};
+        bool                                             loadStoreOpNone;
+        bool                                             pushDescriptor;
+    } ext;
+
+    //
+    // These fields no effect on device creation since they're all
+    // required extensions for VKEX. These extensions will be enabled
+    // for device creation. If thesee extensions are not found on the
+    // system then device creation will fail.
+    //
+    struct
+    {
+        VkPhysicalDeviceDynamicRenderingFeatures  dynamicRendering  = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES};
+        VkPhysicalDeviceSynchronization2Features  synchronization2  = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES};
+        VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphore = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES};
+    } khr;
+};
+
 // =================================================================================================
 // PhysicalDevice
 // =================================================================================================
@@ -128,12 +160,17 @@ public:
         return m_vk_physical_device_properties.properties.limits;
     }
 
-    /** @fn GetVkPhysicalDeviceFeatures
-     *
-     */
-    const VkPhysicalDeviceFeatures2& GetPhysicalDeviceFeatures() const
+    ///** @fn GetVkPhysicalDeviceFeatures
+    // *
+    // */
+    // const VkPhysicalDeviceFeatures2& GetPhysicalDeviceFeatures() const
+    //{
+    //    return m_vk_physical_device_features;
+    //}
+
+    const vkex::PhysicalDeviceFeatures& GetPhysicalDeviceFeatures() const
     {
-        return m_vk_physical_device_features;
+        return m_physical_device_features;
     }
 
     /** @fn GetVkApiVersion
@@ -218,10 +255,11 @@ private:
     }
 
 private:
-    vkex::Instance                        m_instance                      = nullptr;
-    PhysicalDeviceCreateInfo              m_create_info                   = {};
-    VkPhysicalDeviceProperties2           m_vk_physical_device_properties = {};
-    VkPhysicalDeviceFeatures2             m_vk_physical_device_features   = {};
+    vkex::Instance              m_instance                      = nullptr;
+    PhysicalDeviceCreateInfo    m_create_info                   = {};
+    VkPhysicalDeviceProperties2 m_vk_physical_device_properties = {};
+    // VkPhysicalDeviceFeatures2             m_vk_physical_device_features   = {};
+    vkex::PhysicalDeviceFeatures          m_physical_device_features = {};
     std::vector<VkQueueFamilyProperties2> m_vk_queue_family_properties;
     VkPhysicalDeviceMemoryProperties2     m_vk_physical_device_memory_properties = {};
 
@@ -239,7 +277,6 @@ private:
 // =================================================================================================
 // Device
 // =================================================================================================
-
 struct DeviceQueueCreateInfo
 {
     VkQueueFlagBits    queue_type;
@@ -475,20 +512,20 @@ public:
         const std::vector<vkex::DescriptorSetLayout>& objects,
         const VkAllocationCallbacks*                  p_allocator = nullptr);
 
-    /** @fn CreateEvent
-     *
-     */
-    vkex::Result CreateEvent(
-        const vkex::EventCreateInfo& create_info,
-        vkex::Event*                 p_object,
-        const VkAllocationCallbacks* p_allocator = nullptr);
-
-    /** @fn DestroyEvent
-     *
-     */
-    vkex::Result DestroyEvent(
-        vkex::Event                  object,
-        const VkAllocationCallbacks* p_allocator = nullptr);
+    ///** @fn CreateEvent
+    // *
+    // */
+    //vkex::Result CreateEvent(
+    //    const vkex::EventCreateInfo& create_info,
+    //    vkex::Event*                 p_object,
+    //    const VkAllocationCallbacks* p_allocator = nullptr);
+    //
+    ///** @fn DestroyEvent
+    // *
+    // */
+    //vkex::Result DestroyEvent(
+    //    vkex::Event                  object,
+    //    const VkAllocationCallbacks* p_allocator = nullptr);
 
     /** @fn CreateFence
      *
@@ -835,7 +872,7 @@ private:
     std::vector<std::unique_ptr<CDepthStencilView>>    m_stored_depth_stencil_views;
     std::vector<std::unique_ptr<CDescriptorPool>>      m_stored_descriptor_pools;
     std::vector<std::unique_ptr<CDescriptorSetLayout>> m_stored_descriptor_set_layouts;
-    std::vector<std::unique_ptr<CEvent>>               m_stored_events;
+    //std::vector<std::unique_ptr<CEvent>>               m_stored_events;
     std::vector<std::unique_ptr<CFence>>               m_stored_fences;
     std::vector<std::unique_ptr<CGraphicsPipeline>>    m_stored_graphics_pipelines;
     std::vector<std::unique_ptr<CImage>>               m_stored_images;

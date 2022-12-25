@@ -772,7 +772,7 @@ vkex::Result TransitionImageLayout(
     vk_submit_info.commandBufferCount = 1;
     vk_submit_info.pCommandBuffers    = &vk_command_buffer;
     // Queue submit
-    VkResult vk_result = vkex::QueueSubmit(queue->GetVkObject(), 1, &vk_submit_info, VK_NULL_HANDLE);
+    VkResult vk_result = vkQueueSubmit(queue->GetVkObject(), 1, &vk_submit_info, VK_NULL_HANDLE);
     VKEX_ASSERT(vk_result == VK_SUCCESS);
 
     // Wait for queue to be done
@@ -879,7 +879,7 @@ vkex::Result CopyResource(
     vk_submit_info.commandBufferCount = 1;
     vk_submit_info.pCommandBuffers    = &vk_command_buffer;
     // Queue submit
-    VkResult vk_result = vkex::QueueSubmit(queue->GetVkObject(), 1, &vk_submit_info, VK_NULL_HANDLE);
+    VkResult vk_result = vkQueueSubmit(queue->GetVkObject(), 1, &vk_submit_info, VK_NULL_HANDLE);
     VKEX_ASSERT(vk_result == VK_SUCCESS);
     if (vk_result != VK_SUCCESS) {
         return vkex::Result(vk_result);
@@ -1020,7 +1020,7 @@ vkex::Result CopyResource(
     vk_submit_info.commandBufferCount = 1;
     vk_submit_info.pCommandBuffers    = &vk_command_buffer;
     // Queue submit
-    VkResult vk_result = vkex::QueueSubmit(queue->GetVkObject(), 1, &vk_submit_info, VK_NULL_HANDLE);
+    VkResult vk_result = vkQueueSubmit(queue->GetVkObject(), 1, &vk_submit_info, VK_NULL_HANDLE);
     VKEX_ASSERT(vk_result == VK_SUCCESS);
 
     // Wait for queue to be done
@@ -1103,7 +1103,7 @@ vkex::Result CopyResource(
     vk_submit_info.commandBufferCount = 1;
     vk_submit_info.pCommandBuffers    = &vk_command_buffer;
     // Queue submit
-    VkResult vk_result = vkex::QueueSubmit(queue->GetVkObject(), 1, &vk_submit_info, VK_NULL_HANDLE);
+    VkResult vk_result = vkQueueSubmit(queue->GetVkObject(), 1, &vk_submit_info, VK_NULL_HANDLE);
     VKEX_ASSERT(vk_result == VK_SUCCESS);
     if (vk_result != VK_SUCCESS) {
         return vkex::Result(vk_result);

@@ -62,7 +62,7 @@ vkex::Result CSampler::InternalCreate(
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::CreateSampler(
+            vkCreateSampler(
                 *m_device,
                 &m_vk_create_info,
                 p_allocator,
@@ -78,7 +78,7 @@ vkex::Result CSampler::InternalCreate(
 vkex::Result CSampler::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroySampler(
+        vkDestroySampler(
             *m_device,
             m_vk_object,
             p_allocator);

@@ -49,7 +49,7 @@ vkex::Result CShaderModule::InternalCreate(
     VkResult vk_result        = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::CreateShaderModule(
+        vkCreateShaderModule(
             *m_device,
             &m_vk_create_info,
             p_allocator,
@@ -127,7 +127,7 @@ vkex::Result CShaderModule::InternalCreate(
 vkex::Result CShaderModule::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object) {
-        vkex::DestroyShaderModule(
+        vkDestroyShaderModule(
             *m_device,
             m_vk_object,
             p_allocator);

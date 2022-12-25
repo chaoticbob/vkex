@@ -49,7 +49,7 @@ vkex::Result CQueryPool::InternalCreate(
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::CreateQueryPool(
+            vkCreateQueryPool(
                 *m_device,
                 &m_vk_create_info,
                 p_allocator,
@@ -65,7 +65,7 @@ vkex::Result CQueryPool::InternalCreate(
 vkex::Result CQueryPool::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyQueryPool(
+        vkDestroyQueryPool(
             *m_device,
             m_vk_object,
             p_allocator);

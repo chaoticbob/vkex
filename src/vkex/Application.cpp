@@ -1903,7 +1903,7 @@ vkex::Result Application::InitializeImGui()
         VkCommandBuffer command_buffer = *(m_per_frame_present_data[0]->GetCommandBuffer());
 
         VkResult vk_result = InvalidValue<VkResult>::Value;
-        VKEX_VULKAN_RESULT_CALL(vk_result, vkex::ResetCommandPool(*m_device, command_pool, 0));
+        VKEX_VULKAN_RESULT_CALL(vk_result, vkResetCommandPool(*m_device, command_pool, 0));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -1912,7 +1912,7 @@ vkex::Result Application::InitializeImGui()
         begin_info.sType                    = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         begin_info.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
         vk_result = InvalidValue<VkResult>::Value;
-        VKEX_VULKAN_RESULT_CALL(vk_result, vkex::BeginCommandBuffer(command_buffer, &begin_info));
+        VKEX_VULKAN_RESULT_CALL(vk_result, vkBeginCommandBuffer(command_buffer, &begin_info));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -1924,19 +1924,19 @@ vkex::Result Application::InitializeImGui()
         end_info.commandBufferCount = 1;
         end_info.pCommandBuffers    = &command_buffer;
         vk_result                   = InvalidValue<VkResult>::Value;
-        VKEX_VULKAN_RESULT_CALL(vk_result, vkex::EndCommandBuffer(command_buffer));
+        VKEX_VULKAN_RESULT_CALL(vk_result, vkEndCommandBuffer(command_buffer));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
 
         vk_result = InvalidValue<VkResult>::Value;
-        VKEX_VULKAN_RESULT_CALL(vk_result, vkex::QueueSubmit(*m_graphics_queue, 1, &end_info, VK_NULL_HANDLE));
+        VKEX_VULKAN_RESULT_CALL(vk_result, vkQueueSubmit(*m_graphics_queue, 1, &end_info, VK_NULL_HANDLE));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
 
         vk_result = InvalidValue<VkResult>::Value;
-        VKEX_VULKAN_RESULT_CALL(vk_result, vkex::DeviceWaitIdle(*m_device));
+        VKEX_VULKAN_RESULT_CALL(vk_result, vkDeviceWaitIdle(*m_device));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -2261,12 +2261,12 @@ vkex::Result Application::RecreateVkexSwapchain()
         return vkex::Result::ErrorInvalidApplicationMode;
     }
 
-    VkResult vk_result = vkex::QueueWaitIdle(*m_graphics_queue);
+    VkResult vk_result = vkQueueWaitIdle(*m_graphics_queue);
     if (vk_result != VK_SUCCESS) {
         return vkex::Result(vk_result);
     }
 
-    vk_result = vkex::QueueWaitIdle(*m_present_queue);
+    vk_result = vkQueueWaitIdle(*m_present_queue);
     if (vk_result != VK_SUCCESS) {
         return vkex::Result(vk_result);
     }
@@ -2817,7 +2817,7 @@ vkex::Result Application::SubmitRender(RenderData* p_current_render_data, Presen
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::QueueSubmit(
+        vkQueueSubmit(
             *m_graphics_queue,
             1,
             &vk_submit_info,
@@ -2876,7 +2876,7 @@ vkex::Result Application::SubmitPresent(PresentData* p_data)
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::QueueSubmit(
+            vkQueueSubmit(
                 *m_graphics_queue,
                 1,
                 &vk_submit_info,
@@ -2912,7 +2912,7 @@ vkex::Result Application::SubmitPresent(PresentData* p_data)
         time_range.start     = static_cast<float>(GetElapsedTime());
 
         // Queue present
-        VkResult vk_result = vkex::QueuePresentKHR(
+        VkResult vk_result = vkQueuePresentKHR(
             *m_present_queue,
             &vk_present_info);
         if (vk_result != VK_SUCCESS) {
@@ -2957,7 +2957,7 @@ vkex::Result Application::SubmitPresent(PresentData* p_data)
     if (m_screen_shot && m_configuration.enable_screen_shot) {
         // Wait for queue idle
         VkResult vk_result = InvalidValue<VkResult>::Value;
-        VKEX_VULKAN_RESULT_CALL(vk_result, vkex::QueueWaitIdle(*m_graphics_queue));
+        VKEX_VULKAN_RESULT_CALL(vk_result, vkQueueWaitIdle(*m_graphics_queue));
 
         // Build command buffer
         vkex::CommandBuffer command_buffer = p_data->GetCommandBuffer();
@@ -2999,13 +2999,13 @@ vkex::Result Application::SubmitPresent(PresentData* p_data)
         vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::QueueSubmit(*m_graphics_queue, 1, &vk_submit_info, VK_NULL_HANDLE));
+            vkQueueSubmit(*m_graphics_queue, 1, &vk_submit_info, VK_NULL_HANDLE));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
 
         // Wait for queue idle again
-        VKEX_VULKAN_RESULT_CALL(vk_result, vkex::QueueWaitIdle(*m_graphics_queue));
+        VKEX_VULKAN_RESULT_CALL(vk_result, vkQueueWaitIdle(*m_graphics_queue));
 
         // Write image
         {

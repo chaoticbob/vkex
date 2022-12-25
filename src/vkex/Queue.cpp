@@ -107,7 +107,7 @@ VkBool32 CQueue::SupportsPresent(const vkex::DisplayInfo& display_info) const
 
 VkResult CQueue::WaitIdle()
 {
-    VkResult vk_result = vkex::QueueWaitIdle(
+    VkResult vk_result = vkQueueWaitIdle(
         m_create_info.vk_object);
     if (vk_result != VK_SUCCESS) {
         return vk_result;
@@ -132,7 +132,7 @@ vkex::Result CQueue::Submit(const vkex::SubmitInfo& submit_info)
     vk_submit_info.signalSemaphoreCount = vkex::CountU32(vk_signal_semaphores);
     vk_submit_info.pSignalSemaphores    = vkex::DataPtr(vk_signal_semaphores);
 
-    VkResult vk_result = vkex::QueueSubmit(m_create_info.vk_object, 1, &vk_submit_info, vk_fence);
+    VkResult vk_result = vkQueueSubmit(m_create_info.vk_object, 1, &vk_submit_info, vk_fence);
     if (vk_result != VK_SUCCESS) {
         return vkex::Result(vk_result);
     }

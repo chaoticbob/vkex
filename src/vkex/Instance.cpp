@@ -28,6 +28,10 @@
 
 namespace vkex {
 
+PFN_vkCreateDebugUtilsMessengerEXT  CreateDebugUtilsMessengerEXT  = nullptr;
+PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT = nullptr;
+PFN_vkSetDebugUtilsObjectNameEXT    SetDebugUtilsObjectNameEXT    = nullptr;
+
 // =================================================================================================
 // Static storage for IInstance
 // =================================================================================================
@@ -154,11 +158,24 @@ vkex::Result CInstance::InitializeLayers()
 {
     // Enumerate layers
     {
-        std::vector<VkLayerProperties> properties_list;
-        VkResult                       vk_result = InvalidValue<VkResult>::Value;
+        uint32_t count     = 0;
+        VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::EnumerateInstanceLayerPropertiesVKEX(&properties_list));
+            vkEnumerateInstanceLayerProperties(
+                &count,
+                nullptr));
+        if (vk_result != VK_SUCCESS) {
+            return vkex::Result(vk_result);
+        }
+
+        std::vector<VkLayerProperties> properties_list(count);
+
+        VKEX_VULKAN_RESULT_CALL(
+            vk_result,
+            vkEnumerateInstanceLayerProperties(
+                &count,
+                vkex::DataPtr(properties_list)));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -225,13 +242,26 @@ vkex::Result CInstance::InitializeExtensions()
         c_str_layers.push_back(nullptr);
 
         for (auto& layer_name : c_str_layers) {
-            std::vector<VkExtensionProperties> properties_list;
-            VkResult                           vk_result = InvalidValue<VkResult>::Value;
+            uint32_t count     = 0;
+            VkResult vk_result = InvalidValue<VkResult>::Value;
             VKEX_VULKAN_RESULT_CALL(
                 vk_result,
-                vkex::EnumerateInstanceExtensionPropertiesVKEX(
+                vkEnumerateInstanceExtensionProperties(
                     layer_name,
-                    &properties_list));
+                    &count,
+                    nullptr));
+            if (vk_result != VK_SUCCESS) {
+                return vkex::Result(vk_result);
+            }
+
+            std::vector<VkExtensionProperties> properties_list(count);
+
+            VKEX_VULKAN_RESULT_CALL(
+                vk_result,
+                vkEnumerateInstanceExtensionProperties(
+                    layer_name,
+                    &count,
+                    vkex::DataPtr(properties_list)));
             if (vk_result != VK_SUCCESS) {
                 return vkex::Result(vk_result);
             }
@@ -417,13 +447,25 @@ vkex::Result CInstance::InitializeDebugUtilMessenger(const VkAllocationCallbacks
 
 vkex::Result CInstance::InitializePhysicalDevices()
 {
-    std::vector<VkPhysicalDevice> vk_physical_devices;
-    VkResult                      vk_result = InvalidValue<VkResult>::Value;
+    uint32_t count     = 0;
+    VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::EnumeratePhysicalDevicesVKEX(
+        vkEnumeratePhysicalDevices(
             m_vk_object,
-            &vk_physical_devices));
+            &count,
+            nullptr));
+    if (vk_result != VK_SUCCESS) {
+        return vkex::Result(vk_result);
+    }
+    std::vector<VkPhysicalDevice> vk_physical_devices(count);
+
+    VKEX_VULKAN_RESULT_CALL(
+        vk_result,
+        vkEnumeratePhysicalDevices(
+            m_vk_object,
+            &count,
+            vkex::DataPtr(vk_physical_devices)));
     if (vk_result != VK_SUCCESS) {
         return vkex::Result(vk_result);
     }
@@ -510,15 +552,12 @@ vkex::Result CInstance::InternalCreate(
     // Copy create info
     m_create_info = create_info;
 
-    // Initialize loader
-    vkex::VkexLoaderInitialize(vkex::LOAD_MODE_SO_DIRECT);
-
     // Enumerate instance API version
     {
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::EnumerateInstanceVersion(&m_found_api_version));
+            vkEnumerateInstanceVersion(&m_found_api_version));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -595,7 +634,7 @@ vkex::Result CInstance::InternalCreate(
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::CreateInstance(
+            vkCreateInstance(
                 &m_vk_create_info,
                 p_allocator,
                 &m_vk_object));
@@ -639,7 +678,7 @@ vkex::Result CInstance::InternalCreate(
     // else {
     //   vkex::LoadVkFunctionsInstance(m_vk_object, vkGetInstanceProcAddr);
     // }
-    vkex::VkexLoaderLoadInstance(m_vk_object, vkGetInstanceProcAddr);
+    // vkex::VkexLoaderLoadInstance(m_vk_object, vkGetInstanceProcAddr);
     //// Load instance functions
     //{
     //  vkex::Result vkex_result = LoadFunctions(m_vk_object);
@@ -647,6 +686,10 @@ vkex::Result CInstance::InternalCreate(
     //    return vkex_result;
     //  }
     //}
+
+    CreateDebugUtilsMessengerEXT  = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_vk_object, "vkCreateDebugUtilsMessengerEXT");
+    DestroyDebugUtilsMessengerEXT = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_vk_object, "vkDestroyDebugUtilsMessengerEXT");
+    SetDebugUtilsObjectNameEXT    = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(m_vk_object, "vkSetDebugUtilsObjectNameEXT");
 
     // Create debug utils messenger
     if (m_create_info.debug_utils.enable) {
@@ -746,7 +789,7 @@ vkex::Result CInstance::InternalDestroy(const VkAllocationCallbacks* p_allocator
 
     // Destroy instance
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyInstance(
+        vkDestroyInstance(
             m_vk_object,
             p_allocator);
 

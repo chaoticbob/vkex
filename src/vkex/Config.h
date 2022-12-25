@@ -29,8 +29,9 @@
 #    endif
 #endif
 
-#include "vkex/VkexLoader.h"
-#include "vkex/VkexLoaderHelper.h"
+//#include "vkex/VkexLoader.h"
+//#include "vkex/VkexLoaderHelper.h"
+#include <vulkan/vulkan.h>
 #include "spirv_reflect.h"
 #include "vk_mem_alloc.h"
 
@@ -357,6 +358,15 @@ template <typename T>
 uint32_t CountU32(const std::vector<T>& v)
 {
     return static_cast<uint32_t>(v.size());
+}
+
+/** @fn DataPtr
+ *
+ */
+template <typename T>
+T* DataPtr(std::vector<T>& v)
+{
+    return v.empty() ? nullptr : v.data();
 }
 
 /** @fn DataPtr

@@ -308,7 +308,7 @@ vkex::Result CTexture::CopyToMipLevel(
     subresource.mipLevel                   = mip_level;
     subresource.arrayLayer                 = array_layer;
     VkSubresourceLayout subresource_layout = {};
-    vkex::GetImageSubresourceLayout(*(m_image->GetDevice()), *m_image, &subresource, &subresource_layout);
+    vkGetImageSubresourceLayout(*(m_image->GetDevice()), *m_image, &subresource, &subresource_layout);
 
     const uint32_t image_height   = m_image->GetExtent().height;
     const uint32_t dst_height     = image_height >> mip_level;

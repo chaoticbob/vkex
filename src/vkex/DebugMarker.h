@@ -18,7 +18,8 @@
 #define __DEBUG_MARKER_H__
 
 #include <glm/glm.hpp>
-#include "VkexLoader.h"
+//#include "VkexLoader.h"
+#include <vulkan/vulkan.h>
 
 #define SCOPE1(cmd, name)                vkex::internal::DebugMarkerHelper temp_##__LINE__(cmd, name);
 #define SCOPE2(cmd, name, color)         vkex::internal::DebugMarkerHelper temp_##__LINE__(cmd, name, color);
@@ -56,14 +57,14 @@ inline void DebugMarkerBegin(VkCommandBuffer cmd_buffer, const char* marker_name
     markerInfo.sType                      = VK_STRUCTURE_TYPE_DEBUG_MARKER_MARKER_INFO_EXT;
     memcpy(markerInfo.color, &color[0], sizeof(float) * 4);
     markerInfo.pMarkerName = marker_name;
-    if (vkex::CmdDebugMarkerBeginEXT != nullptr)
-        vkex::CmdDebugMarkerBeginEXT(cmd_buffer, &markerInfo);
+    if (vkCmdDebugMarkerBeginEXT != nullptr)
+        vkCmdDebugMarkerBeginEXT(cmd_buffer, &markerInfo);
 }
 
 inline void DebugMarkerEnd(VkCommandBuffer cmd_buffer)
 {
-    if (vkex::CmdDebugMarkerEndEXT != nullptr)
-        vkex::CmdDebugMarkerEndEXT(cmd_buffer);
+    if (vkCmdDebugMarkerEndEXT != nullptr)
+        vkCmdDebugMarkerEndEXT(cmd_buffer);
 }
 
 // =================================================================================================

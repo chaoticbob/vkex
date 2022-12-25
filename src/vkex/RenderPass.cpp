@@ -449,7 +449,7 @@ vkex::Result CRenderPass::InternalCreate(
             VkResult vk_result = InvalidValue<VkResult>::Value;
             VKEX_VULKAN_RESULT_CALL(
                 vk_result,
-                vkex::CreateRenderPass(
+                vkCreateRenderPass(
                     *m_device,
                     &m_vk_create_info,
                     p_allocator,
@@ -479,7 +479,7 @@ vkex::Result CRenderPass::InternalCreate(
             VkResult vk_result = InvalidValue<VkResult>::Value;
             VKEX_VULKAN_RESULT_CALL(
                 vk_result,
-                vkex::CreateFramebuffer(
+                vkCreateFramebuffer(
                     *m_device,
                     &m_vk_framebuffer_create_info,
                     p_allocator,
@@ -502,7 +502,7 @@ vkex::Result CRenderPass::InternalCreate(
 vkex::Result CRenderPass::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_framebuffer_object != VK_NULL_HANDLE) {
-        vkex::DestroyFramebuffer(
+        vkDestroyFramebuffer(
             *m_device,
             m_vk_framebuffer_object,
             p_allocator);
@@ -511,7 +511,7 @@ vkex::Result CRenderPass::InternalDestroy(const VkAllocationCallbacks* p_allocat
     }
 
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyRenderPass(
+        vkDestroyRenderPass(
             *m_device,
             m_vk_object,
             p_allocator);

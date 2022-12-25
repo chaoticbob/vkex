@@ -38,7 +38,7 @@ class CDescriptorSetLayout;
 class CDescriptorSet;
 class CDevice;
 class CDeviceMemory;
-class CEvent;
+//class CEvent;
 class CFence;
 class CGpuBufferResource;
 class CGpuTextureResource;
@@ -77,7 +77,7 @@ using DescriptorSetLayout = typename std::add_pointer<CDescriptorSetLayout>::typ
 using DescriptorSet       = typename std::add_pointer<CDescriptorSet>::type;
 using Device              = typename std::add_pointer<CDevice>::type;
 using DeviceMemory        = typename std::add_pointer<CDeviceMemory>::type;
-using Event               = typename std::add_pointer<CEvent>::type;
+//using Event               = typename std::add_pointer<CEvent>::type;
 using Fence               = typename std::add_pointer<CFence>::type;
 using GpuBufferResource   = typename std::add_pointer<CGpuBufferResource>::type;
 using GpuTextureResource  = typename std::add_pointer<CGpuTextureResource>::type;

@@ -20,61 +20,61 @@
 
 namespace vkex {
 
-// =================================================================================================
-// Event
-// =================================================================================================
-CEvent::CEvent()
-{
-}
-
-CEvent::~CEvent()
-{
-}
-
-vkex::Result CEvent::InternalCreate(
-    const vkex::EventCreateInfo& create_info,
-    const VkAllocationCallbacks* p_allocator)
-{
-    // Copy create info
-    m_create_info = create_info;
-
-    // Vulkan create info
-    {
-        m_vk_create_info       = {VK_STRUCTURE_TYPE_EVENT_CREATE_INFO};
-        m_vk_create_info.flags = m_create_info.flags;
-    }
-
-    // Create Vulkan object
-    {
-        VkResult vk_result = InvalidValue<VkResult>::Value;
-        VKEX_VULKAN_RESULT_CALL(
-            vk_result,
-            vkex::CreateEvent(
-                *m_device,
-                &m_vk_create_info,
-                p_allocator,
-                &m_vk_object));
-        if (vk_result != VK_SUCCESS) {
-            return vkex::Result(vk_result);
-        }
-    }
-
-    return vkex::Result::Success;
-}
-
-vkex::Result CEvent::InternalDestroy(const VkAllocationCallbacks* p_allocator)
-{
-    if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyEvent(
-            *m_device,
-            m_vk_object,
-            p_allocator);
-
-        m_vk_object = VK_NULL_HANDLE;
-    }
-
-    return vkex::Result::Success;
-}
+//// =================================================================================================
+//// Event
+//// =================================================================================================
+//CEvent::CEvent()
+//{
+//}
+//
+//CEvent::~CEvent()
+//{
+//}
+//
+//vkex::Result CEvent::InternalCreate(
+//    const vkex::EventCreateInfo& create_info,
+//    const VkAllocationCallbacks* p_allocator)
+//{
+//    // Copy create info
+//    m_create_info = create_info;
+//
+//    // Vulkan create info
+//    {
+//        m_vk_create_info       = {VK_STRUCTURE_TYPE_EVENT_CREATE_INFO};
+//        m_vk_create_info.flags = m_create_info.flags;
+//    }
+//
+//    // Create Vulkan object
+//    {
+//        VkResult vk_result = InvalidValue<VkResult>::Value;
+//        VKEX_VULKAN_RESULT_CALL(
+//            vk_result,
+//            vkex::CreateEvent(
+//                *m_device,
+//                &m_vk_create_info,
+//                p_allocator,
+//                &m_vk_object));
+//        if (vk_result != VK_SUCCESS) {
+//            return vkex::Result(vk_result);
+//        }
+//    }
+//
+//    return vkex::Result::Success;
+//}
+//
+//vkex::Result CEvent::InternalDestroy(const VkAllocationCallbacks* p_allocator)
+//{
+//    if (m_vk_object != VK_NULL_HANDLE) {
+//        vkex::DestroyEvent(
+//            *m_device,
+//            m_vk_object,
+//            p_allocator);
+//
+//        m_vk_object = VK_NULL_HANDLE;
+//    }
+//
+//    return vkex::Result::Success;
+//}
 
 // =================================================================================================
 // Fence
@@ -105,7 +105,7 @@ vkex::Result CFence::InternalCreate(
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::CreateFence(
+            vkCreateFence(
                 *m_device,
                 &m_vk_create_info,
                 p_allocator,
@@ -139,7 +139,7 @@ vkex::Result CFence::InternalCreate(
 vkex::Result CFence::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyFence(
+        vkDestroyFence(
             *m_device,
             m_vk_object,
             p_allocator);
@@ -152,9 +152,10 @@ vkex::Result CFence::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 
 VkResult CFence::ResetFence()
 {
-    VkResult vk_result = vkex::ResetFenceVKEX(
+    VkResult vk_result = vkResetFences(
         *m_device,
-        m_vk_object);
+        1,
+        &m_vk_object);
     if (vk_result != VK_SUCCESS) {
         return vk_result;
     }
@@ -163,7 +164,7 @@ VkResult CFence::ResetFence()
 
 VkResult CFence::GetFenceStatus()
 {
-    VkResult vk_result = vkex::GetFenceStatus(
+    VkResult vk_result = vkGetFenceStatus(
         *m_device,
         m_vk_object);
     if (vk_result != VK_SUCCESS) {
@@ -174,9 +175,10 @@ VkResult CFence::GetFenceStatus()
 
 VkResult CFence::WaitForFence(uint64_t timeout)
 {
-    VkResult vk_result = vkex::WaitForFenceVKEX(
+    VkResult vk_result = vkWaitForFences(
         *m_device,
-        m_vk_object,
+        1,
+        &m_vk_object,
         VK_TRUE,
         timeout);
     if (vk_result != VK_SUCCESS) {
@@ -229,7 +231,7 @@ vkex::Result CSemaphore::InternalCreate(
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::CreateSemaphore(
+            vkCreateSemaphore(
                 *m_device,
                 &m_vk_create_info,
                 p_allocator,
@@ -263,7 +265,7 @@ vkex::Result CSemaphore::InternalCreate(
 vkex::Result CSemaphore::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroySemaphore(
+        vkDestroySemaphore(
             *m_device,
             m_vk_object,
             p_allocator);

@@ -62,7 +62,7 @@ vkex::Result CSurface::InternalCreate(
         m_vk_create_info           = {VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR};
         m_vk_create_info.hinstance = create_info.hinstance;
         m_vk_create_info.hwnd      = create_info.hwnd;
-        VkResult vk_result         = vkex::CreateWin32SurfaceKHR(
+        VkResult vk_result         = vkCreateWin32SurfaceKHR(
             *m_instance,
             &m_vk_create_info,
             p_allocator,
@@ -81,10 +81,10 @@ vkex::Result CSurface::InternalCreate(
         m_vk_surface_capabilities                    = {VK_STRUCTURE_TYPE_SURFACE_CAPABILITIES_2_KHR};
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::GetPhysicalDeviceSurfaceCapabilities2VKEX_SAFE(
+            vkGetPhysicalDeviceSurfaceCapabilities2KHR(
                 *m_create_info.physical_device,
                 &surface_info,
-                &m_vk_surface_capabilities););
+                &m_vk_surface_capabilities));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -94,13 +94,31 @@ vkex::Result CSurface::InternalCreate(
     {
         VkPhysicalDeviceSurfaceInfo2KHR surface_info = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SURFACE_INFO_2_KHR};
         surface_info.surface                         = m_vk_object;
-        VkResult vk_result                           = InvalidValue<VkResult>::Value;
+
+        uint32_t count     = 0;
+        VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::GetPhysicalDeviceSurfaceFormats2VKEX_SAFE(
+            vkGetPhysicalDeviceSurfaceFormats2KHR(
                 *m_create_info.physical_device,
                 &surface_info,
-                &m_vk_surface_formats));
+                &count,
+                nullptr));
+        if (vk_result != VK_SUCCESS) {
+            return vkex::Result(vk_result);
+        }
+
+        for (uint32_t i = 0; i < count; ++i) {
+            m_vk_surface_formats.push_back({VK_STRUCTURE_TYPE_SURFACE_FORMAT_2_KHR});
+        }
+
+        VKEX_VULKAN_RESULT_CALL(
+            vk_result,
+            vkGetPhysicalDeviceSurfaceFormats2KHR(
+                *m_create_info.physical_device,
+                &surface_info,
+                &count,
+                vkex::DataPtr(m_vk_surface_formats)));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -121,7 +139,7 @@ vkex::Result CSurface::InternalCreate(
             VkResult vk_result = InvalidValue<VkResult>::Value;
             VKEX_VULKAN_RESULT_CALL(
                 vk_result,
-                vkex::GetPhysicalDeviceSurfaceSupportKHR(
+                vkGetPhysicalDeviceSurfaceSupportKHR(
                     *m_create_info.physical_device,
                     queue_family_index,
                     m_vk_object,
@@ -138,13 +156,27 @@ vkex::Result CSurface::InternalCreate(
 
     // Presentable queue families
     {
+        uint32_t count     = 0;
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::GetPhysicalDeviceSurfacePresentModesVKEX(
+            vkGetPhysicalDeviceSurfacePresentModesKHR(
                 *m_create_info.physical_device,
                 m_vk_object,
-                &m_vk_present_modes););
+                &count,
+                nullptr));
+        if (vk_result != VK_SUCCESS) {
+            return vkex::Result(vk_result);
+        }
+
+        m_vk_present_modes.resize(count);
+        VKEX_VULKAN_RESULT_CALL(
+            vk_result,
+            vkGetPhysicalDeviceSurfacePresentModesKHR(
+                *m_create_info.physical_device,
+                m_vk_object,
+                &count,
+                vkex::DataPtr(m_vk_present_modes)));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -156,7 +188,7 @@ vkex::Result CSurface::InternalCreate(
 vkex::Result CSurface::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroySurfaceKHR(
+        vkDestroySurfaceKHR(
             *m_instance,
             m_vk_object,
             p_allocator);
@@ -251,7 +283,7 @@ vkex::Result CSwapchain::InternalCreate(
 
         VkFormatProperties2  vk_format_properties = {VK_STRUCTURE_TYPE_FORMAT_PROPERTIES_2};
         vkex::PhysicalDevice physical_device      = m_device->GetPhysicalDevice();
-        vkex::GetPhysicalDeviceFormatProperties2(
+        vkGetPhysicalDeviceFormatProperties2(
             *physical_device,
             m_create_info.color_format,
             &vk_format_properties);
@@ -286,7 +318,7 @@ vkex::Result CSwapchain::InternalCreate(
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::CreateSwapchainKHR(
+            vkCreateSwapchainKHR(
                 *m_device,
                 &m_vk_create_info,
                 p_allocator,
@@ -298,14 +330,28 @@ vkex::Result CSwapchain::InternalCreate(
 
     // Get swapchain color images
     {
-        std::vector<VkImage> vk_swapchain_images;
-        VkResult             vk_result = InvalidValue<VkResult>::Value;
+        uint32_t count     = 0;
+        VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::GetSwapchainImagesVKEX(
+            vkGetSwapchainImagesKHR(
                 *m_device,
                 m_vk_object,
-                &vk_swapchain_images););
+                &count,
+                nullptr));
+        if (vk_result != VK_SUCCESS) {
+            return vkex::Result(vk_result);
+        }
+
+        std::vector<VkImage> vk_swapchain_images(count);
+        vk_result = InvalidValue<VkResult>::Value;
+        VKEX_VULKAN_RESULT_CALL(
+            vk_result,
+            vkGetSwapchainImagesKHR(
+                *m_device,
+                m_vk_object,
+                &count,
+                vkex::DataPtr(vk_swapchain_images)));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -404,7 +450,7 @@ vkex::Result CSwapchain::InternalDestroy(const VkAllocationCallbacks* p_allocato
     }
 
     if (m_vk_object) {
-        vkex::DestroySwapchainKHR(
+        vkDestroySwapchainKHR(
             *m_device,
             m_vk_object,
             p_allocator);
@@ -441,7 +487,7 @@ vkex::Result CSwapchain::GetDepthStencilImage(uint32_t image_index, vkex::Image*
 
 VkResult CSwapchain::AcquireNextImage(uint64_t timeout, VkSemaphore semaphore, VkFence fence, uint32_t* pImageIndex)
 {
-    VkResult vk_result = vkex::AcquireNextImageKHR(
+    VkResult vk_result = vkAcquireNextImageKHR(
         *m_device,
         m_vk_object,
         timeout,

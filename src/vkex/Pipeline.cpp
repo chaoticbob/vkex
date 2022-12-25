@@ -50,7 +50,7 @@ vkex::Result CPipelineLayout::InternalCreate(
     VkResult vk_result                      = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::CreatePipelineLayout(
+        vkCreatePipelineLayout(
             *m_device,
             &m_vk_create_info,
             p_allocator,
@@ -65,7 +65,7 @@ vkex::Result CPipelineLayout::InternalCreate(
 vkex::Result CPipelineLayout::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object) {
-        vkex::DestroyPipelineLayout(
+        vkDestroyPipelineLayout(
             *m_device,
             m_vk_object,
             p_allocator);
@@ -103,7 +103,7 @@ vkex::Result CPipelineCache::InternalCreate(
     // Call create
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::CreatePipelineCache(
+        vkCreatePipelineCache(
             *m_device,
             &m_vk_create_info,
             p_allocator,
@@ -118,7 +118,7 @@ vkex::Result CPipelineCache::InternalCreate(
 vkex::Result CPipelineCache::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object) {
-        vkex::DestroyPipelineCache(
+        vkDestroyPipelineCache(
             *m_device,
             m_vk_object,
             p_allocator);
@@ -181,7 +181,7 @@ vkex::Result CComputePipeline::InternalCreate(
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::CreateComputePipelines(
+        vkCreateComputePipelines(
             *m_device,
             vk_pipeline_cache,
             1,
@@ -594,7 +594,7 @@ vkex::Result CGraphicsPipeline::InternalCreate(
     VkResult vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::CreateGraphicsPipelines(
+        vkCreateGraphicsPipelines(
             *m_device,
             vk_pipeline_cache,
             1,
@@ -624,7 +624,7 @@ vkex::Result CGraphicsPipeline::InternalCreate(
 vkex::Result CGraphicsPipeline::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyPipeline(
+        vkDestroyPipeline(
             *m_device,
             m_vk_object,
             p_allocator);

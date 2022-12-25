@@ -46,7 +46,7 @@ vkex::Result CDescriptorSetLayout::InternalCreate(
     VkResult vk_result            = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::CreateDescriptorSetLayout(
+        vkCreateDescriptorSetLayout(
             *m_device,
             &m_vk_create_info,
             p_allocator,
@@ -58,7 +58,7 @@ vkex::Result CDescriptorSetLayout::InternalCreate(
 vkex::Result CDescriptorSetLayout::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyDescriptorSetLayout(
+        vkDestroyDescriptorSetLayout(
             *m_device,
             m_vk_object,
             p_allocator);
@@ -315,7 +315,7 @@ vkex::Result CDescriptorPool::InternalCreate(
     VkResult vk_result             = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::CreateDescriptorPool(
+        vkCreateDescriptorPool(
             *m_device,
             &m_vk_create_info,
             p_allocator,
@@ -330,7 +330,7 @@ vkex::Result CDescriptorPool::InternalCreate(
 vkex::Result CDescriptorPool::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyDescriptorPool(
+        vkDestroyDescriptorPool(
             *m_device,
             m_vk_object,
             p_allocator);
@@ -365,7 +365,7 @@ vkex::Result CDescriptorPool::AllocateDescriptorSets(
     VkResult                     vk_result = InvalidValue<VkResult>::Value;
     VKEX_VULKAN_RESULT_CALL(
         vk_result,
-        vkex::AllocateDescriptorSets(
+        vkAllocateDescriptorSets(
             *m_device,
             &vk_allocate_info,
             vk_descriptor_sets.data()));
@@ -475,7 +475,7 @@ void CDescriptorPool::FreeDescriptorSets(
             nullptr);
     }
 
-    vkex::FreeDescriptorSets(
+    vkFreeDescriptorSets(
         *m_device,
         m_vk_object,
         CountU32(vk_descriptor_sets),

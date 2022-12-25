@@ -28,6 +28,24 @@
 
 namespace vkex {
 
+static void WireUpPNexts(vkex::PhysicalDeviceFeatures* pFeatures)
+{
+    if (pFeatures == nullptr) {
+        return;
+    }
+    pFeatures->ext.depthClampZeroOne.pNext     = nullptr;
+    pFeatures->ext.depthClipControl.pNext      = &pFeatures->ext.depthClampZeroOne;
+    pFeatures->ext.depthClipEnable.pNext       = &pFeatures->ext.depthClipControl;
+    pFeatures->ext.descriptorBuffer.pNext      = &pFeatures->ext.depthClipEnable;
+    pFeatures->ext.descriptorIndexing.pNext    = &pFeatures->ext.descriptorBuffer;
+    pFeatures->ext.extendedDynamicState.pNext  = &pFeatures->ext.descriptorIndexing;
+    pFeatures->ext.extendedDynamicState2.pNext = &pFeatures->ext.extendedDynamicState;
+    pFeatures->ext.extendedDynamicState3.pNext = &pFeatures->ext.extendedDynamicState2;
+    pFeatures->khr.dynamicRendering.pNext      = &pFeatures->ext.extendedDynamicState3;
+    pFeatures->khr.synchronization2.pNext      = &pFeatures->khr.dynamicRendering;
+    pFeatures->khr.timelineSemaphore.pNext     = &pFeatures->khr.synchronization2;
+}
+
 // =================================================================================================
 // PhysicalDevice
 // =================================================================================================
@@ -49,7 +67,7 @@ vkex::Result CPhysicalDevice::InternalCreate(
     // Properties
     {
         m_vk_physical_device_properties = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
-        vkex::GetPhysicalDeviceProperties2(
+        vkGetPhysicalDeviceProperties2(
             m_create_info.vk_object,
             &m_vk_physical_device_properties);
     }
@@ -59,23 +77,41 @@ vkex::Result CPhysicalDevice::InternalCreate(
 
     // Features
     {
-        m_vk_physical_device_features = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-        vkex::GetPhysicalDeviceFeatures2(
+        m_physical_device_features = {};
+        WireUpPNexts(&m_physical_device_features);
+
+        VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
+        features2.pNext                     = &m_physical_device_features.khr.timelineSemaphore;
+
+        vkGetPhysicalDeviceFeatures2(
             m_create_info.vk_object,
-            &m_vk_physical_device_features);
+            &features2);
+
+        m_physical_device_features.core = features2.features;
     }
 
     // Queue family properties
     {
-        vkex::GetPhysicalDeviceQueueFamilyProperties2VKEX(
+        uint32_t count = 0;
+        vkGetPhysicalDeviceQueueFamilyProperties2(
             m_create_info.vk_object,
-            &m_vk_queue_family_properties);
+            &count,
+            nullptr);
+
+        for (uint32_t i = 0; i < count; ++i) {
+            m_vk_queue_family_properties.push_back({VK_STRUCTURE_TYPE_QUEUE_FAMILY_PROPERTIES_2});
+        }
+
+        vkGetPhysicalDeviceQueueFamilyProperties2(
+            m_create_info.vk_object,
+            &count,
+            vkex::DataPtr(m_vk_queue_family_properties));
     }
 
     // Memory properties
     {
         m_vk_physical_device_memory_properties = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_MEMORY_PROPERTIES_2};
-        vkex::GetPhysicalDeviceMemoryProperties2(
+        vkGetPhysicalDeviceMemoryProperties2(
             m_create_info.vk_object,
             &m_vk_physical_device_memory_properties);
     }
@@ -109,7 +145,7 @@ void CPhysicalDevice::InitializeVendorProperties()
 
         std::vector<VkQueueFamilyProperties> vk_queue_family_properties_list(count);
         if (count > 0) {
-            vkex::GetPhysicalDeviceQueueFamilyProperties(m_create_info.vk_object, &count, vk_queue_family_properties_list.data());
+            vkGetPhysicalDeviceQueueFamilyProperties(m_create_info.vk_object, &count, vk_queue_family_properties_list.data());
         }
 
         uint32_t graphics_queue_family_index = UINT32_MAX;
@@ -136,14 +172,14 @@ void CPhysicalDevice::InitializeVendorProperties()
             vk_device_create_info.ppEnabledExtensionNames = &extension;
 
             VkDevice vk_device = VK_NULL_HANDLE;
-            VkResult vk_result = vkex::CreateDevice(m_create_info.vk_object, &vk_device_create_info, nullptr, &vk_device);
+            VkResult vk_result = vkCreateDevice(m_create_info.vk_object, &vk_device_create_info, nullptr, &vk_device);
             if (vk_result == VK_SUCCESS) {
                 m_vendor_properties.amd.shader_core_properties = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SHADER_CORE_PROPERTIES_AMD};
 
                 VkPhysicalDeviceProperties2 properties_2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
                 properties_2.pNext                       = &m_vendor_properties.amd.shader_core_properties;
 
-                vkex::GetPhysicalDeviceProperties2(m_create_info.vk_object, &properties_2);
+                vkGetPhysicalDeviceProperties2(m_create_info.vk_object, &properties_2);
 
                 uint32_t cu_count = m_vendor_properties.amd.shader_core_properties.shaderEngineCount *
                                     m_vendor_properties.amd.shader_core_properties.shaderArraysPerEngineCount *
@@ -194,7 +230,7 @@ VkBool32 CPhysicalDevice::SupportsPresent(uint32_t queue_family_index, const vke
         display_info.dpy,
         display_info.visual_id);
 #elif defined(VKEX_WIN32)
-    VkBool32 supported = vkex::GetPhysicalDeviceWin32PresentationSupportKHR(
+    VkBool32 supported = vkGetPhysicalDeviceWin32PresentationSupportKHR(
         m_create_info.vk_object,
         queue_family_index);
 #endif
@@ -218,14 +254,27 @@ vkex::Result CDevice::InitializeExtensions()
     {
         VkPhysicalDevice vk_physical_device = m_create_info.physical_device->GetVkObject();
 
-        std::vector<VkExtensionProperties> properties_list;
-        VkResult                           vk_result = InvalidValue<VkResult>::Value;
+        uint32_t count     = 0;
+        VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::EnumerateDeviceExtensionPropertiesVKEX(
+            vkEnumerateDeviceExtensionProperties(
                 vk_physical_device,
                 nullptr,
-                &properties_list););
+                &count,
+                nullptr));
+        if (vk_result != VK_SUCCESS) {
+            return vkex::Result(vk_result);
+        }
+
+        std::vector<VkExtensionProperties> properties_list(count);
+        VKEX_VULKAN_RESULT_CALL(
+            vk_result,
+            vkEnumerateDeviceExtensionProperties(
+                vk_physical_device,
+                nullptr,
+                &count,
+                vkex::DataPtr(properties_list)));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -254,13 +303,13 @@ vkex::Result CDevice::InitializeExtensions()
 
     // Set required extensions
     {
-        std::vector<std::string> required;
+        std::vector<std::string> required = {
+            VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+        };
+
         if (GetInstance()->IsSwapchainEnabled()) {
             required.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
-
-#if defined(VKEX_LINUX_GGP)
-            required.push_back(VK_GGP_FRAME_TOKEN_EXTENSION_NAME);
-#endif
         }
 
         if (m_create_info.physical_device->IsAMD()) {
@@ -372,7 +421,7 @@ vkex::Result CDevice::InitializeQueues()
             // support VkDeviceQueueCreateFlags yet.
             //
             VkQueue vk_queue = VK_NULL_HANDLE;
-            vkex::GetDeviceQueue(
+            vkGetDeviceQueue(
                 m_vk_object,
                 create_info.queue_family_index,
                 queue_index,
@@ -496,7 +545,7 @@ vkex::Result CDevice::InternalCreate(
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::CreateDevice(
+            vkCreateDevice(
                 *m_create_info.physical_device,
                 &m_vk_create_info,
                 p_allocator,
@@ -538,7 +587,7 @@ vkex::Result CDevice::InternalCreate(
             VkPhysicalDeviceProperties2 properties_2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
             properties_2.pNext                       = &shader_core_properties;
 
-            vkex::GetPhysicalDeviceProperties2(*m_create_info.physical_device, &properties_2);
+            vkGetPhysicalDeviceProperties2(*m_create_info.physical_device, &properties_2);
 
             uint32_t cu_count = shader_core_properties.shaderEngineCount *
                                 shader_core_properties.shaderArraysPerEngineCount *
@@ -587,9 +636,6 @@ vkex::Result CDevice::InternalCreate(
                 &m_vma_allocator));
     }
 
-    // Load device functions
-    vkex::VkexLoaderLoadDevice(m_vk_object, vkGetDeviceProcAddr);
-
     // Initialize queue slots
     {
         vkex::Result vkex_result = InitializeQueues();
@@ -622,7 +668,7 @@ vkex::Result CDevice::DestroyAllStoredObjects(const VkAllocationCallbacks* p_all
     VKEX_DESTROY_ALL_OBJECTS(vkex::ComputePipeline, m_stored_compute_pipelines, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::DescriptorPool, m_stored_descriptor_pools, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::DescriptorSetLayout, m_stored_descriptor_set_layouts, p_allocator);
-    VKEX_DESTROY_ALL_OBJECTS(vkex::Event, m_stored_events, p_allocator);
+    //VKEX_DESTROY_ALL_OBJECTS(vkex::Event, m_stored_events, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::Fence, m_stored_fences, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::GraphicsPipeline, m_stored_graphics_pipelines, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::Image, m_stored_images, p_allocator);
@@ -668,7 +714,7 @@ vkex::Result CDevice::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 
     // Destroy Vulkan device object
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyDevice(
+        vkDestroyDevice(
             m_vk_object,
             p_allocator);
 
@@ -716,7 +762,7 @@ vkex::Result CDevice::GetQueue(
 
 VkResult CDevice::WaitIdle()
 {
-    VkResult vk_result = vkex::DeviceWaitIdle(m_vk_object);
+    VkResult vk_result = vkDeviceWaitIdle(m_vk_object);
     if (vk_result != VK_SUCCESS) {
         return vk_result;
     }

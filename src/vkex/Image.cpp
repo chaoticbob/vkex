@@ -85,7 +85,7 @@ vkex::Result CImage::InternalCreate(
     else {
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
-            vk_result, vkex::CreateImage(*m_device, &m_vk_create_info, p_allocator, &m_vk_object));
+            vk_result, vkCreateImage(*m_device, &m_vk_create_info, p_allocator, &m_vk_object));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -116,7 +116,7 @@ vkex::Result CImage::InternalDestroy(const VkAllocationCallbacks* p_allocator)
             m_create_info.vk_object = VK_NULL_HANDLE;
         }
         else {
-            vkex::DestroyImage(*m_device, m_vk_object, p_allocator);
+            vkDestroyImage(*m_device, m_vk_object, p_allocator);
         }
 
         m_vk_object = VK_NULL_HANDLE;
@@ -283,7 +283,7 @@ vkex::Result CImageView::InternalCreate(
     {
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
-            vk_result, vkex::CreateImageView(*m_device, &m_vk_create_info, p_allocator, &m_vk_object));
+            vk_result, vkCreateImageView(*m_device, &m_vk_create_info, p_allocator, &m_vk_object));
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
@@ -295,7 +295,7 @@ vkex::Result CImageView::InternalCreate(
 vkex::Result CImageView::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 {
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyImageView(*m_device, m_vk_object, p_allocator);
+        vkDestroyImageView(*m_device, m_vk_object, p_allocator);
 
         m_vk_object = VK_NULL_HANDLE;
     }

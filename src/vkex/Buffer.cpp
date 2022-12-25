@@ -16,6 +16,7 @@
 
 #include "vkex/Buffer.h"
 #include "vkex/Device.h"
+#include "vkex/Instance.h"
 #include "vkex/ToString.h"
 
 namespace vkex {
@@ -79,7 +80,7 @@ vkex::Result CBuffer::InternalCreate(
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
             vk_result,
-            vkex::CreateBuffer(
+            vkCreateBuffer(
                 *m_device,
                 &m_vk_create_info,
                 p_allocator,
@@ -126,7 +127,7 @@ vkex::Result CBuffer::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 
     // Destroy Vulkan object
     if (m_vk_object != VK_NULL_HANDLE) {
-        vkex::DestroyBuffer(
+        vkDestroyBuffer(
             *m_device,
             m_vk_object,
             p_allocator);

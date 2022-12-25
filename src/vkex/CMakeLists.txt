@@ -153,8 +153,8 @@ list(APPEND VKEX_HDR_FILES
   ${INC_DIR}/Transform.h
   ${INC_DIR}/Util.h
   ${INC_DIR}/View.h
-  ${INC_DIR}/VkexLoader.h
-  ${INC_DIR}/VkexLoaderHelper.h
+  #${INC_DIR}/VkexLoader.h
+  #${INC_DIR}/VkexLoaderHelper.h
   ${INC_DIR}/VulkanUtil.h
   ${SPIRV_REFLECT_DIR}/spirv_reflect.h
   ${SHARED_SHADER_HDR_FILES}
@@ -189,8 +189,8 @@ list(APPEND VKEX_SRC_FILES
   ${SRC_DIR}/ToString.cpp
   ${SRC_DIR}/Transform.cpp
   ${SRC_DIR}/View.cpp
-  ${SRC_DIR}/VkexLoader.cpp
-  ${SRC_DIR}/VkexLoaderHelper.cpp
+  #${SRC_DIR}/VkexLoader.cpp
+  #${SRC_DIR}/VkexLoaderHelper.cpp
   ${SRC_DIR}/VulkanUtil.cpp
   ${SPIRV_REFLECT_DIR}/spirv_reflect.c
 )

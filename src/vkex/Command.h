@@ -119,6 +119,11 @@ public:
     void CmdEndRenderPass();
     void CmdExecuteCommands(uint32_t commandBufferCount, const VkCommandBuffer* pCommandBuffers);
 
+    void CmdBeginRendering(const VkRenderingInfo* pRenderingInfo);
+    void CmdEndRendering();
+
+    void CmdPushDescriptorSetKHR(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t set, uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites);
+
     // -----------------------------------------------------------------------------------------------
     // Command functions with convenience parameters
     // -----------------------------------------------------------------------------------------------

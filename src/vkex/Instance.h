@@ -325,6 +325,10 @@ vkex::Result DestroyInstanceVKEX(
     vkex::Instance               object,
     const VkAllocationCallbacks* p_allocator = nullptr);
 
+extern PFN_vkCreateDebugUtilsMessengerEXT  CreateDebugUtilsMessengerEXT;
+extern PFN_vkDestroyDebugUtilsMessengerEXT DestroyDebugUtilsMessengerEXT;
+extern PFN_vkSetDebugUtilsObjectNameEXT    SetDebugUtilsObjectNameEXT;
+
 } // namespace vkex
 
 #endif // __VKEX_INSTANCE_H__

@@ -217,67 +217,82 @@ void DrawDebugUiPhyiscalDevice(vkex::PhysicalDevice physical_device)
     ImGui::TreePop();
   }
 
+  
+  // clang-format off
   if (ImGui::TreeNode("Physical Device Features")) {
-    auto& features = physical_device->GetPhysicalDeviceFeatures().features;
-    ImGui::Columns(2);
-    AddRowBool("robustBufferAccess",                       features.robustBufferAccess);
-    AddRowBool("fullDrawIndexUint32",                      features.fullDrawIndexUint32);
-    AddRowBool("imageCubeArray",                           features.imageCubeArray);
-    AddRowBool("independentBlend",                         features.independentBlend);
-    AddRowBool("geometryShader",                           features.geometryShader);
-    AddRowBool("tessellationShader",                       features.tessellationShader);
-    AddRowBool("sampleRateShading",                        features.sampleRateShading);
-    AddRowBool("dualSrcBlend",                             features.dualSrcBlend);
-    AddRowBool("logicOp",                                  features.logicOp);
-    AddRowBool("multiDrawIndirect",                        features.multiDrawIndirect);
-    AddRowBool("drawIndirectFirstInstance",                features.drawIndirectFirstInstance);
-    AddRowBool("depthClamp",                               features.depthClamp);
-    AddRowBool("depthBiasClamp",                           features.depthBiasClamp);
-    AddRowBool("fillModeNonSolid",                         features.fillModeNonSolid);
-    AddRowBool("depthBounds",                              features.depthBounds);
-    AddRowBool("wideLines",                                features.wideLines);
-    AddRowBool("largePoints",                              features.largePoints);
-    AddRowBool("alphaToOne",                               features.alphaToOne);
-    AddRowBool("multiViewport",                            features.multiViewport);
-    AddRowBool("samplerAnisotropy",                        features.samplerAnisotropy);
-    AddRowBool("textureCompressionETC2",                   features.textureCompressionETC2);
-    AddRowBool("textureCompressionASTC_LDR",               features.textureCompressionASTC_LDR);
-    AddRowBool("textureCompressionBC",                     features.textureCompressionBC);
-    AddRowBool("occlusionQueryPrecise",                    features.occlusionQueryPrecise);
-    AddRowBool("pipelineStatisticsQuery",                  features.pipelineStatisticsQuery);
-    AddRowBool("vertexPipelineStoresAndAtomics",           features.vertexPipelineStoresAndAtomics);
-    AddRowBool("fragmentStoresAndAtomics",                 features.fragmentStoresAndAtomics);
-    AddRowBool("shaderTessellationAndGeometryPointSize",   features.shaderTessellationAndGeometryPointSize);
-    AddRowBool("shaderImageGatherExtended",                features.shaderImageGatherExtended);
-    AddRowBool("shaderStorageImageExtendedFormats",        features.shaderStorageImageExtendedFormats);
-    AddRowBool("shaderStorageImageMultisample",            features.shaderStorageImageMultisample);
-    AddRowBool("shaderStorageImageReadWithoutFormat",      features.shaderStorageImageReadWithoutFormat);
-    AddRowBool("shaderStorageImageWriteWithoutFormat",     features.shaderStorageImageWriteWithoutFormat);
-    AddRowBool("shaderUniformBufferArrayDynamicIndexing",  features.shaderUniformBufferArrayDynamicIndexing);
-    AddRowBool("shaderSampledImageArrayDynamicIndexing",   features.shaderSampledImageArrayDynamicIndexing);
-    AddRowBool("shaderStorageBufferArrayDynamicIndexing",  features.shaderStorageBufferArrayDynamicIndexing);
-    AddRowBool("shaderStorageImageArrayDynamicIndexing",   features.shaderStorageImageArrayDynamicIndexing);
-    AddRowBool("shaderClipDistance",                       features.shaderClipDistance);
-    AddRowBool("shaderCullDistance",                       features.shaderCullDistance);
-    AddRowBool("shaderFloat64",                            features.shaderFloat64);
-    AddRowBool("shaderInt64",                              features.shaderInt64);
-    AddRowBool("shaderInt16",                              features.shaderInt16);
-    AddRowBool("shaderResourceResidency",                  features.shaderResourceResidency);
-    AddRowBool("shaderResourceMinLod",                     features.shaderResourceMinLod);
-    AddRowBool("sparseBinding",                            features.sparseBinding);
-    AddRowBool("sparseResidencyBuffer",                    features.sparseResidencyBuffer);
-    AddRowBool("sparseResidencyImage2D",                   features.sparseResidencyImage2D);
-    AddRowBool("sparseResidencyImage3D",                   features.sparseResidencyImage3D);
-    AddRowBool("sparseResidency2Samples",                  features.sparseResidency2Samples);
-    AddRowBool("sparseResidency4Samples",                  features.sparseResidency4Samples);
-    AddRowBool("sparseResidency8Samples",                  features.sparseResidency8Samples);
-    AddRowBool("sparseResidency16Samples",                 features.sparseResidency16Samples);
-    AddRowBool("sparseResidencyAliased",                   features.sparseResidencyAliased);
-    AddRowBool("variableMultisampleRate",                  features.variableMultisampleRate);
-    AddRowBool("inheritedQueries",                         features.inheritedQueries);
-    ImGui::Columns(1);
+    if (ImGui::TreeNode("Core")) {  
+        ImGui::Columns(2);
+        auto& features = physical_device->GetPhysicalDeviceFeatures().core;
+        AddRowBool("robustBufferAccess",                       features.robustBufferAccess);
+        AddRowBool("fullDrawIndexUint32",                      features.fullDrawIndexUint32);
+        AddRowBool("imageCubeArray",                           features.imageCubeArray);
+        AddRowBool("independentBlend",                         features.independentBlend);
+        AddRowBool("geometryShader",                           features.geometryShader);
+        AddRowBool("tessellationShader",                       features.tessellationShader);
+        AddRowBool("sampleRateShading",                        features.sampleRateShading);
+        AddRowBool("dualSrcBlend",                             features.dualSrcBlend);
+        AddRowBool("logicOp",                                  features.logicOp);
+        AddRowBool("multiDrawIndirect",                        features.multiDrawIndirect);
+        AddRowBool("drawIndirectFirstInstance",                features.drawIndirectFirstInstance);
+        AddRowBool("depthClamp",                               features.depthClamp);
+        AddRowBool("depthBiasClamp",                           features.depthBiasClamp);
+        AddRowBool("fillModeNonSolid",                         features.fillModeNonSolid);
+        AddRowBool("depthBounds",                              features.depthBounds);
+        AddRowBool("wideLines",                                features.wideLines);
+        AddRowBool("largePoints",                              features.largePoints);
+        AddRowBool("alphaToOne",                               features.alphaToOne);
+        AddRowBool("multiViewport",                            features.multiViewport);
+        AddRowBool("samplerAnisotropy",                        features.samplerAnisotropy);
+        AddRowBool("textureCompressionETC2",                   features.textureCompressionETC2);
+        AddRowBool("textureCompressionASTC_LDR",               features.textureCompressionASTC_LDR);
+        AddRowBool("textureCompressionBC",                     features.textureCompressionBC);
+        AddRowBool("occlusionQueryPrecise",                    features.occlusionQueryPrecise);
+        AddRowBool("pipelineStatisticsQuery",                  features.pipelineStatisticsQuery);
+        AddRowBool("vertexPipelineStoresAndAtomics",           features.vertexPipelineStoresAndAtomics);
+        AddRowBool("fragmentStoresAndAtomics",                 features.fragmentStoresAndAtomics);
+        AddRowBool("shaderTessellationAndGeometryPointSize",   features.shaderTessellationAndGeometryPointSize);
+        AddRowBool("shaderImageGatherExtended",                features.shaderImageGatherExtended);
+        AddRowBool("shaderStorageImageExtendedFormats",        features.shaderStorageImageExtendedFormats);
+        AddRowBool("shaderStorageImageMultisample",            features.shaderStorageImageMultisample);
+        AddRowBool("shaderStorageImageReadWithoutFormat",      features.shaderStorageImageReadWithoutFormat);
+        AddRowBool("shaderStorageImageWriteWithoutFormat",     features.shaderStorageImageWriteWithoutFormat);
+        AddRowBool("shaderUniformBufferArrayDynamicIndexing",  features.shaderUniformBufferArrayDynamicIndexing);
+        AddRowBool("shaderSampledImageArrayDynamicIndexing",   features.shaderSampledImageArrayDynamicIndexing);
+        AddRowBool("shaderStorageBufferArrayDynamicIndexing",  features.shaderStorageBufferArrayDynamicIndexing);
+        AddRowBool("shaderStorageImageArrayDynamicIndexing",   features.shaderStorageImageArrayDynamicIndexing);
+        AddRowBool("shaderClipDistance",                       features.shaderClipDistance);
+        AddRowBool("shaderCullDistance",                       features.shaderCullDistance);
+        AddRowBool("shaderFloat64",                            features.shaderFloat64);
+        AddRowBool("shaderInt64",                              features.shaderInt64);
+        AddRowBool("shaderInt16",                              features.shaderInt16);
+        AddRowBool("shaderResourceResidency",                  features.shaderResourceResidency);
+        AddRowBool("shaderResourceMinLod",                     features.shaderResourceMinLod);
+        AddRowBool("sparseBinding",                            features.sparseBinding);
+        AddRowBool("sparseResidencyBuffer",                    features.sparseResidencyBuffer);
+        AddRowBool("sparseResidencyImage2D",                   features.sparseResidencyImage2D);
+        AddRowBool("sparseResidencyImage3D",                   features.sparseResidencyImage3D);
+        AddRowBool("sparseResidency2Samples",                  features.sparseResidency2Samples);
+        AddRowBool("sparseResidency4Samples",                  features.sparseResidency4Samples);
+        AddRowBool("sparseResidency8Samples",                  features.sparseResidency8Samples);
+        AddRowBool("sparseResidency16Samples",                 features.sparseResidency16Samples);
+        AddRowBool("sparseResidencyAliased",                   features.sparseResidencyAliased);
+        AddRowBool("variableMultisampleRate",                  features.variableMultisampleRate);
+        AddRowBool("inheritedQueries",                         features.inheritedQueries);
+        ImGui::TreePop();
+        ImGui::Columns(1);
+    }
+    
+    if (ImGui::TreeNode("Dynamic Rendering")) {  
+        ImGui::Columns(2);
+        auto& features = physical_device->GetPhysicalDeviceFeatures().khr.dynamicRendering;
+        AddRowBool("dynamicRendering",                         features.dynamicRendering);
+        ImGui::TreePop();
+        ImGui::Columns(1);
+    }
     ImGui::TreePop();
+    ImGui::Columns(1);
   }
+  // clang-formta on
 
   if (ImGui::TreeNode("Physical Device Limits")) {
     auto& limits = physical_device->GetPhysicalDeviceLimits();
