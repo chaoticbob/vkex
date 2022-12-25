@@ -210,9 +210,7 @@ bool CPhysicalDevice::GetQueueFamilyProperties(
 
 VkBool32 CPhysicalDevice::SupportsPresent(uint32_t queue_family_index, const vkex::DisplayInfo& display_info) const
 {
-#if defined(VKEX_GGP)
-    VkBool32 supported = true;
-#elif defined(VKEX_LINUX_WAYLAND)
+#if defined(VKEX_LINUX_WAYLAND)
     VkBool32 supported = vkex::GetPhysicalDeviceWaylandPresentationSupportKHR(
         m_create_info.vk_object,
         queue_family_index,

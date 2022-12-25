@@ -20,13 +20,8 @@
 #include "common/SimpleRenderPass.h"
 #include "vkex/Application.h"
 
-#if defined(VKEX_GGP)
-const uint32_t k_window_width  = 1920;
-const uint32_t k_window_height = 1080;
-#else
 const uint32_t k_window_width  = 1280;
 const uint32_t k_window_height = 720;
-#endif
 
 using float3   = vkex::float3;
 using float3x3 = vkex::float3x3;

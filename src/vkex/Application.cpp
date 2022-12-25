@@ -1002,9 +1002,7 @@ vkex::Result Application::InitializeVkexSwapchain()
     {
         vkex::SurfaceCreateInfo surface_create_info = {};
         surface_create_info.physical_device         = m_device->GetPhysicalDevice();
-#if defined(VKEX_GGP)
-        // Nothing to do
-#elif defined(VKEX_LINUX)
+#if defined(VKEX_LINUX)
 #    if defined(VKEX_LINUX_WAYLAND)
 #        error "not implemented"
 #    elif defined(VKEX_LINUX_XCB)
@@ -2573,9 +2571,7 @@ std::string Application::GetPlatformName() const
 {
     std::stringstream ss;
 #if defined(VKEX_LINUX)
-    ss << "GGP";
-#elif defined(VKEX_LINUX)
-    ss << "Generic Linux";
+    ss << "Linux";
 #elif defined(VKEX_WIN32)
     ss << "Windows";
 #endif
@@ -2619,7 +2615,7 @@ fs::path Application::GetApplicationPath() const
     std::memset(buf, 0, MAX_PATH);
     GetModuleFileNameA(this_win32_module, buf, MAX_PATH);
     path = fs::path(buf);
-#elif defined(VKEX_LINUX) || defined(VKEX_GGP)
+#elif defined(VKEX_LINUX)
     char buf[PATH_MAX];
     std::memset(buf, 0, PATH_MAX);
     readlink("/proc/self/exe", buf, PATH_MAX);
@@ -2901,11 +2897,6 @@ vkex::Result Application::SubmitPresent(PresentData* p_data)
         vk_present_info.pSwapchains        = DataPtr(vk_swapchains);
         vk_present_info.pImageIndices      = DataPtr(vk_swapchain_image_indices);
         vk_present_info.pResults           = nullptr;
-
-#if defined(VKEX_GGP)
-        // TODO: Add frame token support to be a good citizen...
-        // Though, it isn't really needed for this sample
-#endif
 
         // Queue present time start
         TimeRange time_range = {};

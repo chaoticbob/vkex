@@ -32,9 +32,7 @@ namespace vkex {
 struct SurfaceCreateInfo
 {
     vkex::PhysicalDevice physical_device;
-#if defined(VKEX_GGP)
-    // Nothing
-#elif defined(VKEX_LINUX_WAYLAND)
+#if defined(VKEX_LINUX_WAYLAND)
     struct wl_display*            display;
     struct wl_surface*            surface;
 #elif defined(VKEX_LINUX_XCB)
@@ -120,9 +118,7 @@ private:
     vkex::Instance          m_instance    = nullptr;
     vkex::SurfaceCreateInfo m_create_info = {};
 
-#if defined(VKEX_GGP)
-    VkStreamDescriptorSurfaceCreateInfoGGP m_vk_create_info = {};
-#elif defined(VKEX_LINUX_WAYLAND)
+#if defined(VKEX_LINUX_WAYLAND)
     VkWaylandSurfaceCreateInfoKHR m_vk_create_info = {};
 #elif defined(VKEX_LINUX_XCB)
     VkXcbSurfaceCreateInfoKHR m_vk_create_info = {};

@@ -37,10 +37,8 @@
 // parameter. Use VKEX_FORCE_MONOTONIC to force CLOCK_MONOTONIC.
 //
 
-#if !(defined(VKEX_LINUX) || defined(VKEX_WIN32) || defined(VKEX_GGP))
-#    if defined(__ggp__)
-#        define VKEX_GGP
-#    elif defined(__linux__)
+#if !(defined(VKEX_LINUX) || defined(VKEX_WIN32))
+#    if defined(__linux__)
 #        define VKEX_LINUX
 #    elif defined(WIN32)
 #        define VKEX_WIN32
@@ -52,7 +50,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#if defined(VKEX_LINUX) || defined(VKEX_GGP)
+#if defined(VKEX_LINUX)
 #    include <time.h>
 #    include <unistd.h>
 #endif
@@ -253,7 +251,7 @@ private:
 // =============================================================================
 // vkex_timer_timestamp
 // =============================================================================
-#    if defined(VKEX_LINUX) || defined(VKEX_GGP)
+#    if defined(VKEX_LINUX)
 int vkex_timer_timestamp(uint64_t* p_timestamp)
 {
     assert(p_timestamp != NULL);
@@ -692,7 +690,7 @@ int vkex_timer_win32_sleep(double nanos)
 // =============================================================================
 // vkex_timer_sleep_seconds
 // =============================================================================
-#    if defined(VKEX_LINUX) || defined(VKEX_GGP)
+#    if defined(VKEX_LINUX)
 int vkex_timer_sleep_seconds(double seconds)
 {
     double nanos = seconds * (double)VKEX_TIMER_SECONDS_TO_NANOS;
@@ -722,7 +720,7 @@ int vkex_timer_sleep_seconds(double seconds)
 // =============================================================================
 // vkex_timer_sleep_millis
 // =============================================================================
-#    if defined(VKEX_LINUX) || defined(VKEX_GGP)
+#    if defined(VKEX_LINUX)
 int vkex_timer_sleep_millis(double millis)
 {
     double nanos = millis * (double)VKEX_TIMER_MILLIS_TO_NANOS;
@@ -752,7 +750,7 @@ int vkex_timer_sleep_millis(double millis)
 // =============================================================================
 // vkex_timer_sleep_micros
 // =============================================================================
-#    if defined(VKEX_LINUX) || defined(VKEX_GGP)
+#    if defined(VKEX_LINUX)
 int vkex_timer_sleep_micros(double micros)
 {
     double nanos = micros * (double)VKEX_TIMER_MICROS_TO_NANOS;
@@ -782,7 +780,7 @@ int vkex_timer_sleep_micros(double micros)
 // =============================================================================
 // vkex_timer_sleep_nanos
 // =============================================================================
-#    if defined(VKEX_LINUX) || defined(VKEX_GGP)
+#    if defined(VKEX_LINUX)
 int vkex_timer_sleep_nanos(double nanos)
 {
     double secs = floor(nanos * (double)VKEX_TIMER_NANOS_TO_SECONDS);

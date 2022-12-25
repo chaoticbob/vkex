@@ -757,13 +757,13 @@ private:
     vkex::Result UpdateCurrentPerFrameData();
 
     //! @fn ProcessRenderFence
-    vkex::Result ProcessRenderFence(Application::RenderData* p_data);
+    vkex::Result ProcessRenderFence(vkex::RenderData* p_data);
 
     //! @fn ProcessFrameFence
-    vkex::Result ProcessFrameFence(Application::PresentData* p_data);
+    vkex::Result ProcessFrameFence(vkex::PresentData* p_data);
 
     //! @fn SubmitPresent
-    vkex::Result AcquireNextImage(Application::PresentData* p_data, uint32_t* p_swapchain_image_index);
+    vkex::Result AcquireNextImage(vkex::PresentData* p_data, uint32_t* p_swapchain_image_index);
 
     //! @fn WaitAllQueuesIdle
     vkex::Result WaitAllQueuesIdle();

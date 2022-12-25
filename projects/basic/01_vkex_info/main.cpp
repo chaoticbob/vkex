@@ -19,13 +19,8 @@
 #include "common/AssetUtil.h"
 #include "common/DebugUi.h"
 
-#if defined(VKEX_GGP)
-const uint32_t k_window_width  = 1920;
-const uint32_t k_window_height = 1080;
-#else
 const uint32_t k_window_width  = 1280;
 const uint32_t k_window_height = 720;
-#endif
 
 using float3    = vkex::float3;
 using float4x4  = vkex::float4x4;
@@ -65,11 +60,7 @@ private:
 void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& configuration)
 {
   // Force present mode to VK_PRESENT_MODE_MAILBOX_KHR for now...because #reasons
-#if defined(VKEX_GGP)
-  configuration.window.resizeable                        = false;
-#else
   configuration.window.resizeable                        = true;
-#endif //  defined(VKEX_GGP)
   configuration.swapchain.paced_frame_rate               = 60;
   configuration.swapchain.present_mode                   = VK_PRESENT_MODE_MAILBOX_KHR;
   configuration.swapchain.depth_stencil_format           = VK_FORMAT_D32_SFLOAT;

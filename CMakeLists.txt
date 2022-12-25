@@ -25,11 +25,6 @@ if(DEFINED CMAKE_TOOLCHAIN_FILE)
   message("Using CMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE}")
 endif()
 
-# Detect GGP
-if (GGP_TOOLCHAIN_PATH)
-	set(GGP TRUE)
-endif()
-
 # Detect Linux
 if(UNIX AND NOT APPLE)
 		set(LINUX TRUE)

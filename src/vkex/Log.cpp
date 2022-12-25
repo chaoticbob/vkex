@@ -70,7 +70,7 @@ ConsoleLog::~ConsoleLog()
 
 void ConsoleLog::Write(const std::string& msg)
 {
-#if defined(VKEX_LINUX) || defined(VKEX_GGP)
+#if defined(VKEX_LINUX)
     std::cout << msg;
 #elif defined(VKEX_WIN32)
     OutputDebugStringA(msg.c_str());
@@ -79,7 +79,7 @@ void ConsoleLog::Write(const std::string& msg)
 
 void ConsoleLog::FlushOutput()
 {
-#if defined(VKEX_LINUX) || defined(VKEX_GGP)
+#if defined(VKEX_LINUX)
     std::cout << std::flush;
 #elif defined(VKEX_WIN32)
 #endif

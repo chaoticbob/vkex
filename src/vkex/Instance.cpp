@@ -296,9 +296,7 @@ vkex::Result CInstance::InitializeExtensions()
         required.push_back(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME);
 
         if (m_create_info.enable_swapchain) {
-#if defined(VKEX_GGP)
-            required.push_back(VK_GGP_STREAM_DESCRIPTOR_SURFACE_EXTENSION_NAME);
-#elif defined(VKEX_LINUX)
+#if defined(VKEX_LINUX)
 #    if defined(VKEX_LINUX_WAYLAND)
             required.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
 #    elif defined(VKEX_LINUX_XCB)

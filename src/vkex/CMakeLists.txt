@@ -21,12 +21,8 @@ project(libvkex)
 # Determine Vulkan's include directory
 if (NOT VULKAN_INCLUDE_DIR)
   if (LINUX)
-    if (GGP)
-      set(VULKAN_INCLUDE_DIR "${GGP_SYSROOT_PATH}/usr/local/include")
-    else()
-      if (DEFINED ENV{VULKAN_SDK})
-      	set(VULKAN_INCLUDE_DIR "$ENV{VULKAN_SDK}/x86_64/include")
-      endif()
+    if (DEFINED ENV{VULKAN_SDK})
+    	set(VULKAN_INCLUDE_DIR "$ENV{VULKAN_SDK}/x86_64/include")
     endif()
   elseif (WIN32)
     if (DEFINED ENV{VULKAN_SDK})
@@ -38,12 +34,8 @@ endif()
 # Determine Vulkan's library directory
 if (NOT VULKAN_LIBRARY_DIR)
   if (LINUX)
-    if (GGP)
-      set(VULKAN_LIBRARY_DIR "${GGP_SYSROOT_PATH}/usr/local/lib")
-    else()
-      if (DEFINED ENV{VULKAN_SDK})
-      	set(VULKAN_LIBRARY_DIR "$ENV{VULKAN_SDK}/x86_64/lib")
-      endif()
+    if (DEFINED ENV{VULKAN_SDK})
+    	set(VULKAN_LIBRARY_DIR "$ENV{VULKAN_SDK}/x86_64/lib")
     endif()
   elseif (WIN32)
     if (DEFINED ENV{VULKAN_SDK})
@@ -61,28 +53,6 @@ endif()
 if (NOT VULKAN_LIBRARY_DIR)
   message(FATAL_ERROR "VULKAN_LIBRARY_DIR not specified and could not be determined using environment variable VULKAN_SDK")
 endif()
-
-## TODO: Fix this logic to make it more flexible for custom Vulkan installations
-#
-#
-## Try to use VULKAN_SDK if VULKAN_DIR is not specified
-#if(NOT DEFINED VULKAN_DIR)
-#  set(VULKAN_DIR $ENV{VULKAN_SDK})
-#endif()
-## Bail if VULKAN_DIR is not set
-#if(NOT DEFINED VULKAN_DIR)
-#  message(FATAL_ERROR "VULKAN_DIR not manually specified and environment variable VULKAN_SDK is not set")
-#endif()
-
-#if (GGP)
-#  set(VULKAN_INCLUDE_DIR "${VULKAN_DIR}/Include")
-#  set(VULKAN_LIBRARY     "${VULKAN_DIR}/Lib/vulkan-1.lib")
-#elseif (WIN32)
-#  set(VULKAN_INCLUDE_DIR "${VULKAN_DIR}/Include")
-#  set(VULKAN_LIBRARY     "${VULKAN_DIR}/Lib/vulkan-1.lib")
-#else()
-#  message(FATAL_ERROR "Unsupported platform")
-#endif()
 
 message("VKEX is using Vulkan found here: ${VULKAN_DIR}")
 message("  Vulkan include directory: ${VULKAN_INCLUDE_DIR}")
@@ -223,18 +193,11 @@ target_compile_definitions(${PROJECT_NAME}
 
 # Additional compile definitions
 if (LINUX)
-  if (GGP)
-    target_compile_definitions(${PROJECT_NAME}
-      PUBLIC VK_USE_PLATFORM_GGP_KHR
-             VKEX_GGP
-    )    
-  else()
-    target_compile_definitions(${PROJECT_NAME}
-      PUBLIC VK_USE_PLATFORM_XCB_KHR
-             VKEX_LINUX
-             VKEX_LINUX_XCB
-    )  
-  endif()
+  target_compile_definitions(${PROJECT_NAME}
+    PUBLIC VK_USE_PLATFORM_XCB_KHR
+           VKEX_LINUX
+           VKEX_LINUX_XCB
+  )  
 elseif (WIN32)
   target_compile_definitions(${PROJECT_NAME}
     PUBLIC VK_USE_PLATFORM_WIN32_KHR
@@ -267,29 +230,19 @@ if (LINUX)
   target_link_directories(${PROJECT_NAME} 
     PUBLIC ${VULKAN_LIBRARY_DIR}
   )
+  # Link properties
+  set_target_properties(${PROJECT_NAME}
+    PROPERTIES OUTPUT_NAME VKEX
+               LINKER_LANGUAGE CXX
+  )
   # Link libraries
   target_link_libraries(${PROJECT_NAME} 
     PUBLIC vulkan
-  )  
-
-  # Additional link properties and libraries for non-GGP Linux
-  if (NOT GGP)
-    # Link properties
-    set_target_properties(${PROJECT_NAME}
-      PROPERTIES OUTPUT_NAME VKEX
-                 LINKER_LANGUAGE CXX
-    )
-    # Link libraries
-    target_link_libraries(${PROJECT_NAME} 
-        PUBLIC xcb X11-xcb
-    )  
-  endif()
+           xcb
+           X11-xcb
+  )
 elseif (WIN32)
   target_link_libraries(${PROJECT_NAME} 
     PUBLIC "${VULKAN_LIBRARY_DIR}/vulkan-1.lib"
   )
 endif()
-
-#if(UNIX AND NOT APPLE)
-#  target_link_libraries(${PROJECT_NAME} PUBLIC xcb X11-xcb)
-#endif()
