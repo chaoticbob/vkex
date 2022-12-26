@@ -200,7 +200,6 @@ public:
 
     void CmdTransitionImageLayout(VkImage image, VkImageAspectFlags aspectMask, uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage);
     void CmdTransitionImageLayout(vkex::Image image, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel = 0, uint32_t levelCount = VKEX_ALL_MIP_LEVELS, uint32_t baseArrayLayer = 0, uint32_t layerCount = VKEX_ALL_ARRAY_LAYERS);
-    // void CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel = 0, uint32_t levelCount = VKEX_ALL_MIP_LEVELS, uint32_t baseArrayLayer = 0, uint32_t layerCount = VKEX_ALL_ARRAY_LAYERS);
 
 private:
     friend class CCommandPool;

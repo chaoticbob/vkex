@@ -304,10 +304,16 @@ vkex::Result CDevice::InitializeExtensions()
 
     // Set required extensions
     {
-        std::vector<std::string> required = {
-            VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
-            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
-        };
+        std::vector<std::string> required = {};
+        if (m_create_info.enabled_features.khr.dynamicRendering.dynamicRendering) {
+            required.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+        }
+        if (m_create_info.enabled_features.khr.synchronization2.synchronization2) {
+            required.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+        }
+        if (m_create_info.enabled_features.khr.timelineSemaphore.timelineSemaphore) {
+            required.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+        }
 
         if (GetInstance()->IsSwapchainEnabled()) {
             required.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
@@ -497,6 +503,22 @@ vkex::Result CDevice::InternalCreate(
         }
     }
 
+    // Features
+    {
+        vkex::WireUpPNexts(&m_create_info.enabled_features);
+
+        m_create_info.enabled_features.core.geometryShader          = VK_TRUE;
+        m_create_info.enabled_features.core.tessellationShader      = VK_TRUE;
+        m_create_info.enabled_features.core.dualSrcBlend            = VK_TRUE;
+        m_create_info.enabled_features.core.occlusionQueryPrecise   = VK_TRUE;
+        m_create_info.enabled_features.core.pipelineStatisticsQuery = VK_TRUE;
+        m_create_info.enabled_features.core.samplerAnisotropy       = VK_TRUE;
+
+        m_create_info.enabled_features.khr.dynamicRendering.dynamicRendering   = VK_TRUE;
+        m_create_info.enabled_features.khr.synchronization2.synchronization2   = VK_TRUE;
+        m_create_info.enabled_features.khr.timelineSemaphore.timelineSemaphore = VK_TRUE;
+    }
+
     // Initialize extensions
     {
         vkex::Result vkex_result = InitializeExtensions();
@@ -511,20 +533,6 @@ vkex::Result CDevice::InternalCreate(
         if (!vkex_result) {
             return vkex_result;
         }
-    }
-
-    // Features
-    {
-        vkex::WireUpPNexts(&m_create_info.enabled_features);
-
-        m_create_info.enabled_features.core.geometryShader          = VK_TRUE;
-        m_create_info.enabled_features.core.tessellationShader      = VK_TRUE;
-        m_create_info.enabled_features.core.dualSrcBlend            = VK_TRUE;
-        m_create_info.enabled_features.core.occlusionQueryPrecise   = VK_TRUE;
-        m_create_info.enabled_features.core.pipelineStatisticsQuery = VK_TRUE;
-        m_create_info.enabled_features.core.samplerAnisotropy       = VK_TRUE;
-
-        m_create_info.enabled_features.khr.dynamicRendering.dynamicRendering = VK_TRUE;
     }
 
     // Create info
