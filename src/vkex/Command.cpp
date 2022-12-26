@@ -1134,29 +1134,6 @@ void CCommandBuffer::CmdTransitionImageLayout(vkex::Image image, VkImageLayout o
     ;
 }
 
-// void CCommandBuffer::CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer, uint32_t layerCount)
-//{
-//     VkImage            vk_image    = texture->GetImage()->GetVkObject();
-//     VkImageAspectFlags aspectMask  = texture->GetAspectFlags();
-//     uint32_t           mipLevels   = texture->GetMipLevels();
-//     uint32_t           arrayLayers = texture->GetArrayLayers();
-//     // Check level count
-//     levelCount = (levelCount == VKEX_ALL_MIP_LEVELS) ? mipLevels : std::min(levelCount, mipLevels);
-//     // Check layer count
-//     layerCount = (layerCount == VKEX_ALL_ARRAY_LAYERS) ? arrayLayers : std::min(layerCount, arrayLayers);
-//     // Transition
-//     this->CmdTransitionImageLayout(
-//         vk_image,
-//         aspectMask,
-//         baseMipLevel,
-//         levelCount,
-//         baseArrayLayer,
-//         layerCount,
-//         oldLayout,
-//         newLayout,
-//         newPipelineStage);
-// }
-
 // =================================================================================================
 // CommandPool
 // =================================================================================================

@@ -133,15 +133,33 @@ union BufferUsageFlags
 {
     struct
     {
-        bool transfer_src         : 1;
-        bool transfer_dst         : 1;
-        bool uniform_texel_buffer : 1;
-        bool storage_texel_buffer : 1;
-        bool uniform_buffer       : 1;
-        bool storage_buffer       : 1;
-        bool index_buffer         : 1;
-        bool vertex_buffer        : 1;
-        bool indirect_buffer      : 1;
+        bool transfer_src                       : 1; // 0x00000001 (VK_BUFFER_USAGE_TRANSFER_SRC_BIT)
+        bool transfer_dst                       : 1; // 0x00000002 (VK_BUFFER_USAGE_TRANSFER_DST_BIT)
+        bool uniform_texel_buffer               : 1; // 0x00000004 (VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT)
+        bool storage_texel_buffer               : 1; // 0x00000008 (VK_BUFFER_USAGE_STORAGE_TEXEL_BUFFER_BIT)
+        bool uniform_buffer                     : 1; // 0x00000010 (VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT)
+        bool storage_buffer                     : 1; // 0x00000020 (VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
+        bool index_buffer                       : 1; // 0x00000040 (VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+        bool vertex_buffer                      : 1; // 0x00000080 (VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
+        bool indirect_buffer                    : 1; // 0x00000100 (VK_BUFFER_USAGE_INDIRECT_BUFFER_BIT)
+        bool conditional_rendering              : 1; // 0x00000200 (VK_BUFFER_USAGE_CONDITIONAL_RENDERING_BIT_EXT)
+        bool shader_binding_table               : 1; // 0x00000400 (VK_BUFFER_USAGE_SHADER_BINDING_TABLE_BIT_KHR)
+        bool transform_feedback                 : 1; // 0x00000800 (VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_BUFFER_BIT_EXT)
+        bool transform_feedback_counter         : 1; // 0x00001000 (VK_BUFFER_USAGE_TRANSFORM_FEEDBACK_COUNTER_BUFFER_BIT_EXT)
+        bool video_deccode_dst                  : 1; // 0x00002000 (VK_BUFFER_USAGE_VIDEO_DECODE_SRC_BIT_KHR)
+        bool video_deccode_src                  : 1; // 0x00004000 (VK_BUFFER_USAGE_VIDEO_DECODE_DST_BIT_KHR)
+        bool video_encode_dst                   : 1; // 0x00008000 (VK_BUFFER_USAGE_VIDEO_ENCODE_DST_BIT_KHR)
+        bool video_encode_src                   : 1; // 0x00010000 (VK_BUFFER_USAGE_VIDEO_ENCODE_SRC_BIT_KHR)
+        bool shader_device_address              : 1; // 0x00020000 (VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT)
+        bool __unused_1__                       : 1; // 0x00040000
+        bool acceleration_structure_build_input : 1; // 0x00080000 (VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_BUILD_INPUT_READ_ONLY_BIT_KHR)
+        bool acceleration_structure_storage     : 1; // 0x00100000 (VK_BUFFER_USAGE_ACCELERATION_STRUCTURE_STORAGE_BIT_KHR)
+        bool sampler_descriptor_buffer          : 1; // 0x00200000 (VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT)
+        bool resource_descriptor_buffer         : 1; // 0x00400000 (VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT)
+        bool micromap_build_input               : 1; // 0x00800000 (VK_BUFFER_USAGE_MICROMAP_BUILD_INPUT_READ_ONLY_BIT_EXT)
+        bool micromap_storage                   : 1; // 0x01000000 (VK_BUFFER_USAGE_MICROMAP_STORAGE_BIT_EXT)
+        bool __unused_2__                       : 1; // 0x02000000
+        bool push_descriptors_descriptor_buffer : 1; // 0x04000000 (VK_BUFFER_USAGE_PUSH_DESCRIPTORS_DESCRIPTOR_BUFFER_BIT_EXT)
     } bits;
     VkBufferUsageFlags flags;
 
