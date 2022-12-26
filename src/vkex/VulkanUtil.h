@@ -983,6 +983,11 @@ VkComponentMapping ComponentMapping(
     VkComponentSwizzle b,
     VkComponentSwizzle a);
 
+/** @fn ComponentMappingIdentity
+ *
+ */
+VkComponentMapping ComponentMappingIdentity();
+
 /** @fn ComponentMappingRGBA
  *
  */

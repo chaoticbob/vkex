@@ -255,12 +255,9 @@ struct GraphicsPipelineCreateInfo
     VkLogicOp                             color_blend_logic_op;
     float                                 blend_constants[4] = {1.0f, 1.0f, 1.0f, 1.0f};
     vkex::PipelineLayout                  pipeline_layout;
-    RenderPass                            render_pass;
-    uint32_t                              subpass;
     vkex::PipelineCache                   pipeline_cache;
-
-    std::vector<VkFormat> rtv_formats;
-    VkFormat              dsv_format;
+    std::vector<VkFormat>                 color_formats;
+    VkFormat                              depth_stencil_format;
 };
 
 /** @class IGraphicsPipeline
@@ -317,31 +314,32 @@ private:
 
 private:
     // clang-format off
-  vkex::GraphicsPipelineCreateInfo                      m_create_info = {};
-  VkGraphicsPipelineCreateInfo                          m_vk_create_info = {};
-  VkPipeline                                            m_vk_object = VK_NULL_HANDLE;
-  std::string                                           m_vs_entry_point;
-  std::string                                           m_hs_entry_point;
-  std::string                                           m_ds_entry_point;
-  std::string                                           m_gs_entry_point;
-  std::string                                           m_ps_entry_point;
-  std::vector<VkPipelineShaderStageCreateInfo>          m_vk_shader_stages;
-  std::vector<VkVertexInputAttributeDescription>        m_vk_vertex_input_attributes;
-  std::vector<VkVertexInputBindingDescription>          m_vk_vertex_input_bindings;
-  VkPipelineVertexInputStateCreateInfo                  m_vk_pipeline_vertex_input =  { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
-  VkPrimitiveTopology                                   m_vk_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-  VkPipelineInputAssemblyStateCreateInfo                m_vk_pipeline_input_assembly = { VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
-  VkPipelineTessellationDomainOriginStateCreateInfoKHR  m_vk_tessellation_domain_origin = { VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO_KHR };
-  VkPipelineTessellationStateCreateInfo                 m_vk_pipeline_tessellation = { VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO };
-  VkPipelineViewportStateCreateInfo                     m_vk_pipeline_viewport = { VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
-  VkCullModeFlags                                       m_vk_cull_mode = VK_CULL_MODE_NONE;
-  VkFrontFace                                           m_vk_front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
-  VkPipelineRasterizationStateCreateInfo                m_vk_pipeline_rasterization = { VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
-  VkPipelineMultisampleStateCreateInfo                  m_vk_pipeline_multisample = { VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
-  VkPipelineDepthStencilStateCreateInfo                 m_vk_pipeline_depth_stencil = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
-  VkPipelineColorBlendStateCreateInfo                   m_vk_pipeline_color_blend = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
-  std::vector<VkDynamicState>                           m_vk_dynamic_states;
-  VkPipelineDynamicStateCreateInfo                      m_vk_pipeline_dynamic_state = { VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
+    vkex::GraphicsPipelineCreateInfo                      m_create_info = {};
+    VkGraphicsPipelineCreateInfo                          m_vk_create_info = {};
+    VkPipeline                                            m_vk_object = VK_NULL_HANDLE;
+    std::string                                           m_vs_entry_point;
+    std::string                                           m_hs_entry_point;
+    std::string                                           m_ds_entry_point;
+    std::string                                           m_gs_entry_point;
+    std::string                                           m_ps_entry_point;
+    std::vector<VkPipelineShaderStageCreateInfo>          m_vk_shader_stages;
+    std::vector<VkVertexInputAttributeDescription>        m_vk_vertex_input_attributes;
+    std::vector<VkVertexInputBindingDescription>          m_vk_vertex_input_bindings;
+    VkPipelineVertexInputStateCreateInfo                  m_vk_pipeline_vertex_input =  { VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO };
+    VkPrimitiveTopology                                   m_vk_topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    VkPipelineInputAssemblyStateCreateInfo                m_vk_pipeline_input_assembly = { VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO };
+    VkPipelineTessellationDomainOriginStateCreateInfoKHR  m_vk_tessellation_domain_origin = { VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_DOMAIN_ORIGIN_STATE_CREATE_INFO_KHR };
+    VkPipelineTessellationStateCreateInfo                 m_vk_pipeline_tessellation = { VK_STRUCTURE_TYPE_PIPELINE_TESSELLATION_STATE_CREATE_INFO };
+    VkPipelineViewportStateCreateInfo                     m_vk_pipeline_viewport = { VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO };
+    VkCullModeFlags                                       m_vk_cull_mode = VK_CULL_MODE_NONE;
+    VkFrontFace                                           m_vk_front_face = VK_FRONT_FACE_COUNTER_CLOCKWISE;
+    VkPipelineRasterizationStateCreateInfo                m_vk_pipeline_rasterization = { VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO };
+    VkPipelineMultisampleStateCreateInfo                  m_vk_pipeline_multisample = { VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO };
+    VkPipelineDepthStencilStateCreateInfo                 m_vk_pipeline_depth_stencil = { VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO };
+    VkPipelineColorBlendStateCreateInfo                   m_vk_pipeline_color_blend = { VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO };
+    std::vector<VkDynamicState>                           m_vk_dynamic_states;
+    VkPipelineDynamicStateCreateInfo                      m_vk_pipeline_dynamic_state = { VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO };
+    VkPipelineRenderingCreateInfo                         m_vk_pipeline_rendering = {VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO};
     // clang-format on
 };
 

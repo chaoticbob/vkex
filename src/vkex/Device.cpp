@@ -28,6 +28,8 @@
 
 namespace vkex {
 
+PFN_vkCmdPushDescriptorSetKHR CmdPushDescriptorSetKHR = nullptr;
+
 static void WireUpPNexts(vkex::PhysicalDeviceFeatures* pFeatures)
 {
     if (pFeatures == nullptr) {
@@ -44,6 +46,7 @@ static void WireUpPNexts(vkex::PhysicalDeviceFeatures* pFeatures)
     pFeatures->khr.dynamicRendering.pNext      = &pFeatures->ext.extendedDynamicState3;
     pFeatures->khr.synchronization2.pNext      = &pFeatures->khr.dynamicRendering;
     pFeatures->khr.timelineSemaphore.pNext     = &pFeatures->khr.synchronization2;
+    pFeatures->pFirst                          = &pFeatures->khr.timelineSemaphore;
 }
 
 // =================================================================================================
@@ -512,12 +515,16 @@ vkex::Result CDevice::InternalCreate(
 
     // Features
     {
-        m_create_info.enabled_features.geometryShader          = VK_TRUE;
-        m_create_info.enabled_features.tessellationShader      = VK_TRUE;
-        m_create_info.enabled_features.dualSrcBlend            = VK_TRUE;
-        m_create_info.enabled_features.occlusionQueryPrecise   = VK_TRUE;
-        m_create_info.enabled_features.pipelineStatisticsQuery = VK_TRUE;
-        m_create_info.enabled_features.samplerAnisotropy       = VK_TRUE;
+        vkex::WireUpPNexts(&m_create_info.enabled_features);
+
+        m_create_info.enabled_features.core.geometryShader          = VK_TRUE;
+        m_create_info.enabled_features.core.tessellationShader      = VK_TRUE;
+        m_create_info.enabled_features.core.dualSrcBlend            = VK_TRUE;
+        m_create_info.enabled_features.core.occlusionQueryPrecise   = VK_TRUE;
+        m_create_info.enabled_features.core.pipelineStatisticsQuery = VK_TRUE;
+        m_create_info.enabled_features.core.samplerAnisotropy       = VK_TRUE;
+
+        m_create_info.enabled_features.khr.dynamicRendering.dynamicRendering = VK_TRUE;
     }
 
     // Create info
@@ -525,7 +532,7 @@ vkex::Result CDevice::InternalCreate(
         m_c_str_extensions = GetCStrings(m_create_info.extensions);
 
         m_vk_create_info                         = {VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO};
-        m_vk_create_info.pNext                   = m_create_info.p_next;
+        m_vk_create_info.pNext                   = m_create_info.enabled_features.pFirst;
         m_vk_create_info.flags                   = 0;
         m_vk_create_info.queueCreateInfoCount    = CountU32(m_vk_queue_create_infos);
         m_vk_create_info.pQueueCreateInfos       = DataPtr(m_vk_queue_create_infos);
@@ -533,7 +540,7 @@ vkex::Result CDevice::InternalCreate(
         m_vk_create_info.ppEnabledLayerNames     = nullptr;
         m_vk_create_info.enabledExtensionCount   = CountU32(m_c_str_extensions);
         m_vk_create_info.ppEnabledExtensionNames = DataPtr(m_c_str_extensions);
-        m_vk_create_info.pEnabledFeatures        = &m_create_info.enabled_features;
+        m_vk_create_info.pEnabledFeatures        = &m_create_info.enabled_features.core;
     }
 
     VKEX_LOG_INFO(ToString(m_vk_create_info));
@@ -551,6 +558,11 @@ vkex::Result CDevice::InternalCreate(
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
         }
+    }
+
+    // Load functions
+    {
+        CmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(m_vk_object, "vkCmdPushDescriptorSetKHR");
     }
 
     // Log device creation
@@ -666,7 +678,6 @@ vkex::Result CDevice::DestroyAllStoredObjects(const VkAllocationCallbacks* p_all
     VKEX_DESTROY_ALL_OBJECTS(vkex::ComputePipeline, m_stored_compute_pipelines, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::DescriptorPool, m_stored_descriptor_pools, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::DescriptorSetLayout, m_stored_descriptor_set_layouts, p_allocator);
-    //VKEX_DESTROY_ALL_OBJECTS(vkex::Event, m_stored_events, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::Fence, m_stored_fences, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::GraphicsPipeline, m_stored_graphics_pipelines, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::Image, m_stored_images, p_allocator);
@@ -675,7 +686,6 @@ vkex::Result CDevice::DestroyAllStoredObjects(const VkAllocationCallbacks* p_all
     VKEX_DESTROY_ALL_OBJECTS(vkex::PipelineLayout, m_stored_pipeline_layouts, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::QueryPool, m_stored_query_pools, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::Queue, m_stored_queues, p_allocator);
-    VKEX_DESTROY_ALL_OBJECTS(vkex::RenderPass, m_stored_render_passes, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::Sampler, m_stored_samplers, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::Semaphore, m_stored_semaphores, p_allocator);
     VKEX_DESTROY_ALL_OBJECTS(vkex::ShaderModule, m_stored_shader_modules, p_allocator);
@@ -905,42 +915,6 @@ vkex::Result CDevice::DestroyConstantBuffer(
 {
     vkex::Result vkex_result = DestroyObject<CBuffer>(
         m_stored_buffers,
-        object,
-        p_allocator);
-
-    if (!vkex_result) {
-        return vkex_result;
-    }
-
-    return vkex::Result::Success;
-}
-
-vkex::Result CDevice::CreateDepthStencilView(
-    const vkex::DepthStencilViewCreateInfo& create_info,
-    vkex::DepthStencilView*                 p_object,
-    const VkAllocationCallbacks*            p_allocator)
-{
-    vkex::Result vkex_result = CreateObject<CDepthStencilView>(
-        create_info,
-        p_allocator,
-        m_stored_depth_stencil_views,
-        &CDepthStencilView::SetDevice,
-        this,
-        p_object);
-
-    if (!vkex_result) {
-        return vkex_result;
-    }
-
-    return vkex::Result::Success;
-}
-
-vkex::Result CDevice::DestroyDepthStencilView(
-    vkex::DepthStencilView       object,
-    const VkAllocationCallbacks* p_allocator)
-{
-    vkex::Result vkex_result = DestroyObject<CDepthStencilView>(
-        m_stored_depth_stencil_views,
         object,
         p_allocator);
 
@@ -1397,78 +1371,6 @@ vkex::Result CDevice::DestroyQueryPool(
 {
     vkex::Result vkex_result = DestroyObject<CQueryPool>(
         m_stored_query_pools,
-        object,
-        p_allocator);
-
-    if (!vkex_result) {
-        return vkex_result;
-    }
-
-    return vkex::Result::Success;
-}
-
-vkex::Result CDevice::CreateRenderPass(
-    const vkex::RenderPassCreateInfo& create_info,
-    vkex::RenderPass*                 p_object,
-    const VkAllocationCallbacks*      p_allocator)
-{
-    vkex::Result vkex_result = CreateObject<CRenderPass>(
-        create_info,
-        p_allocator,
-        m_stored_render_passes,
-        &CRenderPass::SetDevice,
-        this,
-        p_object);
-
-    if (!vkex_result) {
-        return vkex_result;
-    }
-
-    return vkex::Result::Success;
-}
-
-vkex::Result CDevice::DestroyRenderPass(
-    vkex::RenderPass             object,
-    const VkAllocationCallbacks* p_allocator)
-{
-    vkex::Result vkex_result = DestroyObject<CRenderPass>(
-        m_stored_render_passes,
-        object,
-        p_allocator);
-
-    if (!vkex_result) {
-        return vkex_result;
-    }
-
-    return vkex::Result::Success;
-}
-
-vkex::Result CDevice::CreateRenderTargetView(
-    const vkex::RenderTargetViewCreateInfo& create_info,
-    vkex::RenderTargetView*                 p_object,
-    const VkAllocationCallbacks*            p_allocator)
-{
-    vkex::Result vkex_result = CreateObject<CRenderTargetView>(
-        create_info,
-        p_allocator,
-        m_stored_render_target_views,
-        &CRenderTargetView::SetDevice,
-        this,
-        p_object);
-
-    if (!vkex_result) {
-        return vkex_result;
-    }
-
-    return vkex::Result::Success;
-}
-
-vkex::Result CDevice::DestroyRenderTargetView(
-    vkex::RenderTargetView       object,
-    const VkAllocationCallbacks* p_allocator)
-{
-    vkex::Result vkex_result = DestroyObject<CRenderTargetView>(
-        m_stored_render_target_views,
         object,
         p_allocator);
 

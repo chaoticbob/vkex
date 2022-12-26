@@ -26,6 +26,44 @@ namespace vkex {
 // =================================================================================================
 // CommandBuffer
 // =================================================================================================
+struct ColorAttachmentInfo
+{
+    vkex::ImageView     image_view  = nullptr;
+    VkAttachmentLoadOp  load_op     = VK_ATTACHMENT_LOAD_OP_LOAD;
+    VkAttachmentStoreOp store_op    = VK_ATTACHMENT_STORE_OP_STORE;
+    VkClearColorValue   clear_value = {0.0f, 0.0f, 0.0f, 0.0f};
+};
+
+struct DepthStencilAttachmentInfo
+{
+    vkex::ImageView          image_view  = nullptr;
+    VkAttachmentLoadOp       load_op     = VK_ATTACHMENT_LOAD_OP_LOAD;
+    VkAttachmentStoreOp      store_op    = VK_ATTACHMENT_STORE_OP_STORE;
+    VkClearDepthStencilValue clear_value = {1.0f, 0xFF};
+    VkImageLayout            layout      = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+};
+
+struct RenderingInfo
+{
+    VkRenderingFlags                       flags                    = 0;
+    VkRect2D                               render_area              = {};
+    std::vector<vkex::ColorAttachmentInfo> color_attachments        = {};
+    vkex::DepthStencilAttachmentInfo       depth_stencil_attachment = {};
+
+    static vkex::RenderingInfo LoadOp(
+        const std::vector<vkex::ImageView>&    color_views,
+        const std::vector<VkAttachmentLoadOp>& color_load_ops,
+        vkex::ImageView                        depth_stencil_view    = nullptr,
+        VkAttachmentLoadOp                     depth_stencil_load_op = VK_ATTACHMENT_LOAD_OP_DONT_CARE);
+
+    static vkex::RenderingInfo LoadOpClear(
+        const std::vector<vkex::ImageView>& color_views,
+        vkex::ImageView                     depth_stencil_view = nullptr);
+
+    static vkex::RenderingInfo LoadOpLoad(
+        const std::vector<vkex::ImageView>& color_views,
+        vkex::ImageView                     depth_stencil_view = nullptr);
+};
 
 /** @struct CommandBufferCreateInfo
  *
@@ -156,14 +194,13 @@ public:
     void CmdWriteTimestamp(VkPipelineStageFlagBits pipelineStage, vkex::QueryPool queryPool, uint32_t query);
     void CmdCopyQueryPoolResults(vkex::QueryPool queryPool, uint32_t firstQuery, uint32_t queryCount, VkBuffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize stride, VkQueryResultFlags flags);
     void CmdPushConstants(VkPipelineLayout layout, VkShaderStageFlags stageFlags, uint32_t offset, const std::vector<uint8_t>* pValues);
-    void CmdBeginRenderPass(const vkex::RenderPass renderPass, uint32_t clearValueCount, const VkClearValue* pClearValues, VkSubpassContents contents = VK_SUBPASS_CONTENTS_INLINE);
-    void CmdBeginRenderPass(const vkex::RenderPass renderPass, const std::vector<VkClearValue>* pClearValues, VkSubpassContents contents = VK_SUBPASS_CONTENTS_INLINE);
-    void CmdBeginRenderPass(const vkex::RenderPass renderPass, VkSubpassContents contents = VK_SUBPASS_CONTENTS_INLINE);
     void CmdExecuteCommands(const std::vector<VkCommandBuffer>* pCommandBuffers);
+
+    void CmdBeginRendering(const vkex::RenderingInfo& renderingInfo);
 
     void CmdTransitionImageLayout(VkImage image, VkImageAspectFlags aspectMask, uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage);
     void CmdTransitionImageLayout(vkex::Image image, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel = 0, uint32_t levelCount = VKEX_ALL_MIP_LEVELS, uint32_t baseArrayLayer = 0, uint32_t layerCount = VKEX_ALL_ARRAY_LAYERS);
-    void CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel = 0, uint32_t levelCount = VKEX_ALL_MIP_LEVELS, uint32_t baseArrayLayer = 0, uint32_t layerCount = VKEX_ALL_ARRAY_LAYERS);
+    // void CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel = 0, uint32_t levelCount = VKEX_ALL_MIP_LEVELS, uint32_t baseArrayLayer = 0, uint32_t layerCount = VKEX_ALL_ARRAY_LAYERS);
 
 private:
     friend class CCommandPool;

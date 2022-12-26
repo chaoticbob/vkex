@@ -413,10 +413,23 @@ VkComponentMapping ComponentMapping(
     return mapping;
 }
 
+VkComponentMapping ComponentMappingIdentity()
+{
+    VkComponentMapping mapping = {
+        VK_COMPONENT_SWIZZLE_IDENTITY,
+        VK_COMPONENT_SWIZZLE_IDENTITY,
+        VK_COMPONENT_SWIZZLE_IDENTITY,
+        VK_COMPONENT_SWIZZLE_IDENTITY};
+    return mapping;
+}
+
 VkComponentMapping ComponentMappingRGBA()
 {
     VkComponentMapping mapping = {
-        VK_COMPONENT_SWIZZLE_R, VK_COMPONENT_SWIZZLE_G, VK_COMPONENT_SWIZZLE_B, VK_COMPONENT_SWIZZLE_A};
+        VK_COMPONENT_SWIZZLE_R,
+        VK_COMPONENT_SWIZZLE_G,
+        VK_COMPONENT_SWIZZLE_B,
+        VK_COMPONENT_SWIZZLE_A};
     return mapping;
 }
 

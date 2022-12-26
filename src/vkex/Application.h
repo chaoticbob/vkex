@@ -434,13 +434,14 @@ public:
     vkex::Semaphore               GetWorkCompleteForRenderSemaphore() const { return m_work_complete_for_render_semaphore; }
     vkex::Semaphore               GetWorkCompleteForPresentSemaphore() const { return m_work_complete_for_present_semaphore; }
     vkex::Fence                   GetWorkCompleteFence() const { return m_work_complete_fence; }
-    vkex::RenderPass              GetRenderPass() const { return m_render_pass; }
+    vkex::ImageView               GetColorAttachment() const { return m_color_attachment; }
+    vkex::ImageView               GetDepthStencilAttachment() const { return m_depth_stencil_attachment; }
 
 private:
     friend class vkex::Application;
     vkex::Result InternalCreate(vkex::Device device, uint32_t frame_index, vkex::CommandBuffer cmd);
     vkex::Result InternalDestroy();
-    void         SetRenderPass(vkex::RenderPass render_pass);
+    void         SetAttachments(vkex::ImageView color_attachment, vkex::ImageView depth_stencil_attachment);
     void         SetPrevious(PresentData* p_previous);
 
 private:
@@ -476,7 +477,8 @@ private:
     vkex::Semaphore              m_work_complete_for_render_semaphore  = nullptr;
     vkex::Semaphore              m_work_complete_for_present_semaphore = nullptr;
     vkex::Fence                  m_work_complete_fence                 = nullptr;
-    vkex::RenderPass             m_render_pass                         = nullptr;
+    vkex::ImageView              m_color_attachment                    = nullptr;
+    vkex::ImageView              m_depth_stencil_attachment            = nullptr;
 };
 
 /** @class Application
@@ -574,10 +576,10 @@ public:
     void DrawImGui(vkex::CommandBuffer cmd);
 
     //! @fn SubmitPresent
-    vkex::Result SubmitRender(RenderData* p_current_render_data, PresentData* p_current_present_data);
+    vkex::Result SubmitRender(vkex::RenderData* p_current_render_data, vkex::PresentData* p_current_present_data);
 
     //! @fn SubmitPresent
-    vkex::Result SubmitPresent(PresentData* p_current_render_data);
+    vkex::Result SubmitPresent(vkex::PresentData* p_current_render_data);
 
     //! @fn Run
     vkex::Result Run(int argn, const char* const* argv);
@@ -796,28 +798,26 @@ protected:
     double         m_max_window_frame_time = 0;
     double         m_min_window_frame_time = std::numeric_limits<double>::max();
 
-    vkex::Instance                m_instance                      = nullptr;
-    vkex::Device                  m_device                        = nullptr;
-    vkex::Queue                   m_graphics_queue                = nullptr;
-    vkex::Queue                   m_compute_queue                 = nullptr;
-    vkex::Queue                   m_transfer_queue                = nullptr;
-    vkex::Queue                   m_present_queue                 = nullptr;
-    vkex::Surface                 m_surface                       = nullptr;
-    VmaPool                       m_swapchain_image_memory_pool   = VK_NULL_HANDLE;
-    vkex::Swapchain               m_swapchain                     = nullptr;
-    uint32_t                      m_current_swapchain_image_index = UINT32_MAX;
-    std::vector<vkex::ImageView>  m_swapchain_color_image_views;
-    std::vector<vkex::ImageView>  m_swapchain_depth_stencil_image_views;
-    std::vector<vkex::RenderPass> m_swapchain_render_passes;
-    std::vector<vkex::Image>      m_fake_swapchain_color_images;
-    std::vector<vkex::Image>      m_fake_swapchain_depth_stencil_images;
-    std::vector<vkex::ImageView>  m_fake_swapchain_color_image_views;
-    std::vector<vkex::ImageView>  m_fake_swapchain_depth_stencil_image_views;
-    std::vector<vkex::RenderPass> m_fake_swapchain_render_passes;
-    uint64_t                      m_elapsed_frame_count    = 0;
-    uint32_t                      m_frame_index            = 0;
-    bool                          m_recreate_swapchain     = false;
-    bool                          m_window_surface_invalid = false;
+    vkex::Instance               m_instance                      = nullptr;
+    vkex::Device                 m_device                        = nullptr;
+    vkex::Queue                  m_graphics_queue                = nullptr;
+    vkex::Queue                  m_compute_queue                 = nullptr;
+    vkex::Queue                  m_transfer_queue                = nullptr;
+    vkex::Queue                  m_present_queue                 = nullptr;
+    vkex::Surface                m_surface                       = nullptr;
+    VmaPool                      m_swapchain_image_memory_pool   = VK_NULL_HANDLE;
+    vkex::Swapchain              m_swapchain                     = nullptr;
+    uint32_t                     m_current_swapchain_image_index = UINT32_MAX;
+    std::vector<vkex::ImageView> m_swapchain_color_image_views;
+    std::vector<vkex::ImageView> m_swapchain_depth_stencil_image_views;
+    std::vector<vkex::Image>     m_fake_swapchain_color_images;
+    std::vector<vkex::Image>     m_fake_swapchain_depth_stencil_images;
+    std::vector<vkex::ImageView> m_fake_swapchain_color_image_views;
+    std::vector<vkex::ImageView> m_fake_swapchain_depth_stencil_image_views;
+    uint64_t                     m_elapsed_frame_count    = 0;
+    uint32_t                     m_frame_index            = 0;
+    bool                         m_recreate_swapchain     = false;
+    bool                         m_window_surface_invalid = false;
 
     double m_frame_0_time = 0;
 

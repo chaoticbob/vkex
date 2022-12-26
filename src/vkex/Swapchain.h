@@ -196,6 +196,22 @@ public:
         return m_create_info.image_count;
     }
 
+    /** @fn GetColorFormat
+     *
+     */
+    VkFormat GetColorFormat() const
+    {
+        return m_create_info.color_format;
+    }
+
+    /** @fn GetDepthStencilFormat
+     *
+     */
+    VkFormat GetDepthStencilFormat() const
+    {
+        return m_create_info.depth_stencil_format;
+    }
+
     /** @fn HasDepthStencil
      *
      */

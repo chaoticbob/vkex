@@ -111,7 +111,7 @@ list(APPEND VKEX_HDR_FILES
   ${INC_DIR}/Pipeline.h
   ${INC_DIR}/QueryPool.h
   ${INC_DIR}/Queue.h
-  ${INC_DIR}/RenderPass.h
+  #${INC_DIR}/RenderPass.h
   ${INC_DIR}/Sampler.h
   ${INC_DIR}/Shader.h
   ${INC_DIR}/Swapchain.h
@@ -122,7 +122,7 @@ list(APPEND VKEX_HDR_FILES
   ${INC_DIR}/Traits.h
   ${INC_DIR}/Transform.h
   ${INC_DIR}/Util.h
-  ${INC_DIR}/View.h
+  #${INC_DIR}/View.h
   #${INC_DIR}/VkexLoader.h
   #${INC_DIR}/VkexLoaderHelper.h
   ${INC_DIR}/VulkanUtil.h
@@ -149,7 +149,7 @@ list(APPEND VKEX_SRC_FILES
   ${SRC_DIR}/Pipeline.cpp
   ${SRC_DIR}/QueryPool.cpp
   ${SRC_DIR}/Queue.cpp
-  ${SRC_DIR}/RenderPass.cpp
+  #${SRC_DIR}/RenderPass.cpp
   ${SRC_DIR}/Sampler.cpp
   ${SRC_DIR}/Shader.cpp
   ${SRC_DIR}/Swapchain.cpp
@@ -158,7 +158,7 @@ list(APPEND VKEX_SRC_FILES
   ${SRC_DIR}/Timer.cpp
   ${SRC_DIR}/ToString.cpp
   ${SRC_DIR}/Transform.cpp
-  ${SRC_DIR}/View.cpp
+  #${SRC_DIR}/View.cpp
   #${SRC_DIR}/VkexLoader.cpp
   #${SRC_DIR}/VkexLoaderHelper.cpp
   ${SRC_DIR}/VulkanUtil.cpp

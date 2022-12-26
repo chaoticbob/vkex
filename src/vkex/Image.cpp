@@ -23,6 +23,67 @@ namespace vkex {
 // =================================================================================================
 // Image
 // =================================================================================================
+vkex::ImageCreateInfo ImageCreateInfo::ColorAttachment(
+    uint32_t       width,
+    uint32_t       height,
+    VkFormat       format,
+    uint32_t       mip_levels,
+    uint32_t       array_layers,
+    VmaMemoryUsage memory_usage)
+{
+    vkex::ImageCreateInfo create_info             = {};
+    create_info.create_flags                      = 0;
+    create_info.image_type                        = VK_IMAGE_TYPE_2D;
+    create_info.format                            = format;
+    create_info.extent                            = {width, height, 1};
+    create_info.mip_levels                        = mip_levels;
+    create_info.array_layers                      = array_layers;
+    create_info.samples                           = VK_SAMPLE_COUNT_1_BIT;
+    create_info.tiling                            = (memory_usage == VMA_MEMORY_USAGE_GPU_ONLY) ? VK_IMAGE_TILING_OPTIMAL : VK_IMAGE_TILING_LINEAR;
+    create_info.usage_flags.bits.transfer_src     = true;
+    create_info.usage_flags.bits.transfer_dst     = true;
+    create_info.usage_flags.bits.sampled          = true;
+    create_info.usage_flags.bits.color_attachment = true;
+    create_info.sharing_mode                      = VK_SHARING_MODE_EXCLUSIVE;
+    create_info.queue_family_indices              = {};
+    create_info.initial_layout                    = VK_IMAGE_LAYOUT_UNDEFINED;
+    create_info.committed                         = true;
+    create_info.memory_usage                      = memory_usage;
+    create_info.memory_pool                       = VK_NULL_HANDLE;
+    create_info.vk_object                         = VK_NULL_HANDLE;
+    return create_info;
+}
+
+vkex::ImageCreateInfo ImageCreateInfo::DepthStencilAttachment(
+    uint32_t       width,
+    uint32_t       height,
+    VkFormat       format,
+    uint32_t       mip_levels,
+    uint32_t       array_layers,
+    VmaMemoryUsage memory_usage)
+{
+    vkex::ImageCreateInfo create_info                     = {};
+    create_info.create_flags                              = 0;
+    create_info.image_type                                = VK_IMAGE_TYPE_2D;
+    create_info.format                                    = format;
+    create_info.extent                                    = {width, height, 1};
+    create_info.mip_levels                                = mip_levels;
+    create_info.array_layers                              = array_layers;
+    create_info.samples                                   = VK_SAMPLE_COUNT_1_BIT;
+    create_info.tiling                                    = (memory_usage == VMA_MEMORY_USAGE_GPU_ONLY) ? VK_IMAGE_TILING_OPTIMAL : VK_IMAGE_TILING_LINEAR;
+    create_info.usage_flags.bits.transfer_src             = true;
+    create_info.usage_flags.bits.transfer_dst             = true;
+    create_info.usage_flags.bits.sampled                  = true;
+    create_info.usage_flags.bits.depth_stencil_attachment = true;
+    create_info.sharing_mode                              = VK_SHARING_MODE_EXCLUSIVE;
+    create_info.queue_family_indices                      = {};
+    create_info.initial_layout                            = VK_IMAGE_LAYOUT_UNDEFINED;
+    create_info.committed                                 = true;
+    create_info.memory_usage                              = memory_usage;
+    create_info.memory_pool                               = VK_NULL_HANDLE;
+    return create_info;
+}
+
 CImage::CImage()
 {
 }
@@ -247,9 +308,42 @@ VkImageSubresourceLayers CImage::GetSubresourceLayers(
     return subresource_layer;
 }
 
+VkImageSubresourceRange CImage::GetFullSubresourceRange() const
+{
+    VkImageSubresourceRange range = {};
+    range.aspectMask              = vkex::DetermineAspectMask(GetFormat());
+    range.baseMipLevel            = 0;
+    range.levelCount              = GetMipLevels();
+    range.baseArrayLayer          = 0;
+    range.layerCount              = GetArrayLayers();
+    return range;
+}
+
 // =================================================================================================
 // ImageView
 // =================================================================================================
+static VkImageViewType ToVkImageViewType(VkImageType type)
+{
+    switch (type) {
+        case VK_IMAGE_TYPE_1D: return VK_IMAGE_VIEW_TYPE_1D;
+        case VK_IMAGE_TYPE_2D: return VK_IMAGE_VIEW_TYPE_2D;
+        case VK_IMAGE_TYPE_3D: return VK_IMAGE_VIEW_TYPE_3D;
+    }
+    return InvalidValue<VkImageViewType>::Value;
+}
+
+vkex::ImageViewCreateInfo ImageViewCreateInfo::FromImage(vkex::Image image)
+{
+    vkex::ImageViewCreateInfo create_info = {};
+    create_info.image                     = image;
+    create_info.view_type                 = ToVkImageViewType(image->GetImageType());
+    create_info.format                    = image->GetFormat();
+    create_info.samples                   = image->GetSamples();
+    create_info.components                = vkex::ComponentMappingIdentity();
+    create_info.subresource_range         = image->GetFullSubresourceRange();
+    return create_info;
+}
+
 CImageView::CImageView()
 {
 }

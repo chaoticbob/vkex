@@ -502,7 +502,6 @@ vkex::Result PresentData::InternalCreate(vkex::Device device, uint32_t frame_ind
             return vkex_result;
         }
     }
-
     return vkex::Result::Success;
 }
 
@@ -561,12 +560,13 @@ vkex::Result PresentData::InternalDestroy()
     return vkex::Result::Success;
 }
 
-void PresentData::SetRenderPass(vkex::RenderPass render_pass)
+void PresentData::SetAttachments(vkex::ImageView color_attachment, vkex::ImageView depth_stencil_attachment)
 {
-    m_render_pass = render_pass;
+    m_color_attachment         = color_attachment;
+    m_depth_stencil_attachment = depth_stencil_attachment;
 }
 
-void PresentData::SetPrevious(PresentData* p_previous)
+void PresentData::SetPrevious(vkex::PresentData* p_previous)
 {
     m_previous = p_previous;
 }
@@ -761,21 +761,18 @@ vkex::Result Application::InitializeWindow()
 
         // Log window creation
         if (IsApplicationModeWindow()) {
+            // clang-format off
             VKEX_LOG_INFO("");
             VKEX_LOG_INFO("Application is running in WINDOW mode");
             VKEX_LOG_INFO("");
             VKEX_LOG_INFO("Window created:");
-            VKEX_LOG_INFO("   "
-                          << "Name       : " << m_configuration.name);
-            VKEX_LOG_INFO("   "
-                          << "Size       : " << m_configuration.window.width << "x" << m_configuration.window.height);
-            VKEX_LOG_INFO("   "
-                          << "Resizable  : " << m_configuration.window.resizeable);
-            VKEX_LOG_INFO("   "
-                          << "Borderless : " << m_configuration.window.borderless);
-            VKEX_LOG_INFO("   "
-                          << "Cursor     : " << ToString(m_configuration.window.cursor_mode));
+            VKEX_LOG_INFO("   " << "Name       : " << m_configuration.name);
+            VKEX_LOG_INFO("   " << "Size       : " << m_configuration.window.width << "x" << m_configuration.window.height);
+            VKEX_LOG_INFO("   " << "Resizable  : " << m_configuration.window.resizeable);
+            VKEX_LOG_INFO("   " << "Borderless : " << m_configuration.window.borderless);
+            VKEX_LOG_INFO("   " << "Cursor     : " << ToString(m_configuration.window.cursor_mode));
             VKEX_LOG_INFO("");
+            // clang-format on
         }
     }
     else if (IsApplicationModeHeadless()) {
@@ -1013,7 +1010,7 @@ vkex::Result Application::InitializeVkexSwapchain()
 #    endif
 #elif defined(VKEX_WIN32)
         surface_create_info.hinstance = ::GetModuleHandle(nullptr);
-        surface_create_info.hwnd      = glfwGetWin32Window(m_window);
+        surface_create_info.hwnd = glfwGetWin32Window(m_window);
 #endif
         vkex::Result vkex_result = vkex::Result::Undefined;
         VKEX_RESULT_CALL(
@@ -1243,87 +1240,87 @@ vkex::Result Application::InitializeVkexSwapchain()
         }
     }
 
-    // Render passes
-    {
-        uint32_t image_count = m_swapchain->GetImageCount();
-        for (uint32_t image_index = 0; image_index < image_count; ++image_index) {
-            // RTV
-            vkex::RenderTargetView rtv = nullptr;
-            {
-                // Image view
-                vkex::ImageView image_view = m_swapchain_color_image_views[image_index];
-                // Fill out RTV
-                vkex::RenderTargetViewCreateInfo create_info = {};
-                create_info.format                           = image_view->GetFormat();
-                create_info.samples                          = image_view->GetSamples();
-                create_info.load_op                          = m_configuration.swapchain.color_load_op;
-                create_info.store_op                         = m_configuration.swapchain.color_store_op;
-                create_info.initial_layout                   = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-                create_info.render_layout                    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-                create_info.final_layout                     = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-                create_info.clear_value                      = m_configuration.swapchain.rtv_clear_value;
-                create_info.attachment                       = image_view;
-                create_info.resolve                          = nullptr;
-                vkex::Result vkex_result                     = vkex::Result::Undefined;
-                VKEX_RESULT_CALL(
-                    vkex_result,
-                    m_device->CreateRenderTargetView(
-                        create_info,
-                        &rtv));
-                if (!vkex_result) {
-                    return vkex_result;
-                }
-            }
-
-            // DSV
-            bool                   has_depth_stencil = m_configuration.swapchain.depth_stencil_format != VK_FORMAT_UNDEFINED;
-            vkex::DepthStencilView dsv               = nullptr;
-            if (has_depth_stencil) {
-                // Image view
-                vkex::ImageView image_view = m_swapchain_depth_stencil_image_views[image_index];
-                // Fill out DSV
-                vkex::DepthStencilViewCreateInfo create_info = {};
-                create_info.format                           = image_view->GetFormat();
-                create_info.samples                          = image_view->GetSamples();
-                create_info.depth_load_op                    = m_configuration.swapchain.depth_load_op;
-                create_info.depth_store_op                   = m_configuration.swapchain.depth_store_op;
-                create_info.stencil_load_op                  = m_configuration.swapchain.stencil_load_op;
-                create_info.stencil_store_op                 = m_configuration.swapchain.stencil_store_op;
-                create_info.initial_layout                   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                create_info.final_layout                     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-                create_info.final_layout                     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                create_info.clear_value                      = m_configuration.swapchain.dsv_clear_value;
-                create_info.attachment                       = image_view;
-                vkex::Result vkex_result                     = vkex::Result::Undefined;
-                VKEX_RESULT_CALL(
-                    vkex_result,
-                    m_device->CreateDepthStencilView(
-                        create_info,
-                        &dsv));
-                if (!vkex_result) {
-                    return vkex_result;
-                }
-            }
-
-            // Create info
-            vkex::RenderPassCreateInfo render_pass_create_info = {};
-            render_pass_create_info.flags                      = 0;
-            render_pass_create_info.rtvs                       = {rtv};
-            render_pass_create_info.dsv                        = dsv;
-            render_pass_create_info.extent                     = {m_configuration.window.width, m_configuration.window.height};
-            // Create render pass
-            vkex::RenderPass render_pass = nullptr;
-            vkex::Result     vkex_result = vkex::Result::Undefined;
-            VKEX_RESULT_CALL(
-                vkex_result,
-                m_device->CreateRenderPass(render_pass_create_info, &render_pass));
-            if (!vkex_result) {
-                return vkex_result;
-            }
-            // Store render passes
-            m_swapchain_render_passes.push_back(render_pass);
-        }
-    }
+    //// Render passes
+    //{
+    //    uint32_t image_count = m_swapchain->GetImageCount();
+    //    for (uint32_t image_index = 0; image_index < image_count; ++image_index) {
+    //        // RTV
+    //        vkex::RenderTargetView rtv = nullptr;
+    //        {
+    //            // Image view
+    //            vkex::ImageView image_view = m_swapchain_color_image_views[image_index];
+    //            // Fill out RTV
+    //            vkex::RenderTargetViewCreateInfo create_info = {};
+    //            create_info.format                           = image_view->GetFormat();
+    //            create_info.samples                          = image_view->GetSamples();
+    //            create_info.load_op                          = m_configuration.swapchain.color_load_op;
+    //            create_info.store_op                         = m_configuration.swapchain.color_store_op;
+    //            create_info.initial_layout                   = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    //            create_info.render_layout                    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    //            create_info.final_layout                     = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    //            create_info.clear_value                      = m_configuration.swapchain.rtv_clear_value;
+    //            create_info.attachment                       = image_view;
+    //            create_info.resolve                          = nullptr;
+    //            vkex::Result vkex_result                     = vkex::Result::Undefined;
+    //            VKEX_RESULT_CALL(
+    //                vkex_result,
+    //                m_device->CreateRenderTargetView(
+    //                    create_info,
+    //                    &rtv));
+    //            if (!vkex_result) {
+    //                return vkex_result;
+    //            }
+    //        }
+    //
+    //        // DSV
+    //        bool                   has_depth_stencil = m_configuration.swapchain.depth_stencil_format != VK_FORMAT_UNDEFINED;
+    //        vkex::DepthStencilView dsv               = nullptr;
+    //        if (has_depth_stencil) {
+    //            // Image view
+    //            vkex::ImageView image_view = m_swapchain_depth_stencil_image_views[image_index];
+    //            // Fill out DSV
+    //            vkex::DepthStencilViewCreateInfo create_info = {};
+    //            create_info.format                           = image_view->GetFormat();
+    //            create_info.samples                          = image_view->GetSamples();
+    //            create_info.depth_load_op                    = m_configuration.swapchain.depth_load_op;
+    //            create_info.depth_store_op                   = m_configuration.swapchain.depth_store_op;
+    //            create_info.stencil_load_op                  = m_configuration.swapchain.stencil_load_op;
+    //            create_info.stencil_store_op                 = m_configuration.swapchain.stencil_store_op;
+    //            create_info.initial_layout                   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //            create_info.final_layout                     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    //            create_info.final_layout                     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //            create_info.clear_value                      = m_configuration.swapchain.dsv_clear_value;
+    //            create_info.attachment                       = image_view;
+    //            vkex::Result vkex_result                     = vkex::Result::Undefined;
+    //            VKEX_RESULT_CALL(
+    //                vkex_result,
+    //                m_device->CreateDepthStencilView(
+    //                    create_info,
+    //                    &dsv));
+    //            if (!vkex_result) {
+    //                return vkex_result;
+    //            }
+    //        }
+    //
+    //        // Create info
+    //        vkex::RenderPassCreateInfo render_pass_create_info = {};
+    //        render_pass_create_info.flags                      = 0;
+    //        render_pass_create_info.rtvs                       = {rtv};
+    //        render_pass_create_info.dsv                        = dsv;
+    //        render_pass_create_info.extent                     = {m_configuration.window.width, m_configuration.window.height};
+    //        // Create render pass
+    //        vkex::RenderPass render_pass = nullptr;
+    //        vkex::Result     vkex_result = vkex::Result::Undefined;
+    //        VKEX_RESULT_CALL(
+    //            vkex_result,
+    //            m_device->CreateRenderPass(render_pass_create_info, &render_pass));
+    //        if (!vkex_result) {
+    //            return vkex_result;
+    //        }
+    //        // Store render passes
+    //        m_swapchain_render_passes.push_back(render_pass);
+    //    }
+    //}
 
     // Screenshot buffer
     if (m_configuration.enable_screen_shot) {
@@ -1534,87 +1531,87 @@ vkex::Result Application::InitializeFakeSwapchain()
         }
     }
 
-    // Fake swapchain render passes
-    for (uint32_t image_index = 0; image_index < image_count; ++image_index) {
-        // RTV
-        vkex::RenderTargetView rtv = nullptr;
-        {
-            // Image view
-            vkex::ImageView image_view = m_fake_swapchain_color_image_views[image_index];
-            // Fill out RTV
-            vkex::RenderTargetViewCreateInfo create_info = {};
-            create_info.format                           = image_view->GetFormat();
-            create_info.samples                          = image_view->GetSamples();
-            create_info.load_op                          = m_configuration.swapchain.color_load_op;
-            create_info.store_op                         = m_configuration.swapchain.color_store_op;
-            create_info.initial_layout                   = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-            create_info.render_layout                    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            create_info.final_layout                     = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-            create_info.clear_value                      = m_configuration.swapchain.rtv_clear_value;
-            create_info.attachment                       = image_view;
-            create_info.resolve                          = nullptr;
-            vkex::Result vkex_result                     = vkex::Result::Undefined;
-            VKEX_RESULT_CALL(
-                vkex_result,
-                m_device->CreateRenderTargetView(
-                    create_info,
-                    &rtv));
-            if (!vkex_result) {
-                return vkex_result;
-            }
-        }
-
-        // DSV
-        bool                   has_depth_stencil = m_configuration.swapchain.depth_stencil_format != VK_FORMAT_UNDEFINED;
-        vkex::DepthStencilView dsv               = nullptr;
-        if (has_depth_stencil) {
-            // Image view
-            vkex::ImageView image_view = m_fake_swapchain_depth_stencil_image_views[image_index];
-            // Fill out DSV
-            vkex::DepthStencilViewCreateInfo create_info = {};
-            create_info.format                           = image_view->GetFormat();
-            create_info.samples                          = image_view->GetSamples();
-            create_info.depth_load_op                    = m_configuration.swapchain.depth_load_op;
-            create_info.depth_store_op                   = m_configuration.swapchain.depth_store_op;
-            create_info.stencil_load_op                  = m_configuration.swapchain.stencil_load_op;
-            create_info.stencil_store_op                 = m_configuration.swapchain.stencil_store_op;
-            create_info.initial_layout                   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            create_info.final_layout                     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-            create_info.final_layout                     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            create_info.clear_value                      = m_configuration.swapchain.dsv_clear_value;
-            create_info.attachment                       = image_view;
-            vkex::Result vkex_result                     = vkex::Result::Undefined;
-            VKEX_RESULT_CALL(
-                vkex_result,
-                m_device->CreateDepthStencilView(
-                    create_info,
-                    &dsv));
-            if (!vkex_result) {
-                return vkex_result;
-            }
-        }
-
-        // Renderpasses
-        {
-            // Create info
-            vkex::RenderPassCreateInfo render_pass_create_info = {};
-            render_pass_create_info.flags                      = 0;
-            render_pass_create_info.rtvs                       = {rtv};
-            render_pass_create_info.dsv                        = dsv;
-            render_pass_create_info.extent                     = {1, 1};
-            // Create render pass
-            vkex::RenderPass render_pass = nullptr;
-            vkex::Result     vkex_result = vkex::Result::Undefined;
-            VKEX_RESULT_CALL(
-                vkex_result,
-                m_device->CreateRenderPass(render_pass_create_info, &render_pass));
-            if (!vkex_result) {
-                return vkex_result;
-            }
-            // Store render passes
-            m_fake_swapchain_render_passes.push_back(render_pass);
-        }
-    }
+    //// Fake swapchain render passes
+    // for (uint32_t image_index = 0; image_index < image_count; ++image_index) {
+    //     // RTV
+    //     vkex::RenderTargetView rtv = nullptr;
+    //     {
+    //         // Image view
+    //         vkex::ImageView image_view = m_fake_swapchain_color_image_views[image_index];
+    //         // Fill out RTV
+    //         vkex::RenderTargetViewCreateInfo create_info = {};
+    //         create_info.format                           = image_view->GetFormat();
+    //         create_info.samples                          = image_view->GetSamples();
+    //         create_info.load_op                          = m_configuration.swapchain.color_load_op;
+    //         create_info.store_op                         = m_configuration.swapchain.color_store_op;
+    //         create_info.initial_layout                   = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    //         create_info.render_layout                    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    //         create_info.final_layout                     = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+    //         create_info.clear_value                      = m_configuration.swapchain.rtv_clear_value;
+    //         create_info.attachment                       = image_view;
+    //         create_info.resolve                          = nullptr;
+    //         vkex::Result vkex_result                     = vkex::Result::Undefined;
+    //         VKEX_RESULT_CALL(
+    //             vkex_result,
+    //             m_device->CreateRenderTargetView(
+    //                 create_info,
+    //                 &rtv));
+    //         if (!vkex_result) {
+    //             return vkex_result;
+    //         }
+    //     }
+    //
+    //     // DSV
+    //     bool                   has_depth_stencil = m_configuration.swapchain.depth_stencil_format != VK_FORMAT_UNDEFINED;
+    //     vkex::DepthStencilView dsv               = nullptr;
+    //     if (has_depth_stencil) {
+    //         // Image view
+    //         vkex::ImageView image_view = m_fake_swapchain_depth_stencil_image_views[image_index];
+    //         // Fill out DSV
+    //         vkex::DepthStencilViewCreateInfo create_info = {};
+    //         create_info.format                           = image_view->GetFormat();
+    //         create_info.samples                          = image_view->GetSamples();
+    //         create_info.depth_load_op                    = m_configuration.swapchain.depth_load_op;
+    //         create_info.depth_store_op                   = m_configuration.swapchain.depth_store_op;
+    //         create_info.stencil_load_op                  = m_configuration.swapchain.stencil_load_op;
+    //         create_info.stencil_store_op                 = m_configuration.swapchain.stencil_store_op;
+    //         create_info.initial_layout                   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //         create_info.final_layout                     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    //         create_info.final_layout                     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    //         create_info.clear_value                      = m_configuration.swapchain.dsv_clear_value;
+    //         create_info.attachment                       = image_view;
+    //         vkex::Result vkex_result                     = vkex::Result::Undefined;
+    //         VKEX_RESULT_CALL(
+    //             vkex_result,
+    //             m_device->CreateDepthStencilView(
+    //                 create_info,
+    //                 &dsv));
+    //         if (!vkex_result) {
+    //             return vkex_result;
+    //         }
+    //     }
+    //
+    //     // Renderpasses
+    //     {
+    //         // Create info
+    //         vkex::RenderPassCreateInfo render_pass_create_info = {};
+    //         render_pass_create_info.flags                      = 0;
+    //         render_pass_create_info.rtvs                       = {rtv};
+    //         render_pass_create_info.dsv                        = dsv;
+    //         render_pass_create_info.extent                     = {1, 1};
+    //         // Create render pass
+    //         vkex::RenderPass render_pass = nullptr;
+    //         vkex::Result     vkex_result = vkex::Result::Undefined;
+    //         VKEX_RESULT_CALL(
+    //             vkex_result,
+    //             m_device->CreateRenderPass(render_pass_create_info, &render_pass));
+    //         if (!vkex_result) {
+    //             return vkex_result;
+    //         }
+    //         // Store render passes
+    //         m_fake_swapchain_render_passes.push_back(render_pass);
+    //     }
+    // }
 
     // Transition swapchain color images to VK_IMAGE_LAYOUT_PRESENT_SRC_KHR
     // Transition swapchain depth/stencil images to VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
@@ -1637,22 +1634,17 @@ vkex::Result Application::InitializeFakeSwapchain()
 
     // Log fake swapchain creation
     {
+        // clang-format off
         VKEX_LOG_INFO("");
         VKEX_LOG_INFO("Fake Swapchain created : " << vkex::ToHexString(m_swapchain->GetVkObject()));
-        VKEX_LOG_INFO("   "
-                      << "Image Count      : " << m_configuration.swapchain.image_count);
-        VKEX_LOG_INFO("   "
-                      << "Format           : " << vkex::ToString(m_configuration.swapchain.color_format));
-        VKEX_LOG_INFO("   "
-                      << "Color Space      : " << vkex::ToString(m_configuration.swapchain.color_space));
-        VKEX_LOG_INFO("   "
-                      << "Size             : " << 1 << "x" << 1);
-        VKEX_LOG_INFO("   "
-                      << "Present Mode     : "
-                      << "<DON'T CARE>");
-        VKEX_LOG_INFO("   "
-                      << "Paced Frame Rate : " << m_configuration.swapchain.paced_frame_rate);
+        VKEX_LOG_INFO("   " << "Image Count      : " << m_configuration.swapchain.image_count);
+        VKEX_LOG_INFO("   " << "Format           : " << vkex::ToString(m_configuration.swapchain.color_format));
+        VKEX_LOG_INFO("   " << "Color Space      : " << vkex::ToString(m_configuration.swapchain.color_space));
+        VKEX_LOG_INFO("   " << "Size             : " << 1 << "x" << 1);
+        VKEX_LOG_INFO("   " << "Present Mode     : " << "<DON'T CARE>");
+        VKEX_LOG_INFO("   " << "Paced Frame Rate : " << m_configuration.swapchain.paced_frame_rate);
         VKEX_LOG_INFO("");
+        // clang-format on
     }
 
     return vkex::Result::Success;
@@ -1753,7 +1745,7 @@ vkex::Result Application::InitializeVkexPerFramePresentData()
     for (uint32_t frame_index = 0; frame_index < m_configuration.frame_count; ++frame_index) {
         // Present data
         {
-            PresentDataPtr data = std::make_unique<PresentData>();
+            PresentDataPtr data = std::make_unique<vkex::PresentData>();
             if (!data) {
                 return vkex::Result(vkex::Result::ErrorAllocationFailed);
             }
@@ -1869,6 +1861,9 @@ vkex::Result Application::InitializeImGui()
     }
 
     {
+        VkFormat               depth_stencil_format = m_swapchain->GetDepthStencilFormat();
+        vkex::ImageAspectFlags depth_stencil_aspect = vkex::DetermineAspectMask(depth_stencil_format);
+
         // Setup Vulkan binding
         ImGui_ImplVulkan_InitInfo init_info = {};
         init_info.Instance                  = *m_instance;
@@ -1884,7 +1879,9 @@ vkex::Result Application::InitializeImGui()
         init_info.CheckVkResultFn           = nullptr;
         bool result                         = ImGui_ImplVulkan_Init(
             &init_info,
-            *m_swapchain_render_passes[0]);
+            m_swapchain->GetColorFormat(),
+            depth_stencil_aspect.bits.depth_bit ? depth_stencil_format : VK_FORMAT_UNDEFINED,
+            depth_stencil_aspect.bits.stencil_bit ? depth_stencil_format : VK_FORMAT_UNDEFINED);
         if (!result) {
             return vkex::Result::ErrorImGuiInitializeFailed;
         }
@@ -1992,18 +1989,6 @@ vkex::Result Application::DestroyVkexSwapchainImageMemoryPool()
 
 vkex::Result Application::DestroyVkexSwapchain()
 {
-    // Render passes
-    for (auto& render_pass : m_swapchain_render_passes) {
-        vkex::Result vkex_result = vkex::Result::Undefined;
-        VKEX_RESULT_CALL(
-            vkex_result,
-            m_device->DestroyRenderPass(render_pass));
-        if (!vkex_result) {
-            return vkex_result;
-        }
-    }
-    m_swapchain_render_passes.clear();
-
     // Color image views
     for (auto& image_view : m_swapchain_color_image_views) {
         vkex::Result vkex_result = vkex::Result::Undefined;
@@ -2072,18 +2057,6 @@ vkex::Result Application::DestroyVkexSwapchain()
 
 vkex::Result Application::DestroyFakeSwapchain()
 {
-    // Render passes
-    for (auto& render_pass : m_fake_swapchain_render_passes) {
-        vkex::Result vkex_result = vkex::Result::Undefined;
-        VKEX_RESULT_CALL(
-            vkex_result,
-            m_device->DestroyRenderPass(render_pass));
-        if (!vkex_result) {
-            return vkex_result;
-        }
-    }
-    m_fake_swapchain_render_passes.clear();
-
     // Color image views
     for (auto& image_view : m_fake_swapchain_color_image_views) {
         vkex::Result vkex_result = vkex::Result::Undefined;
@@ -2501,9 +2474,10 @@ vkex::Result Application::AcquireNextImage(PresentData* p_present_data, uint32_t
             VKEX_ASSERT(result == vkex::Result::Success);
         }
 
-        // Set present render pass
-        vkex::RenderPass render_pass = m_fake_swapchain_render_passes[*p_swapchain_image_index];
-        p_present_data->SetRenderPass(render_pass);
+        // Set present attachments
+        p_present_data->SetAttachments(
+            m_fake_swapchain_color_image_views[*p_swapchain_image_index],
+            m_fake_swapchain_depth_stencil_image_views[*p_swapchain_image_index]);
     }
     // Get next image from the REAL swapchain
     else {
@@ -2526,9 +2500,10 @@ vkex::Result Application::AcquireNextImage(PresentData* p_present_data, uint32_t
             m_recreate_swapchain = true;
         }
 
-        // Set present render pass
-        vkex::RenderPass render_pass = m_swapchain_render_passes[*p_swapchain_image_index];
-        p_present_data->SetRenderPass(render_pass);
+        // Set present attachments
+        p_present_data->SetAttachments(
+            m_swapchain_color_image_views[*p_swapchain_image_index],
+            m_swapchain_depth_stencil_image_views[*p_swapchain_image_index]);
     }
 
     // Only wait and reset fences if m_recreate_swapchain isn't set
@@ -2827,19 +2802,19 @@ vkex::Result Application::SubmitRender(RenderData* p_current_render_data, Presen
     return vkex::Result::Success;
 }
 
-vkex::Result Application::SubmitPresent(PresentData* p_data)
+vkex::Result Application::SubmitPresent(vkex::PresentData* p_present_data)
 {
     if (IsApplicationModeHeadless()) {
         return vkex::Result::ErrorInvalidApplicationMode;
     }
 
     // Vulkan objects
-    VkSemaphore          vk_image_acquired_semaphore            = *(p_data->GetImageAcquiredSemaphore());
-    VkCommandBuffer      vk_command_buffer                      = *(p_data->GetCommandBuffer());
+    VkSemaphore          vk_image_acquired_semaphore            = *(p_present_data->GetImageAcquiredSemaphore());
+    VkCommandBuffer      vk_command_buffer                      = *(p_present_data->GetCommandBuffer());
     VkPipelineStageFlags vk_pipeline_stage                      = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-    VkSemaphore          vk_work_complete_for_render_semaphore  = *(p_data->GetWorkCompleteForRenderSemaphore());
-    VkSemaphore          vk_work_complete_for_present_semaphore = *(p_data->GetWorkCompleteForPresentSemaphore());
-    VkFence              vk_work_complete_fence                 = *(p_data->GetWorkCompleteFence());
+    VkSemaphore          vk_work_complete_for_render_semaphore  = *(p_present_data->GetWorkCompleteForRenderSemaphore());
+    VkSemaphore          vk_work_complete_for_present_semaphore = *(p_present_data->GetWorkCompleteForPresentSemaphore());
+    VkFence              vk_work_complete_fence                 = *(p_present_data->GetWorkCompleteFence());
     VkSwapchainKHR       vk_swapchain                           = *m_swapchain;
     uint32_t             vk_swapchain_image_index               = m_current_swapchain_image_index;
 
@@ -2951,10 +2926,9 @@ vkex::Result Application::SubmitPresent(PresentData* p_data)
         VKEX_VULKAN_RESULT_CALL(vk_result, vkQueueWaitIdle(*m_graphics_queue));
 
         // Build command buffer
-        vkex::CommandBuffer command_buffer = p_data->GetCommandBuffer();
+        vkex::CommandBuffer command_buffer = p_present_data->GetCommandBuffer();
         {
-            auto        rtvs  = p_data->GetRenderPass()->GetRtvs();
-            vkex::Image image = rtvs[0]->GetResource()->GetImage();
+            vkex::Image image = p_present_data->GetColorAttachment()->GetImage();
             command_buffer->Begin();
             // Transition image
             command_buffer->CmdTransitionImageLayout(

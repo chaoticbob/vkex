@@ -23,6 +23,83 @@ namespace vkex {
 // =================================================================================================
 // CommandBuffer
 // =================================================================================================
+vkex::RenderingInfo RenderingInfo::LoadOp(
+    const std::vector<vkex::ImageView>&    color_views,
+    const std::vector<VkAttachmentLoadOp>& color_load_ops,
+    vkex::ImageView                        depth_stencil_view,
+    VkAttachmentLoadOp                     depth_stencil_load_op)
+{
+    vkex::RenderingInfo rendering_info = {};
+    rendering_info.flags               = 0;
+    rendering_info.render_area         = {};
+
+    bool needs_render_area = true;
+    for (uint32_t i = 0; i < CountU32(color_views); ++i) {
+        vkex::ColorAttachmentInfo attachment = {};
+        attachment.image_view                = color_views[i];
+        attachment.load_op                   = color_load_ops[i];
+        attachment.store_op                  = VK_ATTACHMENT_STORE_OP_STORE;
+        attachment.clear_value               = {0.0f, 0.0f, 0.0f, 0.0f};
+        rendering_info.color_attachments.push_back(attachment);
+
+        if (needs_render_area) {
+            rendering_info.render_area = color_views[i]->GetImage()->GetArea();
+            needs_render_area          = false;
+        }
+    }
+
+    if (depth_stencil_view != nullptr) {
+        rendering_info.depth_stencil_attachment.image_view  = depth_stencil_view;
+        rendering_info.depth_stencil_attachment.load_op     = depth_stencil_load_op;
+        rendering_info.depth_stencil_attachment.store_op    = VK_ATTACHMENT_STORE_OP_STORE;
+        rendering_info.depth_stencil_attachment.clear_value = {1.0f, 0xFF};
+        rendering_info.depth_stencil_attachment.layout      = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        if (needs_render_area) {
+            rendering_info.render_area = depth_stencil_view->GetImage()->GetArea();
+            needs_render_area          = false;
+        }
+    }
+
+    return rendering_info;
+}
+
+vkex::RenderingInfo RenderingInfo::LoadOpClear(
+    const std::vector<vkex::ImageView>& color_views,
+    vkex::ImageView                     depth_stencil_view)
+{
+    std::vector<VkAttachmentLoadOp> color_load_ops;
+    for (uint32_t i = 0; i < CountU32(color_views); ++i) {
+        color_load_ops.push_back(VK_ATTACHMENT_LOAD_OP_CLEAR);
+    }
+
+    vkex::RenderingInfo rendering_info = vkex::RenderingInfo::LoadOp(
+        color_views,
+        color_load_ops,
+        depth_stencil_view,
+        VK_ATTACHMENT_LOAD_OP_CLEAR);
+
+    return rendering_info;
+}
+
+vkex::RenderingInfo RenderingInfo::LoadOpLoad(
+    const std::vector<vkex::ImageView>& color_views,
+    vkex::ImageView                     depth_stencil_view)
+{
+    std::vector<VkAttachmentLoadOp> color_load_ops;
+    for (uint32_t i = 0; i < CountU32(color_views); ++i) {
+        color_load_ops.push_back(VK_ATTACHMENT_LOAD_OP_LOAD);
+    }
+
+    vkex::RenderingInfo rendering_info = vkex::RenderingInfo::LoadOp(
+        color_views,
+        color_load_ops,
+        depth_stencil_view,
+        VK_ATTACHMENT_LOAD_OP_LOAD);
+
+    return rendering_info;
+}
+
 CCommandBuffer::CCommandBuffer()
 {
 }
@@ -557,14 +634,28 @@ void CCommandBuffer::CmdExecuteCommands(uint32_t commandBufferCount, const VkCom
 
 void CCommandBuffer::CmdBeginRendering(const VkRenderingInfo* pRenderingInfo)
 {
+    VkCommandBuffer vk_command_buffer = GetVkObject();
+    vkCmdBeginRendering(
+        vk_command_buffer,
+        pRenderingInfo);
 }
 
 void CCommandBuffer::CmdEndRendering()
 {
+    VkCommandBuffer vk_command_buffer = GetVkObject();
+    vkCmdEndRendering(vk_command_buffer);
 }
 
 void CCommandBuffer::CmdPushDescriptorSetKHR(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t set, uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites)
 {
+    VkCommandBuffer vk_command_buffer = GetVkObject();
+    vkex::CmdPushDescriptorSetKHR(
+        vk_command_buffer,
+        pipelineBindPoint,
+        layout,
+        set,
+        descriptorWriteCount,
+        pDescriptorWrites);
 }
 
 // -----------------------------------------------------------------------------------------------
@@ -765,41 +856,74 @@ void CCommandBuffer::CmdPushConstants(VkPipelineLayout layout, VkShaderStageFlag
 {
 }
 
-void CCommandBuffer::CmdBeginRenderPass(const vkex::RenderPass renderPass, uint32_t clearValueCount, const VkClearValue* pClearValues, VkSubpassContents contents)
-{
-    const VkRect2D&       fullRenderArea = renderPass->GetFullRenderArea();
-    VkRenderPassBeginInfo vk_begin_info  = {VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO};
-    vk_begin_info.renderPass             = renderPass->GetVkObject();
-    vk_begin_info.framebuffer            = renderPass->GetVkFramebufferObject();
-    vk_begin_info.renderArea             = fullRenderArea;
-    vk_begin_info.clearValueCount        = clearValueCount;
-    vk_begin_info.pClearValues           = pClearValues;
-    this->CmdBeginRenderPass(
-        &vk_begin_info,
-        contents);
-}
-
-void CCommandBuffer::CmdBeginRenderPass(const vkex::RenderPass renderPass, const std::vector<VkClearValue>* pClearValues, VkSubpassContents contents)
-{
-    this->CmdBeginRenderPass(
-        renderPass,
-        CountU32(*pClearValues),
-        DataPtr(*pClearValues),
-        contents);
-}
-
-void CCommandBuffer::CmdBeginRenderPass(const vkex::RenderPass renderPass, VkSubpassContents contents)
-{
-    const std::vector<VkClearValue>& clearValues = renderPass->GetClearValues();
-    this->CmdBeginRenderPass(
-        renderPass,
-        CountU32(clearValues),
-        DataPtr(clearValues),
-        contents);
-}
-
 void CCommandBuffer::CmdExecuteCommands(const std::vector<VkCommandBuffer>* pCommandBuffers)
 {
+}
+
+void CCommandBuffer::CmdBeginRendering(const vkex::RenderingInfo& renderingInfo)
+{
+    std::vector<VkRenderingAttachmentInfo> color_attachments        = {};
+    VkRenderingAttachmentInfo              depth_stencil_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+    bool                                   has_depth_stencil        = (renderingInfo.depth_stencil_attachment.image_view != nullptr);
+
+    VkRect2D render_area = renderingInfo.render_area;
+    bool     needs_render_area =
+        (render_area.offset.x == 0) &&
+        (render_area.offset.y == 0) &&
+        (render_area.extent.width == 0) &&
+        (render_area.extent.height == 0);
+
+    for (auto& elem : renderingInfo.color_attachments) {
+        VkRenderingAttachmentInfo color_attachment = {VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO};
+        color_attachment.pNext                     = nullptr;
+        color_attachment.imageView                 = elem.image_view->GetVkObject();
+        color_attachment.imageLayout               = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        color_attachment.resolveMode               = VK_RESOLVE_MODE_NONE;
+        color_attachment.resolveImageView          = VK_NULL_HANDLE;
+        color_attachment.resolveImageLayout        = VK_IMAGE_LAYOUT_UNDEFINED;
+        color_attachment.loadOp                    = elem.load_op;
+        color_attachment.storeOp                   = elem.store_op;
+        color_attachment.clearValue.color          = elem.clear_value;
+        color_attachments.push_back(color_attachment);
+
+        if (needs_render_area) {
+            render_area       = elem.image_view->GetImage()->GetArea();
+            needs_render_area = false;
+        }
+    }
+
+    vkex::ImageAspectFlags depth_stencil_aspects = {};
+    if (has_depth_stencil) {
+        depth_stencil_attachment.pNext                   = nullptr;
+        depth_stencil_attachment.imageView               = renderingInfo.depth_stencil_attachment.image_view->GetVkObject();
+        depth_stencil_attachment.imageLayout             = renderingInfo.depth_stencil_attachment.layout;
+        depth_stencil_attachment.resolveMode             = VK_RESOLVE_MODE_NONE;
+        depth_stencil_attachment.resolveImageView        = VK_NULL_HANDLE;
+        depth_stencil_attachment.resolveImageLayout      = VK_IMAGE_LAYOUT_UNDEFINED;
+        depth_stencil_attachment.loadOp                  = renderingInfo.depth_stencil_attachment.load_op;
+        depth_stencil_attachment.storeOp                 = renderingInfo.depth_stencil_attachment.store_op;
+        depth_stencil_attachment.clearValue.depthStencil = renderingInfo.depth_stencil_attachment.clear_value;
+
+        if (needs_render_area) {
+            render_area       = renderingInfo.depth_stencil_attachment.image_view->GetImage()->GetArea();
+            needs_render_area = false;
+        }
+
+        depth_stencil_aspects = vkex::DetermineAspectMask(renderingInfo.depth_stencil_attachment.image_view->GetFormat());
+    }
+
+    VkRenderingInfo vk_rendering_info      = {VK_STRUCTURE_TYPE_RENDERING_INFO};
+    vk_rendering_info.pNext                = nullptr;
+    vk_rendering_info.flags                = renderingInfo.flags;
+    vk_rendering_info.renderArea           = render_area;
+    vk_rendering_info.layerCount           = 1;
+    vk_rendering_info.viewMask             = 0;
+    vk_rendering_info.colorAttachmentCount = vkex::CountU32(color_attachments);
+    vk_rendering_info.pColorAttachments    = vkex::DataPtr(color_attachments);
+    vk_rendering_info.pDepthAttachment     = depth_stencil_aspects.bits.depth_bit ? &depth_stencil_attachment : nullptr;
+    vk_rendering_info.pStencilAttachment   = depth_stencil_aspects.bits.stencil_bit ? &depth_stencil_attachment : nullptr;
+
+    this->CmdBeginRendering(&vk_rendering_info);
 }
 
 void CCommandBuffer::CmdTransitionImageLayout(VkImage image, VkImageAspectFlags aspectMask, uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer, uint32_t layerCount, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage)
@@ -1010,28 +1134,28 @@ void CCommandBuffer::CmdTransitionImageLayout(vkex::Image image, VkImageLayout o
     ;
 }
 
-void CCommandBuffer::CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer, uint32_t layerCount)
-{
-    VkImage            vk_image    = texture->GetImage()->GetVkObject();
-    VkImageAspectFlags aspectMask  = texture->GetAspectFlags();
-    uint32_t           mipLevels   = texture->GetMipLevels();
-    uint32_t           arrayLayers = texture->GetArrayLayers();
-    // Check level count
-    levelCount = (levelCount == VKEX_ALL_MIP_LEVELS) ? mipLevels : std::min(levelCount, mipLevels);
-    // Check layer count
-    layerCount = (layerCount == VKEX_ALL_ARRAY_LAYERS) ? arrayLayers : std::min(layerCount, arrayLayers);
-    // Transition
-    this->CmdTransitionImageLayout(
-        vk_image,
-        aspectMask,
-        baseMipLevel,
-        levelCount,
-        baseArrayLayer,
-        layerCount,
-        oldLayout,
-        newLayout,
-        newPipelineStage);
-}
+// void CCommandBuffer::CmdTransitionImageLayout(vkex::Texture texture, VkImageLayout oldLayout, VkImageLayout newLayout, VkPipelineStageFlags newPipelineStage, uint32_t baseMipLevel, uint32_t levelCount, uint32_t baseArrayLayer, uint32_t layerCount)
+//{
+//     VkImage            vk_image    = texture->GetImage()->GetVkObject();
+//     VkImageAspectFlags aspectMask  = texture->GetAspectFlags();
+//     uint32_t           mipLevels   = texture->GetMipLevels();
+//     uint32_t           arrayLayers = texture->GetArrayLayers();
+//     // Check level count
+//     levelCount = (levelCount == VKEX_ALL_MIP_LEVELS) ? mipLevels : std::min(levelCount, mipLevels);
+//     // Check layer count
+//     layerCount = (layerCount == VKEX_ALL_ARRAY_LAYERS) ? arrayLayers : std::min(layerCount, arrayLayers);
+//     // Transition
+//     this->CmdTransitionImageLayout(
+//         vk_image,
+//         aspectMask,
+//         baseMipLevel,
+//         levelCount,
+//         baseArrayLayer,
+//         layerCount,
+//         oldLayout,
+//         newLayout,
+//         newPipelineStage);
+// }
 
 // =================================================================================================
 // CommandPool

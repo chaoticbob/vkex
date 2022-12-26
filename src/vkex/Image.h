@@ -49,9 +49,25 @@ struct ImageCreateInfo
     VmaMemoryUsage         memory_usage;
     VmaPool                memory_pool;
     VkImage                vk_object;
+
+    static vkex::ImageCreateInfo ColorAttachment(
+        uint32_t       width,
+        uint32_t       height,
+        VkFormat       format,
+        uint32_t       mip_levels   = 1,
+        uint32_t       array_layers = 1,
+        VmaMemoryUsage memory_usage = VMA_MEMORY_USAGE_GPU_ONLY);
+
+    static vkex::ImageCreateInfo DepthStencilAttachment(
+        uint32_t       width,
+        uint32_t       height,
+        VkFormat       format,
+        uint32_t       mip_levels   = 1,
+        uint32_t       array_layers = 1,
+        VmaMemoryUsage memory_usage = VMA_MEMORY_USAGE_GPU_ONLY);
 };
 
-/** @class IImage
+/** @class CImage
  *
  */
 class CImage : public IDeviceObject
@@ -262,6 +278,19 @@ public:
         uint32_t array_layer_start,
         uint32_t array_layer_count) const;
 
+    /** @fn GetArea
+     *
+     */
+    VkRect2D GetArea() const
+    {
+        return VkRect2D{
+            {0,                          0                          },
+            {m_create_info.extent.width, m_create_info.extent.height}
+        };
+    }
+
+    VkImageSubresourceRange GetFullSubresourceRange() const;
+
 private:
     friend class CDevice;
     friend class IObjectStorageFunctions;
@@ -310,6 +339,8 @@ struct ImageViewCreateInfo
     VkSampleCountFlagBits      samples;
     VkComponentMapping         components;
     VkImageSubresourceRange    subresource_range;
+
+    static vkex::ImageViewCreateInfo FromImage(vkex::Image image);
 };
 
 /** @class IImageView

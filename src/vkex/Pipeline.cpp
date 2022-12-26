@@ -16,7 +16,6 @@
 
 #include "vkex/Pipeline.h"
 #include "vkex/Device.h"
-#include "vkex/RenderPass.h"
 #include "vkex/Shader.h"
 #include "vkex/ToString.h"
 
@@ -542,37 +541,18 @@ vkex::Result CGraphicsPipeline::InternalCreate(
         vk_pipeline_cache = *(m_create_info.pipeline_cache);
     }
 
-    // Render pass
-    VkRenderPass vk_render_pass = (m_create_info.render_pass != nullptr)
-                                      ? *(m_create_info.render_pass)
-                                      : static_cast<VkRenderPass>(VK_NULL_HANDLE);
-    //
-    // Create a transient render pass using RTV/DSV formats and
-    // sample count if render pass object is not specified.
-    //
-    vkex::RenderPass transient_render_pass = nullptr;
-    if (vk_render_pass == VK_NULL_HANDLE) {
-        // Create info
-        vkex::RenderPassCreateInfo render_pass_create_info = {};
-        render_pass_create_info.transient.rtv_formats      = m_create_info.rtv_formats;
-        render_pass_create_info.transient.dsv_format       = m_create_info.dsv_format;
-        render_pass_create_info.transient.samples          = m_create_info.samples;
-        // Render pass
-        vkex::Result vkex_result = vkex::Result::Undefined;
-        VKEX_RESULT_CALL(
-            vkex_result,
-            m_device->CreateRenderPass(
-                render_pass_create_info,
-                &transient_render_pass));
-        if (!vkex_result) {
-            return vkex_result;
-        }
+    vkex::ImageAspectFlags depth_stencil_aspect = vkex::DetermineAspectMask(m_create_info.depth_stencil_format);
 
-        vk_render_pass = *transient_render_pass;
-    }
+    m_vk_pipeline_rendering.pNext                         = nullptr;
+    m_vk_pipeline_rendering.viewMask                      = 0;
+    m_vk_pipeline_rendering.colorAttachmentCount          = CountU32(m_create_info.color_formats);
+    m_vk_pipeline_rendering.pColorAttachmentFormats       = DataPtr(m_create_info.color_formats);
+    m_vk_pipeline_rendering.depthAttachmentFormat         = depth_stencil_aspect.bits.depth_bit ? m_create_info.depth_stencil_format : VK_FORMAT_UNDEFINED;
+    m_vk_pipeline_rendering.stencilAttachmentFormat       = depth_stencil_aspect.bits.stencil_bit ? m_create_info.depth_stencil_format : VK_FORMAT_UNDEFINED;
 
     // Vulkan create info
     m_vk_create_info                     = {VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
+    m_vk_create_info.pNext               = &m_vk_pipeline_rendering;
     m_vk_create_info.flags               = 0;
     m_vk_create_info.stageCount          = CountU32(m_vk_shader_stages);
     m_vk_create_info.pStages             = DataPtr(m_vk_shader_stages);
@@ -586,8 +566,8 @@ vkex::Result CGraphicsPipeline::InternalCreate(
     m_vk_create_info.pColorBlendState    = &m_vk_pipeline_color_blend;
     m_vk_create_info.pDynamicState       = &m_vk_pipeline_dynamic_state;
     m_vk_create_info.layout              = *(m_create_info.pipeline_layout);
-    m_vk_create_info.renderPass          = vk_render_pass;
-    m_vk_create_info.subpass             = m_create_info.subpass;
+    m_vk_create_info.renderPass          = VK_NULL_HANDLE;
+    m_vk_create_info.subpass             = 0;
     m_vk_create_info.basePipelineHandle  = VK_NULL_HANDLE;
     m_vk_create_info.basePipelineIndex   = -1;
     // Call create
@@ -601,18 +581,6 @@ vkex::Result CGraphicsPipeline::InternalCreate(
             &m_vk_create_info,
             p_allocator,
             &m_vk_object));
-
-    // Destroy temporary render pass
-    if (transient_render_pass != nullptr) {
-        vkex::Result vkex_result = vkex::Result::Undefined;
-        VKEX_RESULT_CALL(
-            vkex_result,
-            m_device->DestroyRenderPass(transient_render_pass););
-        if (!vkex_result) {
-            return vkex_result;
-        }
-        transient_render_pass = nullptr;
-    }
 
     if (vk_result != VK_SUCCESS) {
         return vkex::Result(vk_result);

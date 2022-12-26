@@ -24,13 +24,13 @@ set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR})
 
 list(APPEND HDR_FILES
   ${PROJECTS_DIR}/common/AssetUtil.h
-  ${PROJECTS_DIR}/common/SimpleRenderPass.h
+  #${PROJECTS_DIR}/common/SimpleRenderPass.h
 )
 
 list(APPEND SRC_FILES
   ${SRC_DIR}/main.cpp
   ${PROJECTS_DIR}/common/AssetUtil.cpp
-  ${PROJECTS_DIR}/common/SimpleRenderPass.cpp
+  #${PROJECTS_DIR}/common/SimpleRenderPass.cpp
 )
 
 add_executable(${PROJECT_NAME} ${HDR_FILES} ${SRC_FILES})

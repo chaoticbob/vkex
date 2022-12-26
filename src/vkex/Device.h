@@ -24,14 +24,14 @@
 #include "vkex/Pipeline.h"
 #include "vkex/QueryPool.h"
 #include "vkex/Queue.h"
-#include "vkex/RenderPass.h"
+// #include "vkex/RenderPass.h"
 #include "vkex/Sampler.h"
 #include "vkex/Shader.h"
 #include "vkex/Swapchain.h"
 #include "vkex/Sync.h"
 #include "vkex/Texture.h"
 #include "vkex/Traits.h"
-#include "vkex/View.h"
+// #include "vkex/View.h"
 
 namespace vkex {
 
@@ -65,6 +65,8 @@ struct PhysicalDeviceFeatures
         VkPhysicalDeviceSynchronization2Features  synchronization2  = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES};
         VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphore = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES};
     } khr;
+
+    const void* pFirst = nullptr;
 };
 
 // =================================================================================================
@@ -255,11 +257,10 @@ private:
     }
 
 private:
-    vkex::Instance              m_instance                      = nullptr;
-    PhysicalDeviceCreateInfo    m_create_info                   = {};
-    VkPhysicalDeviceProperties2 m_vk_physical_device_properties = {};
-    // VkPhysicalDeviceFeatures2             m_vk_physical_device_features   = {};
-    vkex::PhysicalDeviceFeatures          m_physical_device_features = {};
+    vkex::Instance                        m_instance                      = nullptr;
+    PhysicalDeviceCreateInfo              m_create_info                   = {};
+    VkPhysicalDeviceProperties2           m_vk_physical_device_properties = {};
+    vkex::PhysicalDeviceFeatures          m_physical_device_features      = {};
     std::vector<VkQueueFamilyProperties2> m_vk_queue_family_properties;
     VkPhysicalDeviceMemoryProperties2     m_vk_physical_device_memory_properties = {};
 
@@ -290,11 +291,10 @@ struct DeviceQueueCreateInfo
  */
 struct DeviceCreateInfo
 {
-    const void*                        p_next;
     PhysicalDevice                     physical_device;
     std::vector<DeviceQueueCreateInfo> queue_create_infos;
     std::vector<std::string>           extensions;
-    VkPhysicalDeviceFeatures           enabled_features;
+    vkex::PhysicalDeviceFeatures       enabled_features;
     bool                               safe_values;
 };
 
@@ -452,21 +452,6 @@ public:
         vkex::Buffer                 object,
         const VkAllocationCallbacks* p_allocator = nullptr);
 
-    /** @fn CreateDepthStencilView
-     *
-     */
-    vkex::Result CreateDepthStencilView(
-        const vkex::DepthStencilViewCreateInfo& create_info,
-        vkex::DepthStencilView*                 p_object,
-        const VkAllocationCallbacks*            p_allocator = nullptr);
-
-    /** @fn DestroyDepthStencilView
-     *
-     */
-    vkex::Result DestroyDepthStencilView(
-        vkex::DepthStencilView       object,
-        const VkAllocationCallbacks* p_allocator = nullptr);
-
     /** @fn CreateDescriptorPool
      *
      */
@@ -511,21 +496,6 @@ public:
     vkex::Result DestroyDescriptorSetLayouts(
         const std::vector<vkex::DescriptorSetLayout>& objects,
         const VkAllocationCallbacks*                  p_allocator = nullptr);
-
-    ///** @fn CreateEvent
-    // *
-    // */
-    //vkex::Result CreateEvent(
-    //    const vkex::EventCreateInfo& create_info,
-    //    vkex::Event*                 p_object,
-    //    const VkAllocationCallbacks* p_allocator = nullptr);
-    //
-    ///** @fn DestroyEvent
-    // *
-    // */
-    //vkex::Result DestroyEvent(
-    //    vkex::Event                  object,
-    //    const VkAllocationCallbacks* p_allocator = nullptr);
 
     /** @fn CreateFence
      *
@@ -660,36 +630,6 @@ public:
      */
     vkex::Result DestroyQueryPool(
         vkex::QueryPool              object,
-        const VkAllocationCallbacks* p_allocator = nullptr);
-
-    /** @fn CreateRenderPass
-     *
-     */
-    vkex::Result CreateRenderPass(
-        const vkex::RenderPassCreateInfo& create_info,
-        vkex::RenderPass*                 p_object,
-        const VkAllocationCallbacks*      p_allocator = nullptr);
-
-    /** @fn DestroyRenderPass
-     *
-     */
-    vkex::Result DestroyRenderPass(
-        vkex::RenderPass             object,
-        const VkAllocationCallbacks* p_allocator = nullptr);
-
-    /** @fn CreateRenderTargetView
-     *
-     */
-    vkex::Result CreateRenderTargetView(
-        const vkex::RenderTargetViewCreateInfo& create_info,
-        vkex::RenderTargetView*                 p_object,
-        const VkAllocationCallbacks*            p_allocator = nullptr);
-
-    /** @fn DestroyRenderTargetView
-     *
-     */
-    vkex::Result DestroyRenderTargetView(
-        vkex::RenderTargetView       object,
         const VkAllocationCallbacks* p_allocator = nullptr);
 
     /** @fn CreateSampler
@@ -869,10 +809,8 @@ private:
     std::vector<std::unique_ptr<CBuffer>>              m_stored_buffers;
     std::vector<std::unique_ptr<CCommandPool>>         m_stored_command_pools;
     std::vector<std::unique_ptr<CComputePipeline>>     m_stored_compute_pipelines;
-    std::vector<std::unique_ptr<CDepthStencilView>>    m_stored_depth_stencil_views;
     std::vector<std::unique_ptr<CDescriptorPool>>      m_stored_descriptor_pools;
     std::vector<std::unique_ptr<CDescriptorSetLayout>> m_stored_descriptor_set_layouts;
-    //std::vector<std::unique_ptr<CEvent>>               m_stored_events;
     std::vector<std::unique_ptr<CFence>>               m_stored_fences;
     std::vector<std::unique_ptr<CGraphicsPipeline>>    m_stored_graphics_pipelines;
     std::vector<std::unique_ptr<CImage>>               m_stored_images;
@@ -881,8 +819,6 @@ private:
     std::vector<std::unique_ptr<CPipelineLayout>>      m_stored_pipeline_layouts;
     std::vector<std::unique_ptr<CQueryPool>>           m_stored_query_pools;
     std::vector<std::unique_ptr<CQueue>>               m_stored_queues;
-    std::vector<std::unique_ptr<CRenderPass>>          m_stored_render_passes;
-    std::vector<std::unique_ptr<CRenderTargetView>>    m_stored_render_target_views;
     std::vector<std::unique_ptr<CSampler>>             m_stored_samplers;
     std::vector<std::unique_ptr<CSemaphore>>           m_stored_semaphores;
     std::vector<std::unique_ptr<CShaderModule>>        m_stored_shader_modules;
@@ -890,6 +826,8 @@ private:
     std::vector<std::unique_ptr<CSwapchain>>           m_stored_swapchains;
     std::vector<std::unique_ptr<CTexture>>             m_stored_textures;
 };
+
+extern PFN_vkCmdPushDescriptorSetKHR CmdPushDescriptorSetKHR;
 
 } // namespace vkex
 
