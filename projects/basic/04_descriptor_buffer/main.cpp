@@ -1,5 +1,5 @@
 /*
- Copyright 2018-2019 Google Inc.
+ Copyright 2018-2023 Google Inc.
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -55,7 +55,6 @@ private:
     std::vector<PerFrameData> m_per_frame_data        = {};
     vkex::ShaderProgram       m_color_shader          = nullptr;
     vkex::DescriptorSetLayout m_descriptor_set_layout = nullptr;
-    vkex::DescriptorPool      m_color_descriptor_pool = nullptr;
     vkex::PipelineLayout      m_color_pipeline_layout = nullptr;
     vkex::GraphicsPipeline    m_color_pipeline        = nullptr;
     ViewConstants             m_view_constants        = {};
@@ -104,16 +103,6 @@ void VkexInfoApp::Setup()
         create_info.flags.bits.descriptor_buffer             = true;
 
         VKEX_CALL(GetDevice()->CreateDescriptorSetLayout(create_info, &m_descriptor_set_layout));
-    }
-
-    // Descriptor pool
-    {
-        uint32_t frame_count = GetConfiguration().frame_count;
-
-        const vkex::ShaderInterface&   shader_interface = m_color_shader->GetInterface();
-        vkex::DescriptorPoolCreateInfo create_info      = {};
-        create_info.pool_sizes                          = frame_count * shader_interface.GetDescriptorPoolSizes();
-        VKEX_CALL(GetDevice()->CreateDescriptorPool(create_info, &m_color_descriptor_pool));
     }
 
     // Pipeline layout
