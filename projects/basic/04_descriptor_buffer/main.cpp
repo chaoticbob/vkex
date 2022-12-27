@@ -184,6 +184,7 @@ void VkexInfoApp::Setup()
 
                 vkex::BufferCreateInfo create_info                      = {};
                 create_info.size                                        = layoutSize;
+                create_info.usage_flags.bits.transfer_src               = true;
                 create_info.usage_flags.bits.shader_device_address      = true;
                 create_info.usage_flags.bits.resource_descriptor_buffer = true;
                 create_info.usage_flags.bits.sampler_descriptor_buffer  = true;
@@ -217,7 +218,7 @@ void VkexInfoApp::Setup()
                     VkDescriptorAddressInfoEXT buffer_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT};
                     buffer_info.pNext                      = nullptr;
                     buffer_info.address                    = per_frame_data.constant_buffer->GetDeviceAddress();
-                    buffer_info.range                      = uniformBufferDescriptorSize;
+                    buffer_info.range                      = per_frame_data.constant_buffer->GetSize();
                     buffer_info.format                     = VK_FORMAT_UNDEFINED;
 
                     VkDescriptorGetInfoEXT descriptor_get_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT};
@@ -311,6 +312,9 @@ void VkexInfoApp::Present(vkex::PresentData* p_present_data)
             bindingInfo.pNext                            = nullptr;
             bindingInfo.address                          = frame_data.descriptor_buffer->GetDeviceAddress();
             bindingInfo.usage =
+                VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
+                VK_BUFFER_USAGE_TRANSFER_DST_BIT |
+                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT |
                 VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT |
                 VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
                 VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;

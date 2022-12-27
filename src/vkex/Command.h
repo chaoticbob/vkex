@@ -180,6 +180,7 @@ public:
     void CmdBindVertexBuffers(uint32_t firstBinding, const std::vector<VkBuffer>* pBuffers, const VkDeviceSize* pOffsets);
     void CmdBindVertexBuffers(vkex::Buffer buffer, VkDeviceSize offset = 0);
     void CmdCopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, const std::vector<VkBufferCopy>* pRegions);
+    void CmdCopyBuffer(vkex::Buffer srcBuffer, VkDeviceSize srcOffset, vkex::Buffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size);
     void CmdCopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, const std::vector<VkImageCopy>* pRegions);
     void CmdBlitImage(vkex::Image srcImage, VkImageLayout srcImageLayout, VkRect2D srcRect, vkex::Image dstImage, VkImageLayout dstImageLayout, VkRect2D dstRect, VkFilter filter = VK_FILTER_LINEAR);
     void CmdCopyBufferToImage(VkBuffer srcBuffer, VkImage dstImage, VkImageLayout dstImageLayout, const std::vector<VkBufferImageCopy>* pRegions);

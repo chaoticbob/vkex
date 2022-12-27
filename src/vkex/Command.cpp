@@ -759,6 +759,25 @@ void CCommandBuffer::CmdBindVertexBuffers(vkex::Buffer buffer, VkDeviceSize offs
 
 void CCommandBuffer::CmdCopyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, const std::vector<VkBufferCopy>* pRegions)
 {
+    CmdCopyBuffer(
+        srcBuffer,
+        dstBuffer,
+        CountU32(*pRegions),
+        DataPtr(*pRegions));
+}
+
+void CCommandBuffer::CmdCopyBuffer(vkex::Buffer srcBuffer, VkDeviceSize srcOffset, vkex::Buffer dstBuffer, VkDeviceSize dstOffset, VkDeviceSize size)
+{
+    VkBufferCopy region = {};
+    region.srcOffset    = srcOffset;
+    region.dstOffset    = dstOffset;
+    region.size         = size;
+
+    CmdCopyBuffer(
+        *srcBuffer,
+        *dstBuffer,
+        1,
+        &region);
 }
 
 void CCommandBuffer::CmdCopyImage(VkImage srcImage, VkImageLayout srcImageLayout, VkImage dstImage, VkImageLayout dstImageLayout, const std::vector<VkImageCopy>* pRegions)
