@@ -367,6 +367,12 @@ struct Configuration
         uint32_t paced_frame_rate;
     } swapchain;
 
+    // Graphics
+    struct
+    {
+        vkex::PhysicalDeviceFeatures enable_features;
+    } graphics;
+
     // Graphics debug
     struct
     {
@@ -375,7 +381,7 @@ struct Configuration
         DebugUtilsMessageType     message_type;
     } graphics_debug;
 
-    // IMGui
+    // ImGui
     bool enable_imgui;
 
     // Screenshot

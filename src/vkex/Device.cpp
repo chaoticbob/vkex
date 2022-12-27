@@ -20,7 +20,6 @@
 
 #include "vkex/ToString.h"
 
-// TODO: Move to it's own file?
 #define VMA_IMPLEMENTATION
 #include "vk_mem_alloc.h"
 
@@ -30,23 +29,129 @@ namespace vkex {
 
 PFN_vkCmdPushDescriptorSetKHR CmdPushDescriptorSetKHR = nullptr;
 
-static void WireUpPNexts(vkex::PhysicalDeviceFeatures* pFeatures)
+PFN_vkGetDescriptorSetLayoutSizeEXT                          GetDescriptorSetLayoutSizeEXT                          = nullptr;
+PFN_vkGetDescriptorSetLayoutBindingOffsetEXT                 GetDescriptorSetLayoutBindingOffsetEXT                 = nullptr;
+PFN_vkGetDescriptorEXT                                       GetDescriptorEXT                                       = nullptr;
+PFN_vkCmdBindDescriptorBuffersEXT                            CmdBindDescriptorBuffersEXT                            = nullptr;
+PFN_vkCmdSetDescriptorBufferOffsetsEXT                       CmdSetDescriptorBufferOffsetsEXT                       = nullptr;
+PFN_vkCmdBindDescriptorBufferEmbeddedSamplersEXT             CmdBindDescriptorBufferEmbeddedSamplersEXT             = nullptr;
+PFN_vkGetBufferOpaqueCaptureDescriptorDataEXT                GetBufferOpaqueCaptureDescriptorDataEXT                = nullptr;
+PFN_vkGetImageOpaqueCaptureDescriptorDataEXT                 GetImageOpaqueCaptureDescriptorDataEXT                 = nullptr;
+PFN_vkGetImageViewOpaqueCaptureDescriptorDataEXT             GetImageViewOpaqueCaptureDescriptorDataEXT             = nullptr;
+PFN_vkGetSamplerOpaqueCaptureDescriptorDataEXT               GetSamplerOpaqueCaptureDescriptorDataEXT               = nullptr;
+PFN_vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT GetAccelerationStructureOpaqueCaptureDescriptorDataEXT = nullptr;
+
+static void WireUpPNexts(vkex::PhysicalDeviceFeatures& features)
 {
-    if (pFeatures == nullptr) {
-        return;
+    features.bufferDeviceAddress.pNext       = nullptr;
+    features.descriptorIndexing.pNext        = &features.bufferDeviceAddress;
+    features.ext.depthClampZeroOne.pNext     = &features.descriptorIndexing;
+    features.ext.depthClipControl.pNext      = &features.ext.depthClampZeroOne;
+    features.ext.depthClipEnable.pNext       = &features.ext.depthClipControl;
+    features.ext.descriptorBuffer.pNext      = &features.ext.depthClipEnable;
+    features.ext.extendedDynamicState3.pNext = &features.ext.descriptorBuffer;
+    features.khr.dynamicRendering.pNext      = &features.ext.extendedDynamicState3;
+    features.khr.synchronization2.pNext      = &features.khr.dynamicRendering;
+    features.khr.timelineSemaphore.pNext     = &features.khr.synchronization2;
+    features.khr.rayTracingPipeline.pNext    = &features.khr.timelineSemaphore;
+    features.khr.accelerationStructure.pNext = &features.khr.rayTracingPipeline;
+    features.pFirst                          = &features.khr.accelerationStructure;
+}
+
+static void WireUpPNexts(vkex::PhysicalDeviceProperties& properties)
+{
+    properties.descriptorIndexing.pNext   = nullptr;
+    properties.ext.descriptorBuffer.pNext = &properties.descriptorIndexing;
+    properties.khr.pushDescriptor.pNext   = &properties.ext.descriptorBuffer;
+    properties.pFirst                     = &properties.khr.pushDescriptor;
+}
+
+static void ClearPNext(vkex::PhysicalDeviceFeatures& features)
+{
+    features.bufferDeviceAddress.pNext       = nullptr;
+    features.descriptorIndexing.pNext        = nullptr;
+    features.ext.depthClampZeroOne.pNext     = nullptr;
+    features.ext.depthClipControl.pNext      = nullptr;
+    features.ext.depthClipEnable.pNext       = nullptr;
+    features.ext.descriptorBuffer.pNext      = nullptr;
+    features.ext.extendedDynamicState3.pNext = nullptr;
+    features.khr.dynamicRendering.pNext      = nullptr;
+    features.khr.synchronization2.pNext      = nullptr;
+    features.khr.timelineSemaphore.pNext     = nullptr;
+    features.khr.rayTracingPipeline.pNext    = nullptr;
+    features.khr.accelerationStructure.pNext = nullptr;
+    features.pFirst                          = nullptr;
+}
+
+static void ClearPNext(vkex::PhysicalDeviceProperties& properties)
+{
+    properties.descriptorIndexing.pNext = nullptr;
+    properties.khr.pushDescriptor.pNext = nullptr;
+    properties.pFirst                   = nullptr;
+}
+
+static void SetStructureTypes(vkex::PhysicalDeviceFeatures& features)
+{
+    features.bufferDeviceAddress.sType       = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES;
+    features.descriptorIndexing.sType        = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES;
+    features.ext.depthClampZeroOne.sType     = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_EXT;
+    features.ext.depthClipControl.sType      = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT;
+    features.ext.depthClipEnable.sType       = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT;
+    features.ext.descriptorBuffer.sType      = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT;
+    features.ext.extendedDynamicState3.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT;
+    features.khr.dynamicRendering.sType      = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES;
+    features.khr.synchronization2.sType      = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES;
+    features.khr.timelineSemaphore.sType     = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES;
+    features.khr.rayTracingPipeline.sType    = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR;
+    features.khr.accelerationStructure.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR;
+}
+
+static void SetStructureTypes(vkex::PhysicalDeviceProperties& properties)
+{
+    properties.descriptorIndexing.sType   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES;
+    properties.ext.descriptorBuffer.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT;
+    properties.khr.pushDescriptor.sType   = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR;
+}
+
+static VkResult EnumerateDeviceExtensionNames(VkPhysicalDevice vk_physical_device, std::vector<std::string>& found_extensions)
+{
+    uint32_t count     = 0;
+    VkResult vk_result = InvalidValue<VkResult>::Value;
+    VKEX_VULKAN_RESULT_CALL(
+        vk_result,
+        vkEnumerateDeviceExtensionProperties(
+            vk_physical_device,
+            nullptr,
+            &count,
+            nullptr));
+    if (vk_result != VK_SUCCESS) {
+        return vk_result;
     }
-    pFeatures->ext.depthClampZeroOne.pNext     = nullptr;
-    pFeatures->ext.depthClipControl.pNext      = &pFeatures->ext.depthClampZeroOne;
-    pFeatures->ext.depthClipEnable.pNext       = &pFeatures->ext.depthClipControl;
-    pFeatures->ext.descriptorBuffer.pNext      = &pFeatures->ext.depthClipEnable;
-    pFeatures->ext.descriptorIndexing.pNext    = &pFeatures->ext.descriptorBuffer;
-    pFeatures->ext.extendedDynamicState.pNext  = &pFeatures->ext.descriptorIndexing;
-    pFeatures->ext.extendedDynamicState2.pNext = &pFeatures->ext.extendedDynamicState;
-    pFeatures->ext.extendedDynamicState3.pNext = &pFeatures->ext.extendedDynamicState2;
-    pFeatures->khr.dynamicRendering.pNext      = &pFeatures->ext.extendedDynamicState3;
-    pFeatures->khr.synchronization2.pNext      = &pFeatures->khr.dynamicRendering;
-    pFeatures->khr.timelineSemaphore.pNext     = &pFeatures->khr.synchronization2;
-    pFeatures->pFirst                          = &pFeatures->khr.timelineSemaphore;
+
+    std::vector<VkExtensionProperties> properties_list(count);
+    VKEX_VULKAN_RESULT_CALL(
+        vk_result,
+        vkEnumerateDeviceExtensionProperties(
+            vk_physical_device,
+            nullptr,
+            &count,
+            vkex::DataPtr(properties_list)));
+    if (vk_result != VK_SUCCESS) {
+        return vk_result;
+    }
+
+    // Copy extension names
+    for (auto& properties : properties_list) {
+        std::string name  = properties.extensionName;
+        bool        found = Contains(found_extensions, name);
+        // Skip adding if extension name already exists
+        if (found) {
+            continue;
+        }
+        found_extensions.push_back(name);
+    }
+
+    return VK_SUCCESS;
 }
 
 // =================================================================================================
@@ -69,10 +174,18 @@ vkex::Result CPhysicalDevice::InternalCreate(
 
     // Properties
     {
-        m_vk_physical_device_properties = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        m_physical_device_properties = {};
+        WireUpPNexts(m_physical_device_properties);
+        SetStructureTypes(m_physical_device_properties);
+
+        VkPhysicalDeviceProperties2 properties2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROPERTIES_2};
+        properties2.pNext                       = m_physical_device_properties.pFirst;
+
         vkGetPhysicalDeviceProperties2(
             m_create_info.vk_object,
-            &m_vk_physical_device_properties);
+            &properties2);
+
+        m_physical_device_properties.core = properties2.properties;
     }
 
     // Descriptive name
@@ -81,16 +194,28 @@ vkex::Result CPhysicalDevice::InternalCreate(
     // Features
     {
         m_physical_device_features = {};
-        WireUpPNexts(&m_physical_device_features);
+        WireUpPNexts(m_physical_device_features);
+        SetStructureTypes(m_physical_device_features);
 
         VkPhysicalDeviceFeatures2 features2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2};
-        features2.pNext                     = &m_physical_device_features.khr.timelineSemaphore;
+        features2.pNext                     = m_physical_device_features.pFirst;
 
         vkGetPhysicalDeviceFeatures2(
             m_create_info.vk_object,
             &features2);
 
         m_physical_device_features.core = features2.features;
+
+        std::vector<std::string> found_extensions;
+        auto                     vk_result = vkex::EnumerateDeviceExtensionNames(
+            m_create_info.vk_object,
+            found_extensions);
+        if (vk_result != VK_SUCCESS) {
+            return vkex::Result(vk_result);
+        }
+
+        m_physical_device_features.ext.loadStoreOpNone = Contains(found_extensions, std::string(VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME));
+        m_physical_device_features.khr.pushDescriptor  = Contains(found_extensions, std::string(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME));
     }
 
     // Queue family properties
@@ -255,40 +380,11 @@ vkex::Result CDevice::InitializeExtensions()
     {
         VkPhysicalDevice vk_physical_device = m_create_info.physical_device->GetVkObject();
 
-        uint32_t count     = 0;
-        VkResult vk_result = InvalidValue<VkResult>::Value;
-        VKEX_VULKAN_RESULT_CALL(
-            vk_result,
-            vkEnumerateDeviceExtensionProperties(
-                vk_physical_device,
-                nullptr,
-                &count,
-                nullptr));
+        VkResult vk_result = vkex::EnumerateDeviceExtensionNames(
+            vk_physical_device,
+            m_found_extensions);
         if (vk_result != VK_SUCCESS) {
             return vkex::Result(vk_result);
-        }
-
-        std::vector<VkExtensionProperties> properties_list(count);
-        VKEX_VULKAN_RESULT_CALL(
-            vk_result,
-            vkEnumerateDeviceExtensionProperties(
-                vk_physical_device,
-                nullptr,
-                &count,
-                vkex::DataPtr(properties_list)));
-        if (vk_result != VK_SUCCESS) {
-            return vkex::Result(vk_result);
-        }
-
-        // Copy extension names
-        for (auto& properties : properties_list) {
-            std::string name  = properties.extensionName;
-            bool        found = Contains(m_found_extensions, name);
-            // Skip adding if extension name already exists
-            if (found) {
-                continue;
-            }
-            m_found_extensions.push_back(name);
         }
     }
 
@@ -302,31 +398,49 @@ vkex::Result CDevice::InitializeExtensions()
         }
     }
 
-    // Set required extensions
+    // Enable extensions
     {
-        std::vector<std::string> required = {};
-        if (m_create_info.enabled_features.khr.dynamicRendering.dynamicRendering) {
-            required.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+        std::vector<std::string> enabled_extensions = {
+            VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME,
+            VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME,
+            VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
+        };
+
+        // EXT
+        {
+            if (m_create_info.enabled_features.ext.descriptorBuffer.descriptorBuffer) {
+                enabled_extensions.push_back(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME);
+            }
+            if (m_create_info.enabled_features.ext.loadStoreOpNone) {
+                enabled_extensions.push_back(VK_EXT_LOAD_STORE_OP_NONE_EXTENSION_NAME);
+            }
         }
-        if (m_create_info.enabled_features.khr.synchronization2.synchronization2) {
-            required.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
-        }
-        if (m_create_info.enabled_features.khr.timelineSemaphore.timelineSemaphore) {
-            required.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+
+        // KHR
+        {
+            if (m_create_info.enabled_features.khr.pushDescriptor) {
+                enabled_extensions.push_back(VK_KHR_PUSH_DESCRIPTOR_EXTENSION_NAME);
+            }
+            if (m_create_info.enabled_features.khr.rayTracingPipeline.rayTracingPipeline) {
+                enabled_extensions.push_back(VK_KHR_RAY_TRACING_PIPELINE_EXTENSION_NAME);
+            }
+            if (m_create_info.enabled_features.khr.accelerationStructure.accelerationStructure) {
+                enabled_extensions.push_back(VK_KHR_ACCELERATION_STRUCTURE_EXTENSION_NAME);
+            }
         }
 
         if (GetInstance()->IsSwapchainEnabled()) {
-            required.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+            m_create_info.extensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
         }
 
         if (m_create_info.physical_device->IsAMD()) {
-            required.push_back(VK_AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME);
+            m_create_info.extensions.push_back(VK_AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME);
         }
         else {
             VKEX_LOG_WARN("Skipping AMD extension on non-AMD device: " << VK_AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME);
         }
 
-        for (auto& name : required) {
+        for (auto& name : enabled_extensions) {
             // Check to make sure extension is available
             bool found = Contains(m_found_extensions, name);
             if (!found) {
@@ -342,21 +456,38 @@ vkex::Result CDevice::InitializeExtensions()
         }
     }
 
-    // Set optional extensions
-    {
-        std::vector<std::string> optional;
-#if !defined(VKEX_WIN32)
-        optional.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
-#endif
+    /*
+        // Set required extensions
+        {
+            std::vector<std::string> required = {};
+            if (m_create_info.enabled_features.khr.dynamicRendering.dynamicRendering) {
+                required.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
+            }
+            if (m_create_info.enabled_features.khr.synchronization2.synchronization2) {
+                required.push_back(VK_KHR_SYNCHRONIZATION_2_EXTENSION_NAME);
+            }
+            if (m_create_info.enabled_features.khr.timelineSemaphore.timelineSemaphore) {
+                required.push_back(VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME);
+            }
 
-        for (auto& name : optional) {
-            // Check to make sure extension is available
-            bool found = Contains(m_found_extensions, name);
-            if (!found) {
-                VKEX_LOG_WARN("Optional device extension not found: " << name);
-                VKEX_LOG_WARN("");
+            if (GetInstance()->IsSwapchainEnabled()) {
+                required.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+            }
+
+            if (m_create_info.physical_device->IsAMD()) {
+                required.push_back(VK_AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME);
             }
             else {
+                VKEX_LOG_WARN("Skipping AMD extension on non-AMD device: " << VK_AMD_SHADER_CORE_PROPERTIES_EXTENSION_NAME);
+            }
+
+            for (auto& name : required) {
+                // Check to make sure extension is available
+                bool found = Contains(m_found_extensions, name);
+                if (!found) {
+                    VKEX_ASSERT_MSG(found, "Required device extension not found: " << name);
+                    return vkex::Result::ErrorDeviceExtensionNotFound;
+                }
                 // Skip adding if extension name already exists
                 bool already_exists = Contains(m_create_info.extensions, name);
                 if (already_exists) {
@@ -365,7 +496,33 @@ vkex::Result CDevice::InitializeExtensions()
                 m_create_info.extensions.push_back(name);
             }
         }
-    }
+
+
+        // Set optional extensions
+        {
+            std::vector<std::string> optional;
+    #if !defined(VKEX_WIN32)
+            optional.push_back(VK_EXT_DEBUG_MARKER_EXTENSION_NAME);
+    #endif
+
+            for (auto& name : optional) {
+                // Check to make sure extension is available
+                bool found = Contains(m_found_extensions, name);
+                if (!found) {
+                    VKEX_LOG_WARN("Optional device extension not found: " << name);
+                    VKEX_LOG_WARN("");
+                }
+                else {
+                    // Skip adding if extension name already exists
+                    bool already_exists = Contains(m_create_info.extensions, name);
+                    if (already_exists) {
+                        continue;
+                    }
+                    m_create_info.extensions.push_back(name);
+                }
+            }
+        }
+    */
 
     // Check extension names
     for (auto& name : m_create_info.extensions) {
@@ -505,18 +662,37 @@ vkex::Result CDevice::InternalCreate(
 
     // Features
     {
-        vkex::WireUpPNexts(&m_create_info.enabled_features);
+        vkex::WireUpPNexts(m_create_info.enabled_features);
+        vkex::SetStructureTypes(m_create_info.enabled_features);
 
+        // Force core features
         m_create_info.enabled_features.core.geometryShader          = VK_TRUE;
         m_create_info.enabled_features.core.tessellationShader      = VK_TRUE;
         m_create_info.enabled_features.core.dualSrcBlend            = VK_TRUE;
         m_create_info.enabled_features.core.occlusionQueryPrecise   = VK_TRUE;
         m_create_info.enabled_features.core.pipelineStatisticsQuery = VK_TRUE;
         m_create_info.enabled_features.core.samplerAnisotropy       = VK_TRUE;
-
+        // Force KHR features
         m_create_info.enabled_features.khr.dynamicRendering.dynamicRendering   = VK_TRUE;
         m_create_info.enabled_features.khr.synchronization2.synchronization2   = VK_TRUE;
         m_create_info.enabled_features.khr.timelineSemaphore.timelineSemaphore = VK_TRUE;
+
+        // Enable all of these if one is enabled
+        if (m_create_info.enabled_features.khr.rayTracingPipeline.rayTracingPipeline ||
+            m_create_info.enabled_features.khr.accelerationStructure.accelerationStructure) {
+            m_create_info.enabled_features.khr.rayTracingPipeline.rayTracingPipeline       = VK_TRUE;
+            m_create_info.enabled_features.khr.accelerationStructure.accelerationStructure = VK_TRUE;
+        }
+
+        // Enable buffer device address and descriptor indexing if these are enabled
+        if (m_create_info.enabled_features.ext.descriptorBuffer.descriptorBuffer ||
+            m_create_info.enabled_features.khr.rayTracingPipeline.rayTracingPipeline) {
+            // Buffer device address
+            m_create_info.enabled_features.bufferDeviceAddress.bufferDeviceAddress = VK_TRUE;
+            // Use descriptor indexing properties from physical device
+            auto& physical_device_features                    = m_create_info.physical_device->GetPhysicalDeviceFeatures();
+            m_create_info.enabled_features.descriptorIndexing = physical_device_features.descriptorIndexing;
+        }
     }
 
     // Initialize extensions
@@ -571,6 +747,18 @@ vkex::Result CDevice::InternalCreate(
     // Load functions
     {
         CmdPushDescriptorSetKHR = (PFN_vkCmdPushDescriptorSetKHR)vkGetDeviceProcAddr(m_vk_object, "vkCmdPushDescriptorSetKHR");
+
+        GetDescriptorSetLayoutSizeEXT                          = (PFN_vkGetDescriptorSetLayoutSizeEXT)vkGetDeviceProcAddr(m_vk_object, "vkGetDescriptorSetLayoutSizeEXT");
+        GetDescriptorSetLayoutBindingOffsetEXT                 = (PFN_vkGetDescriptorSetLayoutBindingOffsetEXT)vkGetDeviceProcAddr(m_vk_object, "vkGetDescriptorSetLayoutBindingOffsetEXT");
+        GetDescriptorEXT                                       = (PFN_vkGetDescriptorEXT)vkGetDeviceProcAddr(m_vk_object, "vkGetDescriptorEXT");
+        CmdBindDescriptorBuffersEXT                            = (PFN_vkCmdBindDescriptorBuffersEXT)vkGetDeviceProcAddr(m_vk_object, "vkCmdBindDescriptorBuffersEXT");
+        CmdSetDescriptorBufferOffsetsEXT                       = (PFN_vkCmdSetDescriptorBufferOffsetsEXT)vkGetDeviceProcAddr(m_vk_object, "vkCmdSetDescriptorBufferOffsetsEXT");
+        CmdBindDescriptorBufferEmbeddedSamplersEXT             = (PFN_vkCmdBindDescriptorBufferEmbeddedSamplersEXT)vkGetDeviceProcAddr(m_vk_object, "vkCmdBindDescriptorBufferEmbeddedSamplersEXT");
+        GetBufferOpaqueCaptureDescriptorDataEXT                = (PFN_vkGetBufferOpaqueCaptureDescriptorDataEXT)vkGetDeviceProcAddr(m_vk_object, "vkGetBufferOpaqueCaptureDescriptorDataEXT");
+        GetImageOpaqueCaptureDescriptorDataEXT                 = (PFN_vkGetImageOpaqueCaptureDescriptorDataEXT)vkGetDeviceProcAddr(m_vk_object, "vkGetImageOpaqueCaptureDescriptorDataEXT");
+        GetImageViewOpaqueCaptureDescriptorDataEXT             = (PFN_vkGetImageViewOpaqueCaptureDescriptorDataEXT)vkGetDeviceProcAddr(m_vk_object, "vkGetImageViewOpaqueCaptureDescriptorDataEXT");
+        GetSamplerOpaqueCaptureDescriptorDataEXT               = (PFN_vkGetSamplerOpaqueCaptureDescriptorDataEXT)vkGetDeviceProcAddr(m_vk_object, "vkGetSamplerOpaqueCaptureDescriptorDataEXT");
+        GetAccelerationStructureOpaqueCaptureDescriptorDataEXT = (PFN_vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT)vkGetDeviceProcAddr(m_vk_object, "vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT");
     }
 
     // Log device creation
@@ -582,7 +770,7 @@ vkex::Result CDevice::InternalCreate(
         VKEX_LOG_INFO("Vulkan " << major << "." << minor << " device created (object=VkDevice)");
         // Device properties
         {
-            auto& properties = m_create_info.physical_device->GetPhysicalDeviceProperties().properties;
+            auto& properties = m_create_info.physical_device->GetPhysicalDeviceProperties().core;
             VKEX_LOG_INFO("Device properties:");
             VKEX_LOG_INFO("   "
                           << "Name : " << properties.deviceName);
@@ -645,6 +833,11 @@ vkex::Result CDevice::InternalCreate(
         VmaAllocatorCreateInfo vma_allocator_create_info = {};
         vma_allocator_create_info.physicalDevice         = *m_create_info.physical_device;
         vma_allocator_create_info.device                 = m_vk_object;
+        vma_allocator_create_info.instance               = GetInstance()->GetVkObject();
+
+        if (m_create_info.enabled_features.bufferDeviceAddress.bufferDeviceAddress) {
+            vma_allocator_create_info.flags |= VMA_ALLOCATOR_CREATE_BUFFER_DEVICE_ADDRESS_BIT;
+        }
 
         VkResult vk_result = InvalidValue<VkResult>::Value;
         VKEX_VULKAN_RESULT_CALL(
@@ -743,6 +936,11 @@ vkex::Result CDevice::InternalDestroy(const VkAllocationCallbacks* p_allocator)
 bool CDevice::IsDebugEnabled() const
 {
     return m_instance->IsDebugEnabled();
+}
+
+const VkPhysicalDeviceDescriptorBufferPropertiesEXT& CDevice::GetDescriptorBufferProperties() const
+{
+    return GetPhysicalDevice()->GetPhysicalDeviceProperties().ext.descriptorBuffer;
 }
 
 vkex::Result CDevice::GetQueue(

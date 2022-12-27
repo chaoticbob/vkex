@@ -64,7 +64,7 @@ set(SHADERS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../src/shaders)
 
 set(GLM_INC_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/glm)
 set(STB_INC_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/stb)
-set(VMA_INC_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/VulkanMemoryAllocator/src)
+set(VMA_INC_DIR       ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/VulkanMemoryAllocator/include)
 set(SPIRV_REFLECT_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/SPIRV-Reflect)
 set(IMGUI_DIR         ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/imgui)
 set(TINY_OBJ_INC_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/../../third_party/tinyobjloader)
@@ -111,7 +111,6 @@ list(APPEND VKEX_HDR_FILES
   ${INC_DIR}/Pipeline.h
   ${INC_DIR}/QueryPool.h
   ${INC_DIR}/Queue.h
-  #${INC_DIR}/RenderPass.h
   ${INC_DIR}/Sampler.h
   ${INC_DIR}/Shader.h
   ${INC_DIR}/Swapchain.h
@@ -122,9 +121,6 @@ list(APPEND VKEX_HDR_FILES
   ${INC_DIR}/Traits.h
   ${INC_DIR}/Transform.h
   ${INC_DIR}/Util.h
-  #${INC_DIR}/View.h
-  #${INC_DIR}/VkexLoader.h
-  #${INC_DIR}/VkexLoaderHelper.h
   ${INC_DIR}/VulkanUtil.h
   ${SPIRV_REFLECT_DIR}/spirv_reflect.h
   ${SHARED_SHADER_HDR_FILES}
@@ -149,7 +145,6 @@ list(APPEND VKEX_SRC_FILES
   ${SRC_DIR}/Pipeline.cpp
   ${SRC_DIR}/QueryPool.cpp
   ${SRC_DIR}/Queue.cpp
-  #${SRC_DIR}/RenderPass.cpp
   ${SRC_DIR}/Sampler.cpp
   ${SRC_DIR}/Shader.cpp
   ${SRC_DIR}/Swapchain.cpp
@@ -158,9 +153,6 @@ list(APPEND VKEX_SRC_FILES
   ${SRC_DIR}/Timer.cpp
   ${SRC_DIR}/ToString.cpp
   ${SRC_DIR}/Transform.cpp
-  #${SRC_DIR}/View.cpp
-  #${SRC_DIR}/VkexLoader.cpp
-  #${SRC_DIR}/VkexLoaderHelper.cpp
   ${SRC_DIR}/VulkanUtil.cpp
   ${SPIRV_REFLECT_DIR}/spirv_reflect.c
 )

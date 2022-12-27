@@ -819,6 +819,7 @@ vkex::Result Application::InitializeVkexDevice()
         vkex::DeviceCreateInfo device_create_info = {};
         device_create_info.physical_device        = physical_device;
         device_create_info.safe_values            = true;
+        device_create_info.enabled_features       = m_configuration.graphics.enable_features;
         device_create_info.queue_create_infos.push_back(queue_create_info);
         vkex::Result vkex_result = vkex::Result::Undefined;
         VKEX_RESULT_CALL(
@@ -3342,7 +3343,7 @@ void Application::DrawDebugApplicationInfo()
     }
 
     auto& configuration  = GetConfiguration();
-    auto& gpu_properties = GetDevice()->GetPhysicalDevice()->GetPhysicalDeviceProperties().properties;
+    auto& gpu_properties = GetDevice()->GetPhysicalDevice()->GetPhysicalDeviceProperties().core;
 
     if (ImGui::Begin("Application Info")) {
         {

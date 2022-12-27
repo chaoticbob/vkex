@@ -128,30 +128,35 @@ public:
      */
     VkResult BindMemory();
 
-    /** @fn Map
+    /** @fn MapMemory
      *
      */
     VkResult MapMemory(void** pp_mapped_address);
 
-    /** @fn Unmap
+    /** @fn UnmapMemory
      *
      */
     void UnmapMemory();
 
-    /** @fn IsMapped
+    /** @fn IsMemoryMapped
      *
      */
     bool IsMemoryMapped() const;
 
-    /** @fn GetOffset
+    /** @fn GetMemoryOffset
      *
      */
     VkDeviceSize GetMemoryOffset() const;
 
-    /** @fn GetSize
+    /** @fn GetMemorySize
      *
      */
     VkDeviceSize GetMemorySize() const;
+
+    /** @fn GetBufferDeviceAddress
+     *
+     */
+    VkDeviceAddress GetDeviceAddress() const;
 
     /** @fn Copy
      *

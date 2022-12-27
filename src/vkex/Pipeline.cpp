@@ -553,7 +553,7 @@ vkex::Result CGraphicsPipeline::InternalCreate(
     // Vulkan create info
     m_vk_create_info                     = {VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO};
     m_vk_create_info.pNext               = &m_vk_pipeline_rendering;
-    m_vk_create_info.flags               = 0;
+    m_vk_create_info.flags               = m_create_info.flags;
     m_vk_create_info.stageCount          = CountU32(m_vk_shader_stages);
     m_vk_create_info.pStages             = DataPtr(m_vk_shader_stages);
     m_vk_create_info.pVertexInputState   = &m_vk_pipeline_vertex_input;

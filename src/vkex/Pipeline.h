@@ -239,6 +239,7 @@ private:
  */
 struct GraphicsPipelineCreateInfo
 {
+    VkPipelineCreateFlags                 flags = 0;
     vkex::ShaderProgram                   shader_program;
     std::vector<VertexBindingDescription> vertex_binding_descriptions;
     VkPrimitiveTopology                   topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;

@@ -24,14 +24,12 @@
 #include "vkex/Pipeline.h"
 #include "vkex/QueryPool.h"
 #include "vkex/Queue.h"
-// #include "vkex/RenderPass.h"
 #include "vkex/Sampler.h"
 #include "vkex/Shader.h"
 #include "vkex/Swapchain.h"
 #include "vkex/Sync.h"
 #include "vkex/Texture.h"
 #include "vkex/Traits.h"
-// #include "vkex/View.h"
 
 namespace vkex {
 
@@ -39,34 +37,62 @@ struct PhysicalDeviceFeatures
 {
     VkPhysicalDeviceFeatures core = {};
 
+    VkPhysicalDeviceBufferDeviceAddressFeatures bufferDeviceAddress = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_BUFFER_DEVICE_ADDRESS_FEATURES};
+    VkPhysicalDeviceDescriptorIndexingFeatures  descriptorIndexing  = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES};
+
     struct
     {
         VkPhysicalDeviceDepthClampZeroOneFeaturesEXT     depthClampZeroOne     = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLAMP_ZERO_ONE_FEATURES_EXT};
         VkPhysicalDeviceDepthClipControlFeaturesEXT      depthClipControl      = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_CONTROL_FEATURES_EXT};
         VkPhysicalDeviceDepthClipEnableFeaturesEXT       depthClipEnable       = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DEPTH_CLIP_ENABLE_FEATURES_EXT};
         VkPhysicalDeviceDescriptorBufferFeaturesEXT      descriptorBuffer      = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_FEATURES_EXT};
-        VkPhysicalDeviceDescriptorIndexingFeatures       descriptorIndexing    = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES};
-        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT  extendedDynamicState  = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT};
-        VkPhysicalDeviceExtendedDynamicState2FeaturesEXT extendedDynamicState2 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT};
         VkPhysicalDeviceExtendedDynamicState3FeaturesEXT extendedDynamicState3 = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT};
-        bool                                             loadStoreOpNone;
-        bool                                             pushDescriptor;
+        VkBool32                                         loadStoreOpNone;
     } ext;
 
-    //
-    // These fields no effect on device creation since they're all
-    // required extensions for VKEX. These extensions will be enabled
-    // for device creation. If thesee extensions are not found on the
-    // system then device creation will fail.
-    //
     struct
     {
+        VkBool32 pushDescriptor;
+
+        //
+        // These fields no effect on device creation since they're all
+        // required extensions for VKEX. These extensions will be enabled
+        // for device creation. If thesee extensions are not found on the
+        // system then device creation will fail.
+        //
         VkPhysicalDeviceDynamicRenderingFeatures  dynamicRendering  = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DYNAMIC_RENDERING_FEATURES};
         VkPhysicalDeviceSynchronization2Features  synchronization2  = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SYNCHRONIZATION_2_FEATURES};
         VkPhysicalDeviceTimelineSemaphoreFeatures timelineSemaphore = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TIMELINE_SEMAPHORE_FEATURES};
+
+        // Ray tracing extensions
+        //
+        // Only one of these needs to be enabled for ray tracing support
+        // to be enabled. Device creation will enable all extensions
+        // required for ray tracing if one is enabled.
+        //
+        VkPhysicalDeviceRayTracingPipelineFeaturesKHR    rayTracingPipeline    = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_RAY_TRACING_PIPELINE_FEATURES_KHR};
+        VkPhysicalDeviceAccelerationStructureFeaturesKHR accelerationStructure = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_ACCELERATION_STRUCTURE_FEATURES_KHR};
     } khr;
 
-    const void* pFirst = nullptr;
+    void* pFirst = nullptr;
+};
+
+struct PhysicalDeviceProperties
+{
+    VkPhysicalDeviceProperties                   core               = {};
+    VkPhysicalDeviceDescriptorIndexingProperties descriptorIndexing = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_PROPERTIES};
+
+    struct
+    {
+        VkPhysicalDeviceDescriptorBufferPropertiesEXT descriptorBuffer = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_BUFFER_PROPERTIES_EXT};
+    } ext;
+
+    struct
+    {
+        VkPhysicalDevicePushDescriptorPropertiesKHR pushDescriptor = {VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PUSH_DESCRIPTOR_PROPERTIES_KHR};
+    } khr;
+
+    void* pFirst = nullptr;
 };
 
 // =================================================================================================
@@ -106,12 +132,12 @@ public:
         return m_create_info.vk_object;
     }
 
-    /** @fn GetVkPhysicalDeviceProperties
+    /** @fn GetPhysicalDeviceProperties
      *
      */
-    const VkPhysicalDeviceProperties2& GetPhysicalDeviceProperties() const
+    const vkex::PhysicalDeviceProperties& GetPhysicalDeviceProperties() const
     {
-        return m_vk_physical_device_properties;
+        return m_physical_device_properties;
     }
 
     /** @fn GetVendorId
@@ -119,7 +145,7 @@ public:
      */
     uint32_t GetVendorId() const
     {
-        return m_vk_physical_device_properties.properties.vendorID;
+        return m_physical_device_properties.core.vendorID;
     }
 
     /** @fn IsAMD
@@ -159,7 +185,7 @@ public:
      */
     const VkPhysicalDeviceLimits& GetPhysicalDeviceLimits() const
     {
-        return m_vk_physical_device_properties.properties.limits;
+        return m_physical_device_properties.core.limits;
     }
 
     ///** @fn GetVkPhysicalDeviceFeatures
@@ -180,7 +206,7 @@ public:
      */
     uint32_t GetApiVersion() const
     {
-        return m_vk_physical_device_properties.properties.apiVersion;
+        return m_physical_device_properties.core.apiVersion;
     }
 
     /** @fn GetDeviceName()
@@ -188,7 +214,7 @@ public:
      */
     const char* GetDeviceName() const
     {
-        return m_vk_physical_device_properties.properties.deviceName;
+        return m_physical_device_properties.core.deviceName;
     }
 
     /** @fn GetDescriptiveName()
@@ -257,10 +283,10 @@ private:
     }
 
 private:
-    vkex::Instance                        m_instance                      = nullptr;
-    PhysicalDeviceCreateInfo              m_create_info                   = {};
-    VkPhysicalDeviceProperties2           m_vk_physical_device_properties = {};
-    vkex::PhysicalDeviceFeatures          m_physical_device_features      = {};
+    vkex::Instance                        m_instance                   = nullptr;
+    PhysicalDeviceCreateInfo              m_create_info                = {};
+    vkex::PhysicalDeviceProperties        m_physical_device_properties = {};
+    vkex::PhysicalDeviceFeatures          m_physical_device_features   = {};
     std::vector<VkQueueFamilyProperties2> m_vk_queue_family_properties;
     VkPhysicalDeviceMemoryProperties2     m_vk_physical_device_memory_properties = {};
 
@@ -341,7 +367,7 @@ public:
     /** @fn GetPhysicalDevice
      *
      */
-    PhysicalDevice GetPhysicalDevice() const
+    vkex::PhysicalDevice GetPhysicalDevice() const
     {
         return m_create_info.physical_device;
     }
@@ -352,6 +378,19 @@ public:
     const std::vector<std::string> GetLoadedExtensions() const
     {
         return m_create_info.extensions;
+    }
+
+    /** @fn GetDescriptorBufferProperties
+     *
+     */
+    const VkPhysicalDeviceDescriptorBufferPropertiesEXT& GetDescriptorBufferProperties() const;
+
+    /** @fn GetEnabledFeatures
+     *
+     */
+    const vkex::PhysicalDeviceFeatures& GetEnabledFeatures() const
+    {
+        return m_create_info.enabled_features;
     }
 
     /** @n GetDeviceName()
@@ -828,6 +867,18 @@ private:
 };
 
 extern PFN_vkCmdPushDescriptorSetKHR CmdPushDescriptorSetKHR;
+
+extern PFN_vkGetDescriptorSetLayoutSizeEXT                          GetDescriptorSetLayoutSizeEXT;
+extern PFN_vkGetDescriptorSetLayoutBindingOffsetEXT                 GetDescriptorSetLayoutBindingOffsetEXT;
+extern PFN_vkGetDescriptorEXT                                       GetDescriptorEXT;
+extern PFN_vkCmdBindDescriptorBuffersEXT                            CmdBindDescriptorBuffersEXT;
+extern PFN_vkCmdSetDescriptorBufferOffsetsEXT                       CmdSetDescriptorBufferOffsetsEXT;
+extern PFN_vkCmdBindDescriptorBufferEmbeddedSamplersEXT             CmdBindDescriptorBufferEmbeddedSamplersEXT;
+extern PFN_vkGetBufferOpaqueCaptureDescriptorDataEXT                GetBufferOpaqueCaptureDescriptorDataEXT;
+extern PFN_vkGetImageOpaqueCaptureDescriptorDataEXT                 GetImageOpaqueCaptureDescriptorDataEXT;
+extern PFN_vkGetImageViewOpaqueCaptureDescriptorDataEXT             GetImageViewOpaqueCaptureDescriptorDataEXT;
+extern PFN_vkGetSamplerOpaqueCaptureDescriptorDataEXT               GetSamplerOpaqueCaptureDescriptorDataEXT;
+extern PFN_vkGetAccelerationStructureOpaqueCaptureDescriptorDataEXT GetAccelerationStructureOpaqueCaptureDescriptorDataEXT;
 
 } // namespace vkex
 

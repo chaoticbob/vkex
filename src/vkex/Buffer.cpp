@@ -250,6 +250,20 @@ VkDeviceSize CBuffer::GetMemorySize() const
     return m_vma_allocation_info.size;
 }
 
+VkDeviceAddress CBuffer::GetDeviceAddress() const
+{
+    if (!m_create_info.usage_flags.bits.shader_device_address) {
+        return 0;
+    }
+
+    VkBufferDeviceAddressInfo addressInfo = {VK_STRUCTURE_TYPE_BUFFER_DEVICE_ADDRESS_INFO};
+    addressInfo.pNext                     = nullptr;
+    addressInfo.buffer                    = m_vk_object;
+
+    VkDeviceAddress address = vkGetBufferDeviceAddress(*GetDevice(), &addressInfo);
+    return address;
+}
+
 vkex::Result CBuffer::Copy(size_t size, const void* p_src)
 {
     bool is_host_visible = IsMemoryHostVisible(m_create_info.memory_usage);

@@ -658,6 +658,28 @@ void CCommandBuffer::CmdPushDescriptorSetKHR(VkPipelineBindPoint pipelineBindPoi
         pDescriptorWrites);
 }
 
+void CCommandBuffer::CmdBindDescriptorBuffersEXT(uint32_t bufferCount, const VkDescriptorBufferBindingInfoEXT* pBindingInfos)
+{
+    VkCommandBuffer vk_command_buffer = GetVkObject();
+    vkex::CmdBindDescriptorBuffersEXT(
+        vk_command_buffer,
+        bufferCount,
+        pBindingInfos);
+}
+
+void CCommandBuffer::CmdSetDescriptorBufferOffsetsEXT(VkPipelineBindPoint pipelineBindPoint, VkPipelineLayout layout, uint32_t firstSet, uint32_t setCount, const uint32_t* pBufferIndices, const VkDeviceSize* pOffsets)
+{
+    VkCommandBuffer vk_command_buffer = GetVkObject();
+    vkex::CmdSetDescriptorBufferOffsetsEXT(
+        vk_command_buffer,
+        pipelineBindPoint,
+        layout,
+        firstSet,
+        setCount,
+        pBufferIndices,
+        pOffsets);
+}
+
 // -----------------------------------------------------------------------------------------------
 // Command functions with convenience parameters
 // -----------------------------------------------------------------------------------------------

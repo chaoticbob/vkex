@@ -221,8 +221,12 @@ union DescriptorLayoutCreateFlags
 {
     struct
     {
-        bool push_descriptor_set    : 1;
-        bool update_after_bind_pool : 1;
+        bool push_descriptor_set         : 1; // 0x00000001 (VK_DESCRIPTOR_SET_LAYOUT_CREATE_PUSH_DESCRIPTOR_BIT_KHR)
+        bool update_after_bind_pool      : 1; // 0x00000002 (VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT)
+        bool host_only_pool              : 1; // 0x00000004 (VK_DESCRIPTOR_SET_LAYOUT_CREATE_HOST_ONLY_POOL_BIT_EXT)
+        bool __unused_0__                : 1; // 0x00000008
+        bool descriptor_buffer           : 1; // 0x00000010 (VK_DESCRIPTOR_SET_LAYOUT_CREATE_DESCRIPTOR_BUFFER_BIT_EXT)
+        bool embedded_immutable_samplers : 1; // 0x00000020 (VK_DESCRIPTOR_SET_LAYOUT_CREATE_EMBEDDED_IMMUTABLE_SAMPLERS_BIT_EXT)
     } bits;
     VkDescriptorSetLayoutCreateFlags flags;
 
