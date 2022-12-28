@@ -669,18 +669,6 @@ void Application::InitializeAssetDirs()
         }
         dir = dir.parent_path();
     }
-
-    // fs::path base_dir = app_path.parent_path();
-    // AddAssetDir(base_dir);
-    // size_t n = base_dir.part_count();
-    // for (size_t i = 0; i < n; ++i) {
-    //   fs::path asset_dir = base_dir / "assets";
-    //   if (fs::exists(asset_dir)) {
-    //     AddAssetDir(asset_dir);
-    //     VKEX_LOG_INFO("Added asset path: " << asset_dir);
-    //   }
-    //   base_dir = base_dir.parent();
-    // }
 }
 
 static const char* ToString(vkex::CursorMode value)
@@ -1240,88 +1228,6 @@ vkex::Result Application::InitializeVkexSwapchain()
             }
         }
     }
-
-    //// Render passes
-    //{
-    //    uint32_t image_count = m_swapchain->GetImageCount();
-    //    for (uint32_t image_index = 0; image_index < image_count; ++image_index) {
-    //        // RTV
-    //        vkex::RenderTargetView rtv = nullptr;
-    //        {
-    //            // Image view
-    //            vkex::ImageView image_view = m_swapchain_color_image_views[image_index];
-    //            // Fill out RTV
-    //            vkex::RenderTargetViewCreateInfo create_info = {};
-    //            create_info.format                           = image_view->GetFormat();
-    //            create_info.samples                          = image_view->GetSamples();
-    //            create_info.load_op                          = m_configuration.swapchain.color_load_op;
-    //            create_info.store_op                         = m_configuration.swapchain.color_store_op;
-    //            create_info.initial_layout                   = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    //            create_info.render_layout                    = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-    //            create_info.final_layout                     = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-    //            create_info.clear_value                      = m_configuration.swapchain.rtv_clear_value;
-    //            create_info.attachment                       = image_view;
-    //            create_info.resolve                          = nullptr;
-    //            vkex::Result vkex_result                     = vkex::Result::Undefined;
-    //            VKEX_RESULT_CALL(
-    //                vkex_result,
-    //                m_device->CreateRenderTargetView(
-    //                    create_info,
-    //                    &rtv));
-    //            if (!vkex_result) {
-    //                return vkex_result;
-    //            }
-    //        }
-    //
-    //        // DSV
-    //        bool                   has_depth_stencil = m_configuration.swapchain.depth_stencil_format != VK_FORMAT_UNDEFINED;
-    //        vkex::DepthStencilView dsv               = nullptr;
-    //        if (has_depth_stencil) {
-    //            // Image view
-    //            vkex::ImageView image_view = m_swapchain_depth_stencil_image_views[image_index];
-    //            // Fill out DSV
-    //            vkex::DepthStencilViewCreateInfo create_info = {};
-    //            create_info.format                           = image_view->GetFormat();
-    //            create_info.samples                          = image_view->GetSamples();
-    //            create_info.depth_load_op                    = m_configuration.swapchain.depth_load_op;
-    //            create_info.depth_store_op                   = m_configuration.swapchain.depth_store_op;
-    //            create_info.stencil_load_op                  = m_configuration.swapchain.stencil_load_op;
-    //            create_info.stencil_store_op                 = m_configuration.swapchain.stencil_store_op;
-    //            create_info.initial_layout                   = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    //            create_info.final_layout                     = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-    //            create_info.final_layout                     = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    //            create_info.clear_value                      = m_configuration.swapchain.dsv_clear_value;
-    //            create_info.attachment                       = image_view;
-    //            vkex::Result vkex_result                     = vkex::Result::Undefined;
-    //            VKEX_RESULT_CALL(
-    //                vkex_result,
-    //                m_device->CreateDepthStencilView(
-    //                    create_info,
-    //                    &dsv));
-    //            if (!vkex_result) {
-    //                return vkex_result;
-    //            }
-    //        }
-    //
-    //        // Create info
-    //        vkex::RenderPassCreateInfo render_pass_create_info = {};
-    //        render_pass_create_info.flags                      = 0;
-    //        render_pass_create_info.rtvs                       = {rtv};
-    //        render_pass_create_info.dsv                        = dsv;
-    //        render_pass_create_info.extent                     = {m_configuration.window.width, m_configuration.window.height};
-    //        // Create render pass
-    //        vkex::RenderPass render_pass = nullptr;
-    //        vkex::Result     vkex_result = vkex::Result::Undefined;
-    //        VKEX_RESULT_CALL(
-    //            vkex_result,
-    //            m_device->CreateRenderPass(render_pass_create_info, &render_pass));
-    //        if (!vkex_result) {
-    //            return vkex_result;
-    //        }
-    //        // Store render passes
-    //        m_swapchain_render_passes.push_back(render_pass);
-    //    }
-    //}
 
     // Screenshot buffer
     if (m_configuration.enable_screen_shot) {
