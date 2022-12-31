@@ -82,6 +82,7 @@ private:
 void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& configuration)
 {
     // Force present mode to VK_PRESENT_MODE_MAILBOX_KHR for now...because #reasons
+    //configuration.device_criteria.vendor_id               = VKEX_IHV_VENDOR_ID_NVIDIA;
     configuration.window.resizeable                       = false;
     configuration.swapchain.paced_frame_rate              = 60;
     configuration.swapchain.present_mode                  = VK_PRESENT_MODE_MAILBOX_KHR;

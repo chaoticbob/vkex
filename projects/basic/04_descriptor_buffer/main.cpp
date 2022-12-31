@@ -66,13 +66,14 @@ private:
 void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& configuration)
 {
     // Force present mode to VK_PRESENT_MODE_MAILBOX_KHR for now...because #reasons
+    //configuration.device_criteria.vendor_id                                      = VKEX_IHV_VENDOR_ID_NVIDIA;
     configuration.window.resizeable                                              = false;
     configuration.swapchain.paced_frame_rate                                     = 60;
     configuration.swapchain.present_mode                                         = VK_PRESENT_MODE_MAILBOX_KHR;
     configuration.swapchain.depth_stencil_format                                 = VK_FORMAT_D32_SFLOAT;
     configuration.graphics.enable_features.ext.descriptorBuffer.descriptorBuffer = VK_TRUE;
     configuration.graphics_debug.enable                                          = true;
-    configuration.graphics_debug.message_severity.info                           = false;
+    configuration.graphics_debug.message_severity.info                           = true;
     configuration.graphics_debug.message_severity.warning                        = true;
     configuration.graphics_debug.message_severity.error                          = true;
     configuration.graphics_debug.message_type.validation                         = true;
@@ -196,7 +197,7 @@ void VkexInfoApp::Setup()
             // Constant buffer
             {
                 vkex::BufferCreateInfo create_info                 = {};
-                create_info.size                                   = m_view_constants.size;
+                create_info.size                                   = 512; //m_view_constants.size;
                 create_info.usage_flags.bits.shader_device_address = true;
                 create_info.committed                              = true;
                 create_info.memory_usage                           = VMA_MEMORY_USAGE_CPU_TO_GPU;
