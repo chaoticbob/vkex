@@ -408,7 +408,7 @@ vkex::Result CDevice::InitializeExtensions()
 
         // EXT
         {
-            if (m_create_info.enabled_features.ext.descriptorBuffer.descriptorBuffer) {
+            if (m_create_info.enabled_features.ext.descriptorBuffer.descriptorBuffer || m_create_info.enabled_features.ext.descriptorBuffer.descriptorBufferPushDescriptors) {
                 enabled_extensions.push_back(VK_EXT_DESCRIPTOR_BUFFER_EXTENSION_NAME);
             }
             if (m_create_info.enabled_features.ext.loadStoreOpNone) {

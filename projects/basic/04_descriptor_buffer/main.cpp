@@ -65,7 +65,7 @@ private:
 
 void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& configuration)
 {
-    configuration.device_criteria.vendor_id                                      = VKEX_IHV_VENDOR_ID_NVIDIA;
+    //configuration.device_criteria.vendor_id                                      = VKEX_IHV_VENDOR_ID_NVIDIA;
     configuration.window.resizeable                                              = false;
     configuration.swapchain.paced_frame_rate                                     = 60;
     configuration.swapchain.present_mode                                         = VK_PRESENT_MODE_MAILBOX_KHR;
@@ -181,20 +181,21 @@ void VkexInfoApp::Setup()
                 VkDeviceSize layoutSize = 0;
                 vkex::GetDescriptorSetLayoutSizeEXT(*GetDevice(), *m_descriptor_set_layout, &layoutSize);
 
-                vkex::BufferCreateInfo create_info                      = {};
-                create_info.size                                        = layoutSize;
-                create_info.usage_flags.bits.shader_device_address      = true;
-                create_info.usage_flags.bits.resource_descriptor_buffer = true;
-                create_info.usage_flags.bits.sampler_descriptor_buffer  = true;
-                create_info.committed                                   = true;
-                create_info.memory_usage                                = VMA_MEMORY_USAGE_CPU_ONLY;
+                vkex::BufferCreateInfo create_info                              = {};
+                create_info.size                                                = layoutSize;
+                create_info.usage_flags.bits.shader_device_address              = true;
+                create_info.usage_flags.bits.resource_descriptor_buffer         = true;
+                create_info.usage_flags.bits.sampler_descriptor_buffer          = true;
+                create_info.committed                                           = true;
+                create_info.memory_usage                                        = VMA_MEMORY_USAGE_CPU_ONLY;
                 VKEX_CALL(GetDevice()->CreateBuffer(create_info, &per_frame_data.descriptor_buffer));
             }
 
             // Constant buffer
             {
+                uint32_t val = (m_view_constants.size % 16);
                 vkex::BufferCreateInfo create_info                 = {};
-                create_info.size                                   = m_view_constants.size;
+                create_info.size                                   = vkex::RoundUp<VkDeviceSize>(m_view_constants.size, 16);
                 create_info.usage_flags.bits.shader_device_address = true;
                 create_info.committed                              = true;
                 create_info.memory_usage                           = VMA_MEMORY_USAGE_CPU_ONLY;
@@ -212,6 +213,9 @@ void VkexInfoApp::Setup()
                 size_t sampledImageDescriptorSize      = GetDevice()->GetDescriptorBufferProperties().sampledImageDescriptorSize;
                 size_t samplerDescriptorSize           = GetDevice()->GetDescriptorBufferProperties().samplerDescriptorSize;
 
+                const vkex::ShaderInterface& shader_interface     = m_color_shader->GetInterface();
+                vkex::ShaderInterface::Set   shader_interface_set = shader_interface.GetSet(0);
+
                 // Uniform buffer
                 {
                     VkDescriptorAddressInfoEXT buffer_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_ADDRESS_INFO_EXT};
@@ -224,9 +228,10 @@ void VkexInfoApp::Setup()
                     descriptor_get_info.type                   = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                     descriptor_get_info.data.pUniformBuffer    = &buffer_info;
 
-                    vkex::GetDescriptorEXT(*GetDevice(), &descriptor_get_info, uniformBufferDescriptorSize, p_descriptor_buffer_addr);
+                    VkDeviceSize offset;
+                    vkex::GetDescriptorSetLayoutBindingOffsetEXT(*GetDevice(), *m_descriptor_set_layout, shader_interface_set.bindings[0].binding_number, &offset),
+                    vkex::GetDescriptorEXT(*GetDevice(), &descriptor_get_info, uniformBufferDescriptorSize, p_descriptor_buffer_addr + offset);
                 }
-                p_descriptor_buffer_addr += uniformBufferDescriptorSize;
 
                 // Sampled image
                 {
@@ -238,9 +243,10 @@ void VkexInfoApp::Setup()
                     descriptor_get_info.type                   = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
                     descriptor_get_info.data.pSampledImage     = &image_info;
 
-                    vkex::GetDescriptorEXT(*GetDevice(), &descriptor_get_info, sampledImageDescriptorSize, p_descriptor_buffer_addr);
+                    VkDeviceSize offset;
+                    vkex::GetDescriptorSetLayoutBindingOffsetEXT(*GetDevice(), *m_descriptor_set_layout, shader_interface_set.bindings[1].binding_number, &offset),
+                    vkex::GetDescriptorEXT(*GetDevice(), &descriptor_get_info, sampledImageDescriptorSize, p_descriptor_buffer_addr + offset);
                 }
-                p_descriptor_buffer_addr += sampledImageDescriptorSize;
 
                 // Sampler
                 {
@@ -248,10 +254,11 @@ void VkexInfoApp::Setup()
                     VkDescriptorGetInfoEXT descriptor_get_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_GET_INFO_EXT};
                     descriptor_get_info.type                   = VK_DESCRIPTOR_TYPE_SAMPLER;
                     descriptor_get_info.data.pSampler          = &sampler;
-
-                    vkex::GetDescriptorEXT(*GetDevice(), &descriptor_get_info, samplerDescriptorSize, p_descriptor_buffer_addr);
+                    
+                    VkDeviceSize offset;
+                    vkex::GetDescriptorSetLayoutBindingOffsetEXT(*GetDevice(), *m_descriptor_set_layout, shader_interface_set.bindings[2].binding_number, &offset),
+                    vkex::GetDescriptorEXT(*GetDevice(), &descriptor_get_info, samplerDescriptorSize, p_descriptor_buffer_addr + offset);
                 }
-                p_descriptor_buffer_addr += samplerDescriptorSize;
 
                 per_frame_data.descriptor_buffer->UnmapMemory();
             }
@@ -314,6 +321,9 @@ void VkexInfoApp::Present(vkex::PresentData* p_present_data)
                 VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT |
                 VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT;
             cmd->CmdBindDescriptorBuffersEXT(1, &bindingInfo);
+
+            size_t descriptorBufferOffsetAlignment = GetDevice()->GetDescriptorBufferProperties().descriptorBufferOffsetAlignment;
+            VKEX_ASSERT((bindingInfo.address % descriptorBufferOffsetAlignment) == 0);
 
             uint32_t     bufferIndices[1] = {0};
             VkDeviceSize offsets[1]       = {0};
