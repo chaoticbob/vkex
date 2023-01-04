@@ -65,8 +65,7 @@ private:
 
 void VkexInfoApp::Configure(const vkex::ArgParser& args, vkex::Configuration& configuration)
 {
-    // Force present mode to VK_PRESENT_MODE_MAILBOX_KHR for now...because #reasons
-    //configuration.device_criteria.vendor_id                                      = VKEX_IHV_VENDOR_ID_NVIDIA;
+    configuration.device_criteria.vendor_id                                      = VKEX_IHV_VENDOR_ID_NVIDIA;
     configuration.window.resizeable                                              = false;
     configuration.swapchain.paced_frame_rate                                     = 60;
     configuration.swapchain.present_mode                                         = VK_PRESENT_MODE_MAILBOX_KHR;
@@ -142,8 +141,7 @@ void VkexInfoApp::Setup()
         create_info.committed              = true;
         create_info.memory_usage           = VMA_MEMORY_USAGE_CPU_TO_GPU;
         VKEX_CALL(GetDevice()->CreateVertexBuffer(create_info, &m_vertex_buffer));
-        VKEX_CALL(
-            m_vertex_buffer->Copy(p_vertex_buffer_cpu->GetDataSize(), p_vertex_buffer_cpu->GetData()));
+        VKEX_CALL(m_vertex_buffer->Copy(p_vertex_buffer_cpu->GetDataSize(), p_vertex_buffer_cpu->GetData()));
     }
 
     // Texture
@@ -185,7 +183,6 @@ void VkexInfoApp::Setup()
 
                 vkex::BufferCreateInfo create_info                      = {};
                 create_info.size                                        = layoutSize;
-                create_info.usage_flags.bits.transfer_src               = true;
                 create_info.usage_flags.bits.shader_device_address      = true;
                 create_info.usage_flags.bits.resource_descriptor_buffer = true;
                 create_info.usage_flags.bits.sampler_descriptor_buffer  = true;
@@ -197,10 +194,10 @@ void VkexInfoApp::Setup()
             // Constant buffer
             {
                 vkex::BufferCreateInfo create_info                 = {};
-                create_info.size                                   = 512; //m_view_constants.size;
+                create_info.size                                   = 512; // m_view_constants.size;
                 create_info.usage_flags.bits.shader_device_address = true;
                 create_info.committed                              = true;
-                create_info.memory_usage                           = VMA_MEMORY_USAGE_CPU_TO_GPU;
+                create_info.memory_usage                           = VMA_MEMORY_USAGE_CPU_ONLY;
                 VKEX_CALL(GetDevice()->CreateConstantBuffer(create_info, &per_frame_data.constant_buffer));
             }
 
@@ -210,9 +207,10 @@ void VkexInfoApp::Setup()
                 VkResult vkres                    = per_frame_data.descriptor_buffer->MapMemory(reinterpret_cast<void**>(&p_descriptor_buffer_addr));
                 VKEX_ASSERT_MSG((vkres == VK_SUCCESS), "map memory failed");
 
-                size_t uniformBufferDescriptorSize = GetDevice()->GetDescriptorBufferProperties().uniformBufferDescriptorSize;
-                size_t sampledImageDescriptorSize  = GetDevice()->GetDescriptorBufferProperties().sampledImageDescriptorSize;
-                size_t samplerDescriptorSize       = GetDevice()->GetDescriptorBufferProperties().samplerDescriptorSize;
+                size_t descriptorBufferOffsetAlignment = GetDevice()->GetDescriptorBufferProperties().descriptorBufferOffsetAlignment;
+                size_t uniformBufferDescriptorSize     = GetDevice()->GetDescriptorBufferProperties().uniformBufferDescriptorSize;
+                size_t sampledImageDescriptorSize      = GetDevice()->GetDescriptorBufferProperties().sampledImageDescriptorSize;
+                size_t samplerDescriptorSize           = GetDevice()->GetDescriptorBufferProperties().samplerDescriptorSize;
 
                 // Uniform buffer
                 {
@@ -313,12 +311,8 @@ void VkexInfoApp::Present(vkex::PresentData* p_present_data)
             bindingInfo.pNext                            = nullptr;
             bindingInfo.address                          = frame_data.descriptor_buffer->GetDeviceAddress();
             bindingInfo.usage =
-                VK_BUFFER_USAGE_TRANSFER_SRC_BIT |
-                VK_BUFFER_USAGE_TRANSFER_DST_BIT |
                 VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT |
-                VK_BUFFER_USAGE_RESOURCE_DESCRIPTOR_BUFFER_BIT_EXT |
-                VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT |
-                VK_BUFFER_USAGE_SHADER_DEVICE_ADDRESS_BIT;
+                VK_BUFFER_USAGE_SAMPLER_DESCRIPTOR_BUFFER_BIT_EXT;
             cmd->CmdBindDescriptorBuffersEXT(1, &bindingInfo);
 
             uint32_t     bufferIndices[1] = {0};
