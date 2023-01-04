@@ -194,7 +194,7 @@ void VkexInfoApp::Setup()
             // Constant buffer
             {
                 vkex::BufferCreateInfo create_info                 = {};
-                create_info.size                                   = 512; // m_view_constants.size;
+                create_info.size                                   = m_view_constants.size;
                 create_info.usage_flags.bits.shader_device_address = true;
                 create_info.committed                              = true;
                 create_info.memory_usage                           = VMA_MEMORY_USAGE_CPU_ONLY;
